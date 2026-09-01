@@ -289,7 +289,7 @@
     // ============================================================
     // 🔥 CONFIGURAÇÃO DO GOOGLE SHEETS (WEB APP)
     // ============================================================
-    // const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
+    // const WEB_APP_URL = 'COLE_AQUI_A_URL_DO_WEB_APP';
 
     const midiaArea = document.getElementById('midiaArea');
     const nomeCandidato = document.getElementById('nomeCandidato');
@@ -306,6 +306,8 @@
     let candidatoAtual = null;
     let jaCurtiu = false;
     let modoVideo = false; // false = imagem, true = vídeo
+    let ultimaLinhaMidia = null; // linha do candidato com mídia renderizada
+    let ultimoModoMidia = null;  // modo renderizado (imagem ou vídeo)
 
     function showToast(msg) {
         const el = document.getElementById('toast');
@@ -394,6 +396,8 @@
     function renderizarMidia() {
         if (!candidatoAtual) {
             midiaArea.innerHTML = '<div class="sem-midia">Aguardando candidato no palco...</div>';
+            ultimaLinhaMidia = null;
+            ultimoModoMidia = null;
             return;
         }
         const c = candidatoAtual;
@@ -424,6 +428,9 @@
                 midiaArea.innerHTML = '<div class="sem-midia">Sem foto cadastrada</div>';
             }
         }
+        // Registra o que foi renderizado (para não reiniciar o vídeo no próximo refresh)
+        ultimaLinhaMidia = candidatoAtual.linha;
+        ultimoModoMidia = modoVideo;
     }
 
     // ===== ATUALIZA O CANDIDATO NO PALCO =====
@@ -446,6 +453,8 @@
             modoAtual.innerHTML = 'Modo: <b>Imagem</b>';
             modoVideo = false;
             jaCurtiu = false;
+            ultimaLinhaMidia = null;
+            ultimoModoMidia = null;
             return;
         }
 
@@ -473,7 +482,10 @@
         } else {
             btnComando.textContent = '🎬 Ver vídeo da história';
         }
-        renderizarMidia();
+        // Só re-renderiza a mídia se o candidato ou o modo mudou — evita reiniciar o vídeo
+        if (c.linha !== ultimaLinhaMidia || modoVideo !== ultimoModoMidia) {
+            renderizarMidia();
+        }
     }
 
     // ===== ALTERNA IMAGEM / VÍDEO =====
