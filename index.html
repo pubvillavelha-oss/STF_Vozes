@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShowTime Festival de Vozes - Menu</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a2e12, #0f4d1e, #0a2e12);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 24px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        header { text-align: center; padding: 20px 0 28px; }
+        header h1 {
+            font-size: 2.4rem;
+            background: linear-gradient(90deg, #009C3B, #FFDF00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        header p { color: #aaa; margin-top: 6px; font-size: 0.95rem; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+        }
+        .menu-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 10px;
+            padding: 24px 16px;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            text-decoration: none;
+            color: #e0e0e0;
+            transition: transform 0.2s, border-color 0.2s, background 0.2s;
+        }
+        .menu-card:hover {
+            transform: scale(1.03);
+            border-color: rgba(0, 156, 59, 0.6);
+            background: rgba(0, 156, 59, 0.1);
+        }
+        .menu-card .icon { font-size: 2.4rem; }
+        .menu-card .titulo { font-size: 1.1rem; font-weight: 700; color: #fff; }
+        .menu-card .desc { font-size: 0.85rem; color: #999; line-height: 1.4; }
+        .menu-card .tag {
+            font-size: 0.75rem;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .tag.operador { background: rgba(255, 223, 0, 0.12); color: #FFDF00; border: 1px solid rgba(255, 223, 0, 0.3); }
+        .tag.jurado { background: rgba(0, 156, 59, 0.15); color: #4ade80; border: 1px solid rgba(0, 156, 59, 0.3); }
+        .tag.publico { background: rgba(70, 130, 255, 0.15); color: #6ba3ff; border: 1px solid rgba(70, 130, 255, 0.3); }
+        .tag.gestao { background: rgba(255, 255, 255, 0.1); color: #ccc; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .footer { text-align: center; margin-top: 28px; color: #555; font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>🎤 ShowTime Festival de Vozes</h1>
+        <p>Painel de acesso às páginas do app</p>
+    </header>
+
+    <div class="grid">
+        <!-- INSCRIÇÃO -->
+        <a class="menu-card" href="inclusao.html">
+            <div class="icon">📝</div>
+            <div class="titulo">Inscrição</div>
+            <div class="desc">Formulário para o candidato entrar na fila com nome, música e artista</div>
+            <span class="tag publico">Público</span>
+        </a>
+
+        <!-- FILA -->
+        <a class="menu-card" href="st_fila.html">
+            <div class="icon">📋</div>
+            <div class="titulo">Fila de Apresentação</div>
+            <div class="desc">Painel do operador: chamar candidato, marcar No Palco e desfazer</div>
+            <span class="tag operador">Operador</span>
+        </a>
+
+        <!-- QUESITOS -->
+        <a class="menu-card" href="quesitos.html">
+            <div class="icon">📋</div>
+            <div class="titulo">Quesitos</div>
+            <div class="desc">Cadastro das perguntas que serão lidas aos jurados</div>
+            <span class="tag gestao">Gestão</span>
+        </a>
+
+        <!-- JURADOS -->
+        <a class="menu-card" href="jurados.html">
+            <div class="icon">👨‍⚖️</div>
+            <div class="titulo">Jurados</div>
+            <div class="desc">Cadastro de jurados com nome, especialidade e história</div>
+            <span class="tag gestao">Gestão</span>
+        </a>
+
+        <!-- AVALIAÇÃO -->
+        <a class="menu-card" href="avaliacao.html">
+            <div class="icon">⭐</div>
+            <div class="titulo">Avaliação</div>
+            <div class="desc">Formulário dos jurados com notas de 5 a 10 e observações</div>
+            <span class="tag jurado">Jurado</span>
+        </a>
+
+        <!-- RANKING -->
+        <a class="menu-card" href="ranking.html">
+            <div class="icon">📊</div>
+            <div class="titulo">Ranking</div>
+            <div class="desc">Notas somadas por candidato, com barras e médias</div>
+            <span class="tag gestao">Gestão</span>
+        </a>
+
+        <!-- RESULTADO FINAL -->
+        <a class="menu-card" href="resultado.html">
+            <div class="icon">🏆</div>
+            <div class="titulo">Resultado Final</div>
+            <div class="desc">Campeão em destaque, pódio e demais classificados</div>
+            <span class="tag publico">Público</span>
+        </a>
+    </div>
+
+    <div class="footer">ShowTime Festival de Vozes · 3ª Edição</div>
+</div>
+</body>
+</html>
