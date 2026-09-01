@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShowTime Festival de Vozes - Inscrição</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a2e12, #0f4d1e, #0a2e12);
+            min-height: 100vh;
+            color: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container { max-width: 520px; width: 100%; }
+        header { text-align: center; padding: 20px 0; }
+        header h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #009C3B, #FFDF00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        header p { color: #aaa; margin-top: 6px; font-size: 0.9rem; }
+        .card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 28px 24px;
+        }
+        .form-group { margin-bottom: 16px; }
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #ccc;
+            margin-bottom: 4px;
+        }
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.35);
+            color: #fff;
+            font-size: 1rem;
+            transition: border 0.2s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #009C3B;
+            box-shadow: 0 0 0 3px rgba(0, 156, 59, 0.25);
+        }
+        input::placeholder { color: #777; }
+        .form-group-checkbox {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #ccc;
+            margin-bottom: 0;
+            user-select: none;
+        }
+        .checkbox-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #009C3B;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.2s;
+            background: linear-gradient(90deg, #009C3B, #00b84a);
+            color: #ffffff;
+            margin-top: 8px;
+        }
+        .btn:hover { transform: scale(1.02); }
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .success-msg {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 156, 59, 0.12);
+            border: 1px solid rgba(0, 156, 59, 0.3);
+            border-radius: 12px;
+            margin-top: 16px;
+        }
+        .success-msg .icon { font-size: 2rem; }
+        .success-msg .text {
+            font-size: 1.1rem;
+            color: #4ade80;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+        .success-msg .sub { font-size: 0.85rem; color: #999; margin-top: 4px; }
+        .footer { text-align: center; margin-top: 20px; color: #555; font-size: 0.8rem; }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0a2e12;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.4s, bottom 0.4s;
+            pointer-events: none;
+            z-index: 999;
+            white-space: nowrap;
+            max-width: 90%;
+        }
+        .toast.show { opacity: 1; bottom: 50px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>🎤 ShowTime Festival de Vozes</h1>
+        <p>Preencha para se inscrever</p>
+    </header>
+    <div class="card" id="formCard">
+        <form id="formAdd">
+            <div class="form-group">
+                <label for="nome">Seu Nome *</label>
+                <input type="text" id="nome" placeholder="Ex: Ana" required />
+            </div>
+            <div class="form-group form-group-checkbox">
+                <label class="checkbox-label" for="apoioCantar">
+                    <input type="checkbox" id="apoioCantar" name="apoioCantar" value="sim" />
+                    <span>Apoio para cantar</span>
+                </label>
+            </div>
+            <div class="form-group">
+                <label for="musica">Nome da Música *</label>
+                <input type="text" id="musica" placeholder="Ex: Bohemian Rhapsody" required />
+            </div>
+            <div class="form-group">
+                <label for="artista">Artista / Banda *</label>
+                <input type="text" id="artista" placeholder="Ex: Queen" required />
+            </div>
+            <div class="form-group">
+                <label for="link">Link da Música (YouTube / Spotify)</label>
+                <input type="url" id="link" placeholder="https://youtu.be/..." />
+            </div>
+            <button type="submit" class="btn" id="btnSubmit">➕ Enviar inscrição</button>
+        </form>
+        <div class="success-msg" id="successMsg">
+            <div class="icon">✅</div>
+            <div class="text">Inscrição registrada!</div>
+            <div class="sub">Boa sorte no palco 🎤</div>
+        </div>
+    </div>
+    <div class="footer">Dados registrados no Google Sheets</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+    // ============================================================
+    // 🔥 CONFIGURAÇÃO DO GOOGLE SHEETS (WEB APP)
+    // ============================================================
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
+
+    // ===== DOM =====
+    const form        = document.getElementById('formAdd');
+    const inputNome   = document.getElementById('nome');
+    const inputMusica = document.getElementById('musica');
+    const inputArtista = document.getElementById('artista');
+    const inputLink   = document.getElementById('link');
+    const inputApoio  = document.getElementById('apoioCantar');
+    const btnSubmit   = document.getElementById('btnSubmit');
+    const successMsg  = document.getElementById('successMsg');
+    let toastTimer = null;
+
+    function showToast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    // ===== ENVIO (inclusão simples, sem validação) =====
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nome    = inputNome.value.trim();
+        const musica  = inputMusica.value.trim();
+        const artista = inputArtista.value.trim();
+        const link    = inputLink.value.trim();
+        const apoio   = inputApoio.checked;
+
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = '⏳ Enviando...';
+        try {
+            const res = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ nome, musica, artista, link, apoio })
+            });
+            const json = await res.json();
+            if (json.ok) {
+                form.style.display = 'none';
+                successMsg.style.display = 'block';
+            } else {
+                showToast('⚠️ Não foi possível registrar. Tente novamente.');
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = '➕ Enviar inscrição';
+            }
+        } catch (err) {
+            showToast('⚠️ Erro de conexão. Tente novamente.');
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = '➕ Enviar inscrição';
+        }
+    });
+</script>
+</body>
+</html>
