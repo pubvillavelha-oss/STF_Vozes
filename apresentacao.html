@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShowTime Festival de Vozes - Fila de Apresentação</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a2e12, #0f4d1e, #0a2e12);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 24px;
+        }
+        header {
+            text-align: center;
+            padding: 16px 0 24px;
+        }
+        header h1 {
+            font-size: 2.4rem;
+            background: linear-gradient(90deg, #009C3B, #FFDF00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        header p { color: #aaa; margin-top: 6px; font-size: 1rem; }
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 0.95rem;
+            padding: 8px 18px;
+            border-radius: 20px;
+            width: fit-content;
+        }
+        .status-bar.online { background: rgba(0, 156, 59, 0.15); color: #4ade80; }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status-dot.online { background: #4ade80; animation: pulse 1.5s infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .fila-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .card:hover { transform: scale(1.02); border-color: rgba(0, 156, 59, 0.5); }
+        .card .posicao {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #FFDF00;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .card .nome {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin-top: 6px;
+        }
+        .card .musica {
+            font-size: 1.1rem;
+            color: #4ade80;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+        .card .artista {
+            font-size: 0.95rem;
+            color: #aaa;
+            margin-top: 2px;
+        }
+        .card .apoio {
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            background: rgba(255, 223, 0, 0.12);
+            color: #FFDF00;
+            border: 1px solid rgba(255, 223, 0, 0.3);
+        }
+        .card .hora {
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #777;
+        }
+        .card.destaque {
+            border: 2px solid #009C3B;
+            background: rgba(0, 156, 59, 0.12);
+            box-shadow: 0 0 30px rgba(0, 156, 59, 0.25);
+        }
+        .card.destaque .posicao { color: #4ade80; }
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+            font-size: 1.2rem;
+        }
+        .empty .icon { font-size: 3rem; margin-bottom: 12px; }
+        .footer {
+            text-align: center;
+            margin-top: 32px;
+            color: #555;
+            font-size: 0.85rem;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0a2e12;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.4s, bottom 0.4s;
+            pointer-events: none;
+            z-index: 999;
+            white-space: nowrap;
+            max-width: 90%;
+        }
+        .toast.show { opacity: 1; bottom: 50px; }
+    </style>
+</head>
+<body>
+<header>
+    <h1>🎤 ShowTime Festival de Vozes</h1>
+    <p>Fila de apresentação</p>
+</header>
+<div class="status-bar online" id="statusBar">
+    <span class="status-dot online" id="statusDot"></span>
+    <span id="statusText">Sincronizando...</span>
+</div>
+<div class="fila-grid" id="filaGrid"></div>
+<div class="footer">Dados sincronizados em tempo real com o Google Sheets</div>
+<div class="toast" id="toast"></div>
+<script>
+    // ============================================================
+    // 🔥 CONFIGURAÇÃO DO GOOGLE SHEETS (WEB APP)
+    // ============================================================
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
+
+    const filaGrid = document.getElementById('filaGrid');
+    const statusText = document.getElementById('statusText');
+    let toastTimer = null;
+
+    function showToast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str || '';
+        return div.innerHTML;
+    }
+
+    // ===== CARREGA A FILA =====
+    async function carregarFila() {
+        try {
+            const res = await fetch(WEB_APP_URL);
+            const json = await res.json();
+            if (!json.ok) {
+                showToast('⚠️ Erro ao carregar a fila.');
+                return;
+            }
+            renderizarFila(json.fila || []);
+            statusText.textContent = '🟢 Fila sincronizada';
+        } catch (err) {
+            statusText.textContent = '🔴 Sem conexão';
+            showToast('⚠️ Erro de conexão. Tentando novamente...');
+        }
+    }
+
+    // ===== RENDERIZA OS CARDS =====
+    function renderizarFila(fila) {
+        if (!fila.length) {
+            filaGrid.innerHTML = `
+                <div class="empty" style="grid-column: 1 / -1;">
+                    <div class="icon">🎤</div>
+                    A fila está vazia. Aguardando inscrições...
+                </div>`;
+            return;
+        }
+        let html = '';
+        fila.forEach((item, idx) => {
+            const posicao = idx + 1;
+            const destaque = idx === 0 ? 'destaque' : '';
+            const apoio = item.apoioCantar === 'Sim' || item.apoio === 'Sim'
+                ? '<span class="apoio">🎤 Apoio para cantar</span>'
+                : '';
+            html += `
+                <div class="card ${destaque}">
+                    <div class="posicao">${posicao}º na fila</div>
+                    <div class="nome">${escapeHtml(item.nome)}</div>
+                    <div class="musica">🎵 ${escapeHtml(item.musica)}</div>
+                    <div class="artista">${escapeHtml(item.artista)}</div>
+                    ${apoio}
+                    <div class="hora">Entrou às ${escapeHtml(item.horaCadastro)}</div>
+                </div>`;
+        });
+        filaGrid.innerHTML = html;
+    }
+
+    // ===== INICIA =====
+    carregarFila();
+    setInterval(carregarFila, 15000); // atualiza a cada 15 segundos
+</script>
+</body>
+</html>
