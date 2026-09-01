@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShowTime - Resultado Final</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a2e12, #0f4d1e, #0a2e12);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 24px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        header { text-align: center; padding: 16px 0 24px; }
+        header h1 {
+            font-size: 2.4rem;
+            background: linear-gradient(90deg, #009C3B, #FFDF00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        header p { color: #aaa; margin-top: 6px; font-size: 0.95rem; }
+        .status-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 auto 20px; flex-wrap: wrap; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .status-dot.online { background: #4ade80; }
+        .status-dot.offline { background: #f87171; }
+        .conn-text { font-size: 0.8rem; color: #888; }
+
+        /* ===== CAMPEÃO ===== */
+        .champion {
+            text-align: center;
+            padding: 30px 20px;
+            background: linear-gradient(180deg, rgba(255, 215, 0, 0.12), rgba(0, 156, 59, 0.08));
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            border-radius: 20px;
+            margin-bottom: 24px;
+            animation: fadeSlide 0.5s ease-out;
+        }
+        .champion .trophy { font-size: 4.5rem; animation: float 2.5s ease-in-out infinite; }
+        .champion .label {
+            font-size: 0.9rem;
+            color: #FFD700;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            font-weight: 700;
+            margin-top: 8px;
+        }
+        .champion .nome { font-size: 2.8rem; font-weight: 800; color: #fff; margin-top: 6px; }
+        .champion .score { font-size: 1.4rem; color: #FFD700; margin-top: 6px; font-weight: 700; }
+        .champion .sub { font-size: 0.9rem; color: #aaa; margin-top: 4px; }
+
+        /* ===== PÓDIO ===== */
+        .podium {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .podium-item {
+            text-align: center;
+            padding: 20px 16px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex: 1;
+            max-width: 220px;
+        }
+        .podium-item .medal { font-size: 2.2rem; }
+        .podium-item .pos { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-top: 4px; }
+        .podium-item .nome { font-size: 1.2rem; font-weight: 700; color: #fff; margin-top: 6px; }
+        .podium-item .score { font-size: 1.1rem; font-weight: 700; margin-top: 4px; }
+        .podium-item.p2 { border-color: rgba(192, 192, 192, 0.4); }
+        .podium-item.p2 .pos { color: #C0C0C0; }
+        .podium-item.p2 .score { color: #C0C0C0; }
+        .podium-item.p3 { border-color: rgba(205, 127, 50, 0.4); }
+        .podium-item.p3 .pos { color: #CD7F32; }
+        .podium-item.p3 .score { color: #CD7F32; }
+
+        /* ===== DEMAIS CLASSIFICADOS ===== */
+        .others-title {
+            font-size: 1.1rem;
+            color: #aaa;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .others-list { max-width: 600px; margin: 0 auto; }
+        .other-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            margin-bottom: 6px;
+        }
+        .other-item .pos { font-size: 1.1rem; font-weight: 800; color: #009C3B; min-width: 36px; text-align: center; }
+        .other-item .nome { flex: 1; font-size: 1rem; }
+        .other-item .score { font-size: 1rem; font-weight: 700; color: #4ade80; }
+
+        .empty { text-align: center; padding: 60px 20px; color: #888; font-size: 1.2rem; }
+        .empty .icon { font-size: 3rem; margin-bottom: 12px; }
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #0a2e12; color: #fff; padding: 12px 24px; border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9rem; opacity: 0;
+            transition: opacity 0.4s, bottom 0.4s; pointer-events: none; z-index: 999;
+            white-space: nowrap; max-width: 90%;
+        }
+        .toast.show { opacity: 1; bottom: 50px; }
+
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(-10px); }
+        }
+        @media (max-width: 600px) {
+            .champion .nome { font-size: 1.8rem; }
+            .podium { flex-direction: column; align-items: center; }
+            .podium-item { max-width: 100%; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>🏆 Resultado Final</h1>
+        <p>ShowTime Festival de Vozes</p>
+    </header>
+    <div class="status-row">
+        <span class="status-dot" id="statusDot"></span>
+        <span class="conn-text" id="statusText">Conectando...</span>
+    </div>
+    <div id="resultadoContent">
+        <div class="empty"><div class="icon">🏆</div>Carregando resultado...</div>
+    </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+    // ============================================================
+    // 🔥 CONFIGURAÇÃO DO GOOGLE SHEETS (WEB APP)
+    // ============================================================
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
+
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const resultadoContent = document.getElementById('resultadoContent');
+    let toastTimer = null;
+
+    function showToast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    function setStatus(online) {
+        statusDot.className = 'status-dot ' + (online ? 'online' : 'offline');
+        statusText.textContent = online ? 'Online' : 'Offline';
+    }
+
+    function esc(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // ===== CARREGA RESULTADO =====
+    async function carregarResultado() {
+        try {
+            const res = await fetch(WEB_APP_URL + '?acao=ranking');
+            const json = await res.json();
+            if (!json.ok) { showToast('⚠️ Erro ao carregar resultado.'); setStatus(false); return; }
+            renderizar(json.ranking || []);
+            setStatus(true);
+        } catch (err) {
+            setStatus(false);
+            showToast('⚠️ Erro de conexão.');
+        }
+    }
+
+    // ===== RENDERIZA RESULTADO =====
+    function renderizar(ranking) {
+        if (!ranking.length) {
+            resultadoContent.innerHTML = '<div class="empty"><div class="icon">🎤</div>Ainda não há avaliações lançadas.</div>';
+            return;
+        }
+
+        const campeao = ranking[0];
+        const segundo = ranking[1] || null;
+        const terceiro = ranking[2] || null;
+        const demais = ranking.slice(3);
+
+        let html = '';
+
+        // ===== CAMPEÃO EM DESTAQUE =====
+        html += `
+            <div class="champion">
+                <div class="trophy">🏆</div>
+                <div class="label">Campeão ShowTime</div>
+                <div class="nome">${esc(campeao.candidato)}</div>
+                <div class="score">${campeao.total} pontos</div>
+                <div class="sub">${campeao.avaliacoes} nota(s) lançada(s) · média ${(campeao.total / campeao.avaliacoes).toFixed(1)}</div>
+            </div>
+        `;
+
+        // ===== PÓDIO (2º e 3º) =====
+        if (segundo || terceiro) {
+            html += `<div class="podium">`;
+            if (segundo) {
+                html += `
+                    <div class="podium-item p2">
+                        <div class="medal">🥈</div>
+                        <div class="pos">2º Lugar</div>
+                        <div class="nome">${esc(segundo.candidato)}</div>
+                        <div class="score">${segundo.total} pts</div>
+                    </div>`;
+            }
+            if (terceiro) {
+                html += `
+                    <div class="podium-item p3">
+                        <div class="medal">🥉</div>
+                        <div class="pos">3º Lugar</div>
+                        <div class="nome">${esc(terceiro.candidato)}</div>
+                        <div class="score">${terceiro.total} pts</div>
+                    </div>`;
+            }
+            html += `</div>`;
+        }
+
+        // ===== DEMAIS CLASSIFICADOS =====
+        if (demais.length) {
+            html += `<div class="others-title">📋 Demais classificados</div><div class="others-list">`;
+            demais.forEach((r, idx) => {
+                html += `
+                    <div class="other-item">
+                        <div class="pos">${idx + 4}º</div>
+                        <div class="nome">${esc(r.candidato)}</div>
+                        <div class="score">${r.total} pts</div>
+                    </div>`;
+            });
+            html += `</div>`;
+        }
+
+        resultadoContent.innerHTML = html;
+    }
+
+    // ===== INICIA =====
+    carregarResultado();
+    setInterval(carregarResultado, 10000);
+</script>
+</body>
+</html>
