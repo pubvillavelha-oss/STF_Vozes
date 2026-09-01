@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShowTime - Cadastro de Quesitos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a2e12, #0f4d1e, #0a2e12);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 24px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        header { text-align: center; padding: 16px 0 24px; }
+        header h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #009C3B, #FFDF00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        header p { color: #aaa; margin-top: 6px; font-size: 0.9rem; }
+        .card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .form-group { margin-bottom: 14px; }
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #ccc;
+            margin-bottom: 4px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.35);
+            color: #fff;
+            font-size: 1rem;
+            transition: border 0.2s;
+            font-family: inherit;
+        }
+        textarea { resize: vertical; min-height: 60px; }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #009C3B;
+            box-shadow: 0 0 0 3px rgba(0, 156, 59, 0.25);
+        }
+        input::placeholder, textarea::placeholder { color: #777; }
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.2s;
+            background: linear-gradient(90deg, #009C3B, #00b84a);
+            color: #fff;
+        }
+        .btn:hover { transform: scale(1.02); }
+        .btn:active { transform: scale(0.97); }
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #e0e0e0;
+        }
+        .btn-danger {
+            background: rgba(255, 70, 70, 0.15);
+            border: 1px solid rgba(255, 70, 70, 0.3);
+            color: #ff6b6b;
+        }
+        .quesito-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .quesito-item .ordem {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #009C3B;
+            min-width: 40px;
+            text-align: center;
+        }
+        .quesito-item .info { flex: 1; min-width: 0; }
+        .quesito-item .nome { font-size: 1.1rem; font-weight: 600; }
+        .quesito-item .desc { font-size: 0.85rem; color: #888; margin-top: 2px; }
+        .quesito-item .acoes { display: flex; gap: 6px; flex-shrink: 0; }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0a2e12;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.4s, bottom 0.4s;
+            pointer-events: none;
+            z-index: 999;
+            white-space: nowrap;
+            max-width: 90%;
+        }
+        .toast.show { opacity: 1; bottom: 50px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>📋 Quesitos de Avaliação</h1>
+        <p>Cadastre as perguntas que serão lidas aos jurados</p>
+    </header>
+
+    <div class="card">
+        <form id="formQuesito">
+            <div class="form-group">
+                <label for="ordem">Ordem</label>
+                <input type="number" id="ordem" placeholder="Ex: 1" min="1" />
+            </div>
+            <div class="form-group">
+                <label for="quesito">Quesito / Pergunta *</label>
+                <input type="text" id="quesito" placeholder="Ex: Afinação" required />
+            </div>
+            <div class="form-group">
+                <label for="descricao">Descrição (opcional)</label>
+                <textarea id="descricao" placeholder="Ex: Precisão das notas cantadas em relação à melodia original"></textarea>
+            </div>
+            <button type="submit" class="btn" id="btnSalvar">➕ Adicionar quesito</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-bottom: 12px; color: #aaa;">Quesitos cadastrados</h3>
+        <div id="listaQuesitos">
+            <div style="color: #555; text-align: center; padding: 20px;">Carregando...</div>
+        </div>
+    </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+    // ============================================================
+    // 🔥 CONFIGURAÇÃO DO GOOGLE SHEETS (WEB APP)
+    // ============================================================
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
+
+    const formQuesito = document.getElementById('formQuesito');
+    const inputOrdem = document.getElementById('ordem');
+    const inputQuesito = document.getElementById('quesito');
+    const inputDescricao = document.getElementById('descricao');
+    const listaQuesitos = document.getElementById('listaQuesitos');
+    let toastTimer = null;
+    let editandoLinha = null;
+
+    function showToast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    function esc(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // ===== CARREGA QUESITOS =====
+    async function carregarQuesitos() {
+        try {
+            const res = await fetch(WEB_APP_URL + '?acao=quesitos');
+            const json = await res.json();
+            if (!json.ok) {
+                showToast('⚠️ Erro ao carregar quesitos.');
+                return;
+            }
+            renderizar(json.quesitos || []);
+        } catch (err) {
+            showToast('⚠️ Erro de conexão.');
+        }
+    }
+
+    function renderizar(quesitos) {
+        if (!quesitos.length) {
+            listaQuesitos.innerHTML = '<div style="color: #555; text-align: center; padding: 20px;">Nenhum quesito cadastrado ainda.</div>';
+            return;
+        }
+        listaQuesitos.innerHTML = quesitos.map(q => `
+            <div class="quesito-item">
+                <div class="ordem">${esc(q.ordem || '')}</div>
+                <div class="info">
+                    <div class="nome">${esc(q.quesito)}</div>
+                    <div class="desc">${esc(q.descricao || '')}</div>
+                </div>
+                <div class="acoes">
+                    <button class="btn btn-secondary" onclick="editarQuesito(${q.linha})">✏️ Editar</button>
+                    <button class="btn btn-danger" onclick="excluirQuesito(${q.linha})">🗑️</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // ===== EDITAR =====
+    async function editarQuesito(linha) {
+        try {
+            const res = await fetch(WEB_APP_URL + '?acao=quesitos');
+            const json = await res.json();
+            const q = (json.quesitos || []).find(x => x.linha === linha);
+            if (!q) return;
+            editandoLinha = linha;
+            inputOrdem.value = q.ordem;
+            inputQuesito.value = q.quesito;
+            inputDescricao.value = q.descricao;
+            document.getElementById('btnSalvar').textContent = '💾 Salvar alterações';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (err) {
+            showToast('⚠️ Erro ao carregar quesito.');
+        }
+    }
+
+    // ===== EXCLUIR =====
+    async function excluirQuesito(linha) {
+        if (!confirm('Excluir este quesito?')) return;
+        try {
+            const res = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ acao: 'excluirQuesito', linha: linha })
+            });
+            const json = await res.json();
+            if (json.ok) {
+                showToast('✅ Quesito excluído.');
+                carregarQuesitos();
+            } else {
+                showToast('⚠️ Erro ao excluir.');
+            }
+        } catch (err) {
+            showToast('⚠️ Erro de conexão.');
+        }
+    }
+
+    // ===== SALVAR (novo ou edição) =====
+    formQuesito.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+            acao: 'salvarQuesito',
+            ordem: inputOrdem.value.trim(),
+            quesito: inputQuesito.value.trim(),
+            descricao: inputDescricao.value.trim()
+        };
+        if (editandoLinha) payload.linha = editandoLinha;
+
+        try {
+            const res = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify(payload)
+            });
+            const json = await res.json();
+            if (json.ok) {
+                showToast(editandoLinha ? '✅ Quesito atualizado.' : '✅ Quesito adicionado.');
+                formQuesito.reset();
+                editandoLinha = null;
+                document.getElementById('btnSalvar').textContent = '➕ Adicionar quesito';
+                carregarQuesitos();
+            } else {
+                showToast('⚠️ ' + (json.erro || 'Erro ao salvar.'));
+            }
+        } catch (err) {
+            showToast('⚠️ Erro de conexão.');
+        }
+    });
+
+    // ===== INICIA =====
+    carregarQuesitos();
+</script>
+</body>
+</html>
