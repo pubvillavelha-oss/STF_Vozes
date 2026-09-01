@@ -81,6 +81,7 @@
         .btn-success { background: rgba(0, 156, 59, 0.18); color: #4ade80; border: 1px solid rgba(0, 156, 59, 0.3); }
         .btn-link { background: rgba(70, 130, 255, 0.18); color: #6ba3ff; border: 1px solid rgba(70, 130, 255, 0.3); }
         .btn-call-item { background: rgba(255, 223, 0, 0.15); color: #FFDF00; border: 1px solid rgba(255, 223, 0, 0.3); }
+        .btn-undo { background: rgba(255, 223, 0, 0.15); color: #FFDF00; border: 1px solid rgba(255, 223, 0, 0.3); }
         .controles {
             flex-shrink: 0; padding: 12px 20px; border-top: 1px solid rgba(255, 255, 255, 0.08);
             background: rgba(255, 255, 255, 0.02); display: flex; align-items: center;
@@ -298,14 +299,36 @@
         }
     }
 
+    // ===== DESFAZER NO PALCO (volta o candidato para a fila) =====
+    async function desfazerPalco(linha) {
+        const candidato = ultimosCandidatos.find(s => s.linha === linha);
+        try {
+            const res = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ acao: 'desfazerPalco', linha: linha })
+            });
+            const json = await res.json();
+            if (json.ok) {
+                showToast('↩️ ' + (candidato ? candidato.nome : 'Candidato(a)') + ' voltou para a fila.');
+                carregarFila();
+            } else {
+                showToast('⚠️ Erro ao desfazer. Tente novamente.');
+            }
+        } catch (err) {
+            showToast('⚠️ Erro de conexão. Tente novamente.');
+        }
+    }
+
     // ===== RENDER =====
     function render(fila) {
         ultimosCandidatos = fila;
+        // Só considera "cantando agora" quem tem status "No Palco" (acionado pelo botão)
         const noPalco = fila.find(s => s.status === 'No Palco');
         const current = noPalco || null;
         const pending = fila.filter(s => s.status !== 'No Palco');
-        const nextUp = pending.length > 0 ? pending[0] : null;
 
+        // ===== NOW PLAYING: SÓ mostra se o botão "No Palco" foi acionado =====
         if (current) {
             const apoio = getApoio(current);
             nowContent.innerHTML = `
@@ -313,28 +336,22 @@
                 <div class="music">🎵 ${esc(current.musica)}</div>
                 <div class="artist">🎤 ${esc(current.artista || 'Artista')}</div>
                 ${apoio ? `<div class="apoio-line">🤝 ${esc(apoio)}</div>` : ''}
-            `;
-        } else if (nextUp) {
-            const apoio = getApoio(nextUp);
-            nowContent.innerHTML = `
-                <div class="singer">${esc(nextUp.nome)}</div>
-                <div class="music">🎵 ${esc(nextUp.musica)}</div>
-                <div class="artist">🎤 ${esc(nextUp.artista || 'Artista')}</div>
-                ${apoio ? `<div class="apoio-line">🤝 ${esc(apoio)}</div>` : ''}
-                <div class="artist" style="color:#009C3B;font-style:normal;margin-top:6px;">⏳ Próximo(a) a cantar</div>
+                <div style="margin-top: 12px;">
+                    <button class="btn btn-undo" onclick="desfazerPalco(${current.linha})">↩️ Desfazer No Palco</button>
+                </div>
             `;
         } else {
             nowContent.innerHTML = `<div class="empty-now">Aguardando próximo candidato...</div>`;
         }
 
-        const showPending = current ? pending : (pending.length > 1 ? pending.slice(1) : []);
-        if (showPending.length === 0) {
+        // ===== FILA: todos os pendentes, posição a partir de 1 =====
+        if (pending.length === 0) {
             queueList.innerHTML = `<div class="empty-queue">Fila vazia — aguardando inscrições 🎤</div>`;
-            queueCount.textContent = String(pending.length);
+            queueCount.textContent = '0';
             return;
         }
-        queueList.innerHTML = showPending.map((s, idx) => {
-            const pos = current ? idx + 1 : idx + 2;
+        queueList.innerHTML = pending.map((s, idx) => {
+            const pos = idx + 1;
             const linkHtml = s.link
                 ? `<a href="${esc(s.link)}" target="_blank" rel="noopener" class="btn btn-link">🔗 Ouvir</a>`
                 : '';
