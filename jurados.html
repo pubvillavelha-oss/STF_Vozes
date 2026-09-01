@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShowTime - Cadastro de Jurados</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a2e12, #0f4d1e, #0a2e12);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 24px;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        header { text-align: center; padding: 16px 0 24px; }
+        header h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #009C3B, #FFDF00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        header p { color: #aaa; margin-top: 6px; font-size: 0.9rem; }
+        .card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .form-group { margin-bottom: 14px; }
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #ccc;
+            margin-bottom: 4px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.35);
+            color: #fff;
+            font-size: 1rem;
+            transition: border 0.2s;
+            font-family: inherit;
+        }
+        textarea { resize: vertical; min-height: 120px; }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #009C3B;
+            box-shadow: 0 0 0 3px rgba(0, 156, 59, 0.25);
+        }
+        input::placeholder, textarea::placeholder { color: #777; }
+        .counter {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 4px;
+            text-align: right;
+        }
+        .counter.ok { color: #4ade80; }
+        .counter.erro { color: #ff6b6b; }
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.2s;
+            background: linear-gradient(90deg, #009C3B, #00b84a);
+            color: #fff;
+        }
+        .btn:hover { transform: scale(1.02); }
+        .btn:active { transform: scale(0.97); }
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: #e0e0e0;
+        }
+        .btn-danger {
+            background: rgba(255, 70, 70, 0.15);
+            border: 1px solid rgba(255, 70, 70, 0.3);
+            color: #ff6b6b;
+        }
+        .jurado-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .jurado-item .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(0, 156, 59, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #4ade80;
+            flex-shrink: 0;
+        }
+        .jurado-item .info { flex: 1; min-width: 0; }
+        .jurado-item .nome { font-size: 1.1rem; font-weight: 600; }
+        .jurado-item .esp { font-size: 0.85rem; color: #4ade80; margin-top: 2px; }
+        .jurado-item .hist {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 6px;
+            max-height: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+        .jurado-item .acoes { display: flex; gap: 6px; flex-shrink: 0; }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0a2e12;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.4s, bottom 0.4s;
+            pointer-events: none;
+            z-index: 999;
+            white-space: nowrap;
+            max-width: 90%;
+        }
+        .toast.show { opacity: 1; bottom: 50px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>👨‍⚖️ Cadastro de Jurados</h1>
+        <p>ShowTime Festival de Vozes</p>
+    </header>
+
+    <div class="card">
+        <form id="formJurado">
+            <div class="form-group">
+                <label for="nome">Nome do Jurado *</label>
+                <input type="text" id="nome" placeholder="Ex: Marcelle Maganha" required />
+            </div>
+            <div class="form-group">
+                <label for="especialidade">Especialidade *</label>
+                <input type="text" id="especialidade" placeholder="Ex: Canto lírico, MPB, Técnica vocal..." required />
+            </div>
+            <div class="form-group">
+                <label for="historia">História do Jurado *</label>
+                <textarea id="historia" placeholder="Conte a trajetória do jurado (mínimo 500 caracteres)..." required></textarea>
+                <div class="counter" id="counter">0 / 500 caracteres</div>
+            </div>
+            <button type="submit" class="btn" id="btnSalvar">➕ Adicionar jurado</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-bottom: 12px; color: #aaa;">Jurados cadastrados</h3>
+        <div id="listaJurados">
+            <div style="color: #555; text-align: center; padding: 20px;">Carregando...</div>
+        </div>
+    </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+    // ============================================================
+    // 🔥 CONFIGURAÇÃO DO GOOGLE SHEETS (WEB APP)
+    // ============================================================
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
+
+    const formJurado = document.getElementById('formJurado');
+    const inputNome = document.getElementById('nome');
+    const inputEspecialidade = document.getElementById('especialidade');
+    const inputHistoria = document.getElementById('historia');
+    const counter = document.getElementById('counter');
+    const listaJurados = document.getElementById('listaJurados');
+    let toastTimer = null;
+    let editandoLinha = null;
+
+    function showToast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    function esc(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // ===== CONTADOR DE CARACTERES =====
+    inputHistoria.addEventListener('input', () => {
+        const len = inputHistoria.value.length;
+        counter.textContent = len + ' / 500 caracteres';
+        counter.className = 'counter ' + (len >= 500 ? 'ok' : (len > 0 ? 'erro' : ''));
+    });
+
+    // ===== CARREGA JURADOS =====
+    async function carregarJurados() {
+        try {
+            const res = await fetch(WEB_APP_URL + '?acao=jurados');
+            const json = await res.json();
+            if (!json.ok) {
+                showToast('⚠️ Erro ao carregar jurados.');
+                return;
+            }
+            renderizar(json.jurados || []);
+        } catch (err) {
+            showToast('⚠️ Erro de conexão.');
+        }
+    }
+
+    function renderizar(jurados) {
+        if (!jurados.length) {
+            listaJurados.innerHTML = '<div style="color: #555; text-align: center; padding: 20px;">Nenhum jurado cadastrado ainda.</div>';
+            return;
+        }
+        listaJurados.innerHTML = jurados.map(j => {
+            const inicial = (j.nome || '?').trim().charAt(0).toUpperCase();
+            return `
+                <div class="jurado-item">
+                    <div class="avatar">${esc(inicial)}</div>
+                    <div class="info">
+                        <div class="nome">${esc(j.nome)}</div>
+                        <div class="esp">🎵 ${esc(j.especialidade || '')}</div>
+                        <div class="hist">${esc(j.historia || '')}</div>
+                    </div>
+                    <div class="acoes">
+                        <button class="btn btn-secondary" onclick="editarJurado(${j.linha})">✏️</button>
+                        <button class="btn btn-danger" onclick="excluirJurado(${j.linha})">🗑️</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // ===== EDITAR =====
+    async function editarJurado(linha) {
+        try {
+            const res = await fetch(WEB_APP_URL + '?acao=jurados');
+            const json = await res.json();
+            const j = (json.jurados || []).find(x => x.linha === linha);
+            if (!j) return;
+            editandoLinha = linha;
+            inputNome.value = j.nome;
+            inputEspecialidade.value = j.especialidade;
+            inputHistoria.value = j.historia;
+            counter.textContent = j.historia.length + ' / 500 caracteres';
+            counter.className = 'counter ' + (j.historia.length >= 500 ? 'ok' : 'erro');
+            document.getElementById('btnSalvar').textContent = '💾 Salvar alterações';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (err) {
+            showToast('⚠️ Erro ao carregar jurado.');
+        }
+    }
+
+    // ===== EXCLUIR =====
+    async function excluirJurado(linha) {
+        if (!confirm('Excluir este jurado?')) return;
+        try {
+            const res = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ acao: 'excluirJurado', linha: linha })
+            });
+            const json = await res.json();
+            if (json.ok) {
+                showToast('✅ Jurado excluído.');
+                carregarJurados();
+            } else {
+                showToast('⚠️ Erro ao excluir.');
+            }
+        } catch (err) {
+            showToast('⚠️ Erro de conexão.');
+        }
+    }
+
+    // ===== SALVAR (novo ou edição) =====
+    formJurado.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const historia = inputHistoria.value.trim();
+        if (historia.length < 500) {
+            showToast('⚠️ A história deve ter pelo menos 500 caracteres.');
+            counter.className = 'counter erro';
+            return;
+        }
+        const payload = {
+            acao: 'salvarJurado',
+            nome: inputNome.value.trim(),
+            especialidade: inputEspecialidade.value.trim(),
+            historia: historia
+        };
+        if (editandoLinha) payload.linha = editandoLinha;
+
+        try {
+            const res = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify(payload)
+            });
+            const json = await res.json();
+            if (json.ok) {
+                showToast(editandoLinha ? '✅ Jurado atualizado.' : '✅ Jurado adicionado.');
+                formJurado.reset();
+                counter.textContent = '0 / 500 caracteres';
+                counter.className = 'counter';
+                editandoLinha = null;
+                document.getElementById('btnSalvar').textContent = '➕ Adicionar jurado';
+                carregarJurados();
+            } else {
+                showToast('⚠️ ' + (json.erro || 'Erro ao salvar.'));
+            }
+        } catch (err) {
+            showToast('⚠️ Erro de conexão.');
+        }
+    });
+
+    // ===== INICIA =====
+    carregarJurados();
+</script>
+</body>
+</html>
