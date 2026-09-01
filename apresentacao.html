@@ -17,19 +17,33 @@
             height: 100vh;
             overflow: hidden;
         }
+
+        /* ===== CABEÇALHO COM LOGOTIPO À ESQUERDA ===== */
         header {
-            text-align: center;
-            padding: 14px 20px 10px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 20px 10px;
             flex-shrink: 0;
         }
-        header h1 {
+        .logo {
+            height: 64px;
+            width: auto;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+        .header-texto {
+            flex: 1;
+            text-align: center;
+        }
+        .header-texto h1 {
             font-size: 2.2rem;
             background: linear-gradient(90deg, #009C3B, #FFDF00);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        header p { color: #aaa; margin-top: 4px; font-size: 0.9rem; }
+        .header-texto p { color: #aaa; margin-top: 4px; font-size: 0.9rem; }
 
         /* ===== TELA DIVIDIDA ===== */
         .split {
@@ -238,13 +252,19 @@
         @media (max-width: 800px) {
             .split { flex-direction: column; overflow-y: auto; }
             .painel-direito { min-height: 50vh; }
+            .logo { height: 44px; }
+            .header-texto h1 { font-size: 1.5rem; }
         }
     </style>
 </head>
 <body>
 <header>
-    <h1>🎤 ShowTime Festival de Vozes</h1>
-    <p>Apresentação ao vivo</p>
+    <!-- ===== LOGOTIPO OFICIAL (lado esquerdo superior) ===== -->
+    <img src="LG_STFV.png" alt="Logo ShowTime Festival de Vozes" class="logo" onerror="this.style.display='none'" />
+    <div class="header-texto">
+        <h1>🎤 ShowTime Festival de Vozes</h1>
+        <p>Apresentação ao vivo</p>
+    </div>
 </header>
 
 <div class="split">
