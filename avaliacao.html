@@ -155,8 +155,10 @@
 
     <div class="card">
         <div class="form-group">
-            <label for="jurado">Nome do Jurado *</label>
-            <input type="text" id="jurado" placeholder="Ex: Marcelle Maganha" required />
+            <label for="jurado">Jurado *</label>
+            <select id="jurado" required>
+                <option value="">Selecione o jurado...</option>
+            </select>
         </div>
         <div class="form-group">
             <label for="candidato">Candidato *</label>
@@ -185,7 +187,7 @@
     // ============================================================
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
 
-    const inputJurado = document.getElementById('jurado');
+    const selectJurado = document.getElementById('jurado');
     const selectCandidato = document.getElementById('candidato');
     const quesitosList = document.getElementById('quesitosList');
     const totalValor = document.getElementById('totalValor');
@@ -207,6 +209,23 @@
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
+    }
+
+    // ===== CARREGA JURADOS (dropdown) =====
+    async function carregarJurados() {
+        try {
+            const res = await fetch(WEB_APP_URL + '?acao=jurados');
+            const json = await res.json();
+            if (!json.ok) {
+                showToast('⚠️ Erro ao carregar jurados.');
+                return;
+            }
+            const lista = json.jurados || [];
+            selectJurado.innerHTML = '<option value="">Selecione o jurado...</option>' +
+                lista.map(j => `<option value="${esc(j.nome)}">${esc(j.nome)}</option>`).join('');
+        } catch (err) {
+            showToast('⚠️ Erro ao carregar jurados.');
+        }
     }
 
     // ===== CARREGA CANDIDATOS =====
@@ -265,20 +284,18 @@
     // ===== MARCA NOTA =====
     function marcarNota(linha, nota) {
         notas[linha] = nota;
-        // Atualiza visual
         document.querySelectorAll(`.nota-btn[data-linha="${linha}"]`).forEach(btn => {
             btn.classList.toggle('selecionada', Number(btn.dataset.nota) === nota);
         });
-        // Atualiza total
         const total = Object.values(notas).reduce((s, n) => s + n, 0);
         totalValor.textContent = total;
     }
 
     // ===== ENVIA AVALIAÇÃO =====
     async function enviarAvaliacao() {
-        const jurado = inputJurado.value.trim();
+        const jurado = selectJurado.value;
         const candidato = selectCandidato.value;
-        if (!jurado) { showToast('⚠️ Informe o nome do jurado.'); return; }
+        if (!jurado) { showToast('⚠️ Selecione o jurado.'); return; }
         if (!candidato) { showToast('⚠️ Selecione o candidato.'); return; }
         if (Object.keys(notas).length === 0) { showToast('⚠️ Marque pelo menos uma nota.'); return; }
 
@@ -286,7 +303,6 @@
         btnEnviar.textContent = '⏳ Enviando...';
 
         try {
-            // Envia uma linha por quesito
             for (const q of quesitos) {
                 const nota = notas[q.linha];
                 if (nota === undefined) continue;
@@ -313,10 +329,9 @@
                 }
             }
             showToast('✅ Avaliação enviada com sucesso!');
-            // Limpa o formulário
             notas = {};
             totalValor.textContent = '0';
-            inputJurado.value = '';
+            selectJurado.value = '';
             selectCandidato.value = '';
             renderizarQuesitos();
             btnEnviar.disabled = false;
@@ -329,6 +344,7 @@
     }
 
     // ===== INICIA =====
+    carregarJurados();
     carregarCandidatos();
     carregarQuesitos();
 </script>
