@@ -57,6 +57,11 @@
             box-shadow: 0 0 0 3px rgba(0, 156, 59, 0.25);
         }
         select option { background: #0a2e12; color: #fff; }
+        select:disabled { opacity: 0.7; cursor: not-allowed; }
+        .candidato-lock {
+            display: flex; align-items: center; gap: 8px; margin-top: 6px;
+            font-size: 0.8rem; color: #4ade80;
+        }
         .quesito-card {
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -64,84 +69,42 @@
             padding: 16px;
             margin-bottom: 12px;
         }
-        .quesito-card .titulo {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #fff;
-        }
-        .quesito-card .descricao {
-            font-size: 0.85rem;
-            color: #888;
-            margin-top: 2px;
-        }
-        .nota-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 12px;
-            flex-wrap: wrap;
-        }
+        .quesito-card .titulo { font-size: 1.1rem; font-weight: 600; color: #fff; }
+        .quesito-card .descricao { font-size: 0.85rem; color: #888; margin-top: 2px; }
+        .nota-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
         .nota-row label { margin: 0; font-size: 0.85rem; }
         .nota-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
+            width: 44px; height: 44px; border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            background: rgba(0, 0, 0, 0.3);
-            color: #ccc;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.15s;
+            background: rgba(0, 0, 0, 0.3); color: #ccc;
+            font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.15s;
         }
         .nota-btn:hover { border-color: #009C3B; color: #4ade80; }
         .nota-btn.selecionada {
-            background: #009C3B;
-            border-color: #009C3B;
-            color: #fff;
-            transform: scale(1.08);
+            background: #009C3B; border-color: #009C3B; color: #fff; transform: scale(1.08);
         }
         .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.15s, opacity 0.2s;
-            background: linear-gradient(90deg, #009C3B, #00b84a);
-            color: #fff;
+            padding: 12px 20px; border: none; border-radius: 10px; font-size: 1rem;
+            font-weight: 600; cursor: pointer; transition: transform 0.15s, opacity 0.2s;
+            background: linear-gradient(90deg, #009C3B, #00b84a); color: #fff;
         }
         .btn:hover { transform: scale(1.02); }
         .btn:active { transform: scale(0.97); }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         .total-box {
-            text-align: center;
-            padding: 16px;
+            text-align: center; padding: 16px;
             background: rgba(0, 156, 59, 0.12);
             border: 1px solid rgba(0, 156, 59, 0.3);
-            border-radius: 12px;
-            margin-top: 16px;
+            border-radius: 12px; margin-top: 16px;
         }
         .total-box .label { font-size: 0.85rem; color: #aaa; }
         .total-box .valor { font-size: 2rem; font-weight: 800; color: #4ade80; }
         .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #0a2e12;
-            color: #fff;
-            padding: 12px 24px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.9rem;
-            opacity: 0;
-            transition: opacity 0.4s, bottom 0.4s;
-            pointer-events: none;
-            z-index: 999;
-            white-space: nowrap;
-            max-width: 90%;
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #0a2e12; color: #fff; padding: 12px 24px; border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9rem; opacity: 0;
+            transition: opacity 0.4s, bottom 0.4s; pointer-events: none; z-index: 999;
+            white-space: nowrap; max-width: 90%;
         }
         .toast.show { opacity: 1; bottom: 50px; }
     </style>
@@ -163,8 +126,9 @@
         <div class="form-group">
             <label for="candidato">Candidato *</label>
             <select id="candidato" required>
-                <option value="">Selecione o candidato...</option>
+                <option value="">Aguardando candidato no palco...</option>
             </select>
+            <div class="candidato-lock" id="candidatoLock">🔒 Candidato definido pelo operador da fila</div>
         </div>
     </div>
 
@@ -189,12 +153,13 @@
 
     const selectJurado = document.getElementById('jurado');
     const selectCandidato = document.getElementById('candidato');
+    const candidatoLock = document.getElementById('candidatoLock');
     const quesitosList = document.getElementById('quesitosList');
     const totalValor = document.getElementById('totalValor');
     const btnEnviar = document.getElementById('btnEnviar');
     let toastTimer = null;
     let quesitos = [];
-    let notas = {}; // linha -> nota
+    let notas = {};
 
     function showToast(msg) {
         const el = document.getElementById('toast');
@@ -211,15 +176,12 @@
         return div.innerHTML;
     }
 
-    // ===== CARREGA JURADOS (dropdown) =====
+    // ===== CARREGA JURADOS =====
     async function carregarJurados() {
         try {
             const res = await fetch(WEB_APP_URL + '?acao=jurados');
             const json = await res.json();
-            if (!json.ok) {
-                showToast('⚠️ Erro ao carregar jurados.');
-                return;
-            }
+            if (!json.ok) { showToast('⚠️ Erro ao carregar jurados.'); return; }
             const lista = json.jurados || [];
             selectJurado.innerHTML = '<option value="">Selecione o jurado...</option>' +
                 lista.map(j => `<option value="${esc(j.nome)}">${esc(j.nome)}</option>`).join('');
@@ -228,15 +190,31 @@
         }
     }
 
-    // ===== CARREGA CANDIDATOS =====
+    // ===== CARREGA CANDIDATO (somente quem está No Palco) =====
     async function carregarCandidatos() {
         try {
             const res = await fetch(WEB_APP_URL + '?acao=candidatos');
             const json = await res.json();
             if (!json.ok) return;
-            const lista = (json.candidatos || []).filter(c => c.status !== 'No Palco');
-            selectCandidato.innerHTML = '<option value="">Selecione o candidato...</option>' +
-                lista.map(c => `<option value="${esc(c.nome)}">${esc(c.nome)}</option>`).join('');
+            const lista = json.candidatos || []; // já filtrado: só No Palco
+            if (lista.length === 1) {
+                // Apenas um candidato: pré-seleciona e trava o dropdown
+                const nome = lista[0].nome;
+                if (selectCandidato.disabled && selectCandidato.value === nome) return;
+                selectCandidato.innerHTML = `<option value="${esc(nome)}">${esc(nome)}</option>`;
+                selectCandidato.value = nome;
+                selectCandidato.disabled = true;
+                candidatoLock.style.display = 'flex';
+            } else if (lista.length > 1) {
+                selectCandidato.disabled = false;
+                candidatoLock.style.display = 'none';
+                selectCandidato.innerHTML = '<option value="">Selecione o candidato...</option>' +
+                    lista.map(c => `<option value="${esc(c.nome)}">${esc(c.nome)}</option>`).join('');
+            } else {
+                selectCandidato.disabled = true;
+                candidatoLock.style.display = 'none';
+                selectCandidato.innerHTML = '<option value="">Aguardando candidato no palco...</option>';
+            }
         } catch (err) {
             showToast('⚠️ Erro ao carregar candidatos.');
         }
@@ -247,10 +225,7 @@
         try {
             const res = await fetch(WEB_APP_URL + '?acao=quesitos');
             const json = await res.json();
-            if (!json.ok) {
-                showToast('⚠️ Erro ao carregar quesitos.');
-                return;
-            }
+            if (!json.ok) { showToast('⚠️ Erro ao carregar quesitos.'); return; }
             quesitos = json.quesitos || [];
             renderizarQuesitos();
         } catch (err) {
@@ -296,7 +271,7 @@
         const jurado = selectJurado.value;
         const candidato = selectCandidato.value;
         if (!jurado) { showToast('⚠️ Selecione o jurado.'); return; }
-        if (!candidato) { showToast('⚠️ Selecione o candidato.'); return; }
+        if (!candidato) { showToast('⚠️ Nenhum candidato no palco para avaliar.'); return; }
         if (Object.keys(notas).length === 0) { showToast('⚠️ Marque pelo menos uma nota.'); return; }
 
         btnEnviar.disabled = true;
@@ -332,7 +307,6 @@
             notas = {};
             totalValor.textContent = '0';
             selectJurado.value = '';
-            selectCandidato.value = '';
             renderizarQuesitos();
             btnEnviar.disabled = false;
             btnEnviar.textContent = '📤 Enviar avaliação';
@@ -347,6 +321,7 @@
     carregarJurados();
     carregarCandidatos();
     carregarQuesitos();
+    setInterval(carregarCandidatos, 10000); // atualiza quando o operador marcar novo No Palco
 </script>
 </body>
 </html>
