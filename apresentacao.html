@@ -100,7 +100,39 @@
         .musica-info .musica { font-size: 1.2rem; color: #4ade80; }
         .musica-info .artista { font-size: 1rem; color: #999; font-style: italic; margin-top: 2px; }
 
-        /* ===== FILA (abaixo do candidato, na coluna esquerda) ===== */
+        /* ===== BOTÃO DE COMANDO: IMAGEM / VÍDEO ===== */
+        .comando-area {
+            margin-top: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-comando {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.2s, background 0.2s;
+            background: linear-gradient(90deg, #009C3B, #00b84a);
+            color: #fff;
+        }
+        .btn-comando:hover { transform: scale(1.03); }
+        .btn-comando:active { transform: scale(0.97); }
+        .btn-comando:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-comando.ativo-video {
+            background: linear-gradient(90deg, #b8860b, #FFD700);
+            color: #1a1a2e;
+        }
+        .modo-atual {
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+        .modo-atual b { color: #FFD700; }
+
+        /* ===== FILA ===== */
         .fila-titulo {
             font-size: 1.1rem;
             color: #aaa;
@@ -146,7 +178,7 @@
         }
         .empty { text-align: center; color: #555; font-size: 1.1rem; font-style: italic; padding: 30px 0; }
 
-        /* ===== COLUNA DIREITA: IMAGEM (todo o espaço) ===== */
+        /* ===== COLUNA DIREITA: IMAGEM OU VÍDEO ===== */
         .painel-direito {
             flex: 1.4;
             display: flex;
@@ -156,7 +188,8 @@
             padding: 12px;
             min-width: 0;
         }
-        .imagem-area {
+        .midia-area {
+            position: relative;
             flex: 1;
             display: flex;
             align-items: center;
@@ -166,13 +199,26 @@
             overflow: hidden;
             min-height: 0;
         }
-        .imagem-area img {
+        .midia-area img {
             width: 100%;
             height: 100%;
             object-fit: contain;
             border-radius: 12px;
         }
-        .imagem-area .sem-imagem {
+        .midia-area iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 12px;
+        }
+        .midia-area video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
+            background: #000;
+        }
+        .midia-area .sem-midia {
             color: #666;
             font-size: 1.1rem;
             text-align: center;
@@ -201,7 +247,7 @@
 </header>
 
 <div class="split">
-    <!-- ===== COLUNA ESQUERDA: CANDIDATO NO PALCO + LIKE + FILA ===== -->
+    <!-- ===== COLUNA ESQUERDA: CANDIDATO + COMANDO + FILA ===== -->
     <div class="painel-esquerdo">
         <div class="no-palco-label" id="noPalcoLabel">🔴 No Palco</div>
         <div class="candidato-linha">
@@ -215,6 +261,12 @@
             <div class="artista" id="artistaCandidato">—</div>
         </div>
 
+        <!-- ===== BOTÃO DE COMANDO: ALTERNA IMAGEM / VÍDEO ===== -->
+        <div class="comando-area">
+            <button class="btn-comando" id="btnComando" onclick="alternarMidia()">🎬 Ver vídeo da história</button>
+            <span class="modo-atual" id="modoAtual">Modo: <b>Imagem</b></span>
+        </div>
+
         <div class="fila-titulo">
             <span>📋 Próximos da fila</span>
             <span class="count" id="filaCount">0</span>
@@ -224,10 +276,10 @@
         </div>
     </div>
 
-    <!-- ===== COLUNA DIREITA: IMAGEM DO CANDIDATO (todo o espaço) ===== -->
+    <!-- ===== COLUNA DIREITA: IMAGEM OU VÍDEO ===== -->
     <div class="painel-direito">
-        <div class="imagem-area" id="imagemArea">
-            <div class="sem-imagem">Aguardando candidato no palco...</div>
+        <div class="midia-area" id="midiaArea">
+            <div class="sem-midia">Aguardando candidato no palco...</div>
         </div>
     </div>
 </div>
@@ -238,18 +290,21 @@
     // ============================================================
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
 
-    const imagemArea = document.getElementById('imagemArea');
+    const midiaArea = document.getElementById('midiaArea');
     const nomeCandidato = document.getElementById('nomeCandidato');
     const musicaCandidato = document.getElementById('musicaCandidato');
     const artistaCandidato = document.getElementById('artistaCandidato');
     const btnLike = document.getElementById('btnLike');
     const likeCount = document.getElementById('likeCount');
     const likeMsg = document.getElementById('likeMsg');
+    const btnComando = document.getElementById('btnComando');
+    const modoAtual = document.getElementById('modoAtual');
     const filaLista = document.getElementById('filaLista');
     const filaCount = document.getElementById('filaCount');
     let toastTimer = null;
     let candidatoAtual = null;
     let jaCurtiu = false;
+    let modoVideo = false; // false = imagem, true = vídeo
 
     function showToast(msg) {
         const el = document.getElementById('toast');
@@ -285,6 +340,44 @@
         return url;
     }
 
+    // ===== EXTRAI O ID DO YOUTUBE (vários formatos) =====
+    function extrairIdYouTube(url) {
+        if (!url) return null;
+        const padroes = [
+            /(?:youtube\.com|youtube-nocookie\.com)\/watch\?v=([a-zA-Z0-9_-]{11})/,
+            /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+            /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
+            /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+            /youtube\.com\/live\/([a-zA-Z0-9_-]{11})/,
+            /[?&]v=([a-zA-Z0-9_-]{11})/
+        ];
+        for (const p of padroes) {
+            const m = url.match(p);
+            if (m) return m[1];
+        }
+        return null;
+    }
+
+    // ===== CONVERTE LINK DO YOUTUBE/DRIVE PARA URL REPRODUZÍVEL =====
+    function converterLinkVideo(url) {
+        if (!url) return '';
+        url = url.trim();
+        // YouTube → embed (mute=1 permite autoplay nos navegadores)
+        const idYT = extrairIdYouTube(url);
+        if (idYT) {
+            return 'https://www.youtube.com/embed/' + idYT + '?autoplay=1&mute=1&rel=0';
+        }
+        // Google Drive → preview
+        const mFile = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        const mOpen = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        const id = mFile ? mFile[1] : (mOpen ? mOpen[1] : null);
+        if (id) {
+            return 'https://drive.google.com/file/d/' + id + '/preview';
+        }
+        // Arquivo de vídeo direto (.mp4 etc.)
+        return url;
+    }
+
     // ===== VERIFICA SE ESTE ACESSO JÁ CURTIU =====
     function verificarLikeLocal(linha) {
         try {
@@ -296,13 +389,49 @@
         try { localStorage.setItem('showtime_like_' + linha, '1'); } catch {}
     }
 
+    // ===== RENDERIZA A MÍDIA (imagem ou vídeo) =====
+    function renderizarMidia() {
+        if (!candidatoAtual) {
+            midiaArea.innerHTML = '<div class="sem-midia">Aguardando candidato no palco...</div>';
+            return;
+        }
+        const c = candidatoAtual;
+        if (modoVideo) {
+            const urlVideo = converterLinkVideo(c.linkVideo);
+            if (!urlVideo) {
+                midiaArea.innerHTML = '<div class="sem-midia">Nenhum vídeo cadastrado para este candidato</div>';
+                return;
+            }
+            const ehEmbed = urlVideo.includes('youtube.com/embed') ||
+                            urlVideo.includes('youtube-nocookie.com') ||
+                            urlVideo.includes('drive.google.com/file');
+            if (ehEmbed) {
+                midiaArea.innerHTML = `
+                    <iframe src="${esc(urlVideo)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+                    <div style="position:absolute;bottom:10px;right:10px;z-index:5;">
+                        <a href="${esc(c.linkVideo)}" target="_blank" rel="noopener" style="background:#0a2e12;color:#fff;padding:8px 14px;border-radius:8px;text-decoration:none;font-size:0.85rem;border:1px solid rgba(255,255,255,0.2);">↗ Abrir no YouTube</a>
+                    </div>
+                `;
+            } else {
+                midiaArea.innerHTML = `<video src="${esc(urlVideo)}" controls autoplay></video>`;
+            }
+        } else {
+            const urlImagem = converterLinkImagem(c.linkImagem);
+            if (urlImagem) {
+                midiaArea.innerHTML = `<img src="${esc(urlImagem)}" alt="Foto do candidato" onerror="this.parentNode.innerHTML='<div class=&quot;sem-midia&quot;>Imagem indisponível</div>'">`;
+            } else {
+                midiaArea.innerHTML = '<div class="sem-midia">Sem foto cadastrada</div>';
+            }
+        }
+    }
+
     // ===== ATUALIZA O CANDIDATO NO PALCO =====
     function atualizarPalco(fila) {
         const noPalco = fila.find(s => s.status === 'No Palco');
         candidatoAtual = noPalco || null;
 
         if (!candidatoAtual) {
-            imagemArea.innerHTML = '<div class="sem-imagem">Aguardando candidato no palco...</div>';
+            midiaArea.innerHTML = '<div class="sem-midia">Aguardando candidato no palco...</div>';
             nomeCandidato.textContent = '—';
             musicaCandidato.textContent = '—';
             artistaCandidato.textContent = '—';
@@ -310,23 +439,19 @@
             likeMsg.textContent = 'Toque na estrela para curtir';
             btnLike.disabled = true;
             btnLike.classList.remove('curtido');
+            btnComando.disabled = true;
+            btnComando.classList.remove('ativo-video');
+            btnComando.textContent = '🎬 Ver vídeo da história';
+            modoAtual.innerHTML = 'Modo: <b>Imagem</b>';
+            modoVideo = false;
             jaCurtiu = false;
             return;
         }
 
         const c = candidatoAtual;
-        // Imagem (coluna direita, todo o espaço, sem cortes)
-        const urlImagem = converterLinkImagem(c.linkImagem);
-        if (urlImagem) {
-            imagemArea.innerHTML = `<img src="${esc(urlImagem)}" alt="Foto do candidato" onerror="this.parentNode.innerHTML='<div class=&quot;sem-imagem&quot;>Imagem indisponível</div>'">`;
-        } else {
-            imagemArea.innerHTML = '<div class="sem-imagem">Sem foto cadastrada</div>';
-        }
-        // Nome + música + artista (coluna esquerda)
         nomeCandidato.textContent = c.nome;
         musicaCandidato.textContent = '🎵 ' + (c.musica || '');
         artistaCandidato.textContent = '🎤 ' + (c.artista || 'Artista');
-        // Like
         likeCount.textContent = c.likes || 0;
         jaCurtiu = verificarLikeLocal(c.linha);
         if (jaCurtiu) {
@@ -338,6 +463,38 @@
             btnLike.disabled = false;
             likeMsg.textContent = 'Toque na estrela para curtir';
         }
+        // Botão de comando: habilita se houver vídeo cadastrado
+        btnComando.disabled = !c.linkVideo;
+        if (!c.linkVideo) {
+            btnComando.textContent = '🎬 Sem vídeo cadastrado';
+        } else if (modoVideo) {
+            btnComando.textContent = '🖼️ Ver imagem';
+        } else {
+            btnComando.textContent = '🎬 Ver vídeo da história';
+        }
+        renderizarMidia();
+    }
+
+    // ===== ALTERNA IMAGEM / VÍDEO =====
+    function alternarMidia() {
+        if (!candidatoAtual) return;
+        if (!candidatoAtual.linkVideo) {
+            showToast('⚠️ Nenhum vídeo cadastrado para este candidato.');
+            return;
+        }
+        modoVideo = !modoVideo;
+        if (modoVideo) {
+            btnComando.textContent = '🖼️ Ver imagem';
+            btnComando.classList.add('ativo-video');
+            modoAtual.innerHTML = 'Modo: <b>Vídeo da história</b>';
+            showToast('🎬 Exibindo vídeo da história');
+        } else {
+            btnComando.textContent = '🎬 Ver vídeo da história';
+            btnComando.classList.remove('ativo-video');
+            modoAtual.innerHTML = 'Modo: <b>Imagem</b>';
+            showToast('🖼️ Exibindo imagem do candidato');
+        }
+        renderizarMidia();
     }
 
     // ===== ATUALIZA A FILA =====
