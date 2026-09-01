@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ShowTime Festival de Vozes - Fila de Apresentação</title>
+    <title>ShowTime Festival de Vozes - Apresentação</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -11,149 +11,207 @@
             background: linear-gradient(135deg, #0a2e12, #0f4d1e, #0a2e12);
             min-height: 100vh;
             color: #e0e0e0;
-            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
         }
         header {
             text-align: center;
-            padding: 16px 0 24px;
+            padding: 14px 20px 10px;
+            flex-shrink: 0;
         }
         header h1 {
-            font-size: 2.4rem;
+            font-size: 2.2rem;
             background: linear-gradient(90deg, #009C3B, #FFDF00);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        header p { color: #aaa; margin-top: 6px; font-size: 1rem; }
-        .status-bar {
+        header p { color: #aaa; margin-top: 4px; font-size: 0.9rem; }
+
+        /* ===== TELA DIVIDIDA EM DUAS PARTES ===== */
+        .split {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+            gap: 16px;
+            padding: 0 20px 20px;
+        }
+        .painel-esquerdo {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px;
+            min-width: 0;
+        }
+        .painel-direito {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 16px;
+            min-width: 0;
+            overflow-y: auto;
+        }
+
+        /* ===== IMAGEM DO CANDIDATO ===== */
+        .imagem-area {
+            flex: 1;
             display: flex;
             align-items: center;
-            gap: 8px;
             justify-content: center;
-            margin: 0 auto 24px;
-            font-size: 0.95rem;
-            padding: 8px 18px;
-            border-radius: 20px;
-            width: fit-content;
-        }
-        .status-bar.online { background: rgba(0, 156, 59, 0.15); color: #4ade80; }
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-        .status-dot.online { background: #4ade80; animation: pulse 1.5s infinite; }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
-        .fila-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 16px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        .card {
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px;
-            padding: 20px;
-            transition: transform 0.2s, border-color 0.2s;
-        }
-        .card:hover { transform: scale(1.02); border-color: rgba(0, 156, 59, 0.5); }
-        .card .posicao {
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: #FFDF00;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .card .nome {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #fff;
-            margin-top: 6px;
-        }
-        .card .musica {
-            font-size: 1.1rem;
-            color: #4ade80;
-            margin-top: 8px;
-            font-weight: 600;
-        }
-        .card .artista {
-            font-size: 0.95rem;
-            color: #aaa;
-            margin-top: 2px;
-        }
-        .card .apoio {
-            display: inline-block;
-            margin-top: 10px;
-            font-size: 0.8rem;
-            padding: 4px 12px;
-            border-radius: 20px;
-            background: rgba(255, 223, 0, 0.12);
-            color: #FFDF00;
-            border: 1px solid rgba(255, 223, 0, 0.3);
-        }
-        .card .hora {
-            margin-top: 10px;
-            font-size: 0.8rem;
-            color: #777;
-        }
-        .card.destaque {
-            border: 2px solid #009C3B;
-            background: rgba(0, 156, 59, 0.12);
-            box-shadow: 0 0 30px rgba(0, 156, 59, 0.25);
-        }
-        .card.destaque .posicao { color: #4ade80; }
-        .empty {
-            text-align: center;
-            padding: 60px 20px;
-            color: #888;
-            font-size: 1.2rem;
-        }
-        .empty .icon { font-size: 3rem; margin-bottom: 12px; }
-        .footer {
-            text-align: center;
-            margin-top: 32px;
-            color: #555;
-            font-size: 0.85rem;
-        }
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #0a2e12;
-            color: #fff;
-            padding: 12px 24px;
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            min-height: 0;
+        }
+        .imagem-area img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+        .imagem-area .sem-imagem {
+            color: #666;
+            font-size: 1.1rem;
+            text-align: center;
+            padding: 20px;
+        }
+        .info-candidato {
+            text-align: center;
+            padding: 14px 10px 6px;
+        }
+        .info-candidato .nome { font-size: 1.8rem; font-weight: 800; color: #fff; }
+        .info-candidato .musica { font-size: 1.1rem; color: #4ade80; margin-top: 2px; }
+        .info-candidato .artista { font-size: 0.95rem; color: #999; font-style: italic; }
+
+        /* ===== BOTÃO DE LIKE (ESTRELA) ===== */
+        .like-area {
+            text-align: center;
+            padding: 10px 0 4px;
+        }
+        .btn-like {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 3rem;
+            color: #555;
+            transition: transform 0.15s, color 0.2s;
+            line-height: 1;
+        }
+        .btn-like:hover { transform: scale(1.15); }
+        .btn-like.curtido { color: #FFD700; }
+        .btn-like:disabled { cursor: not-allowed; opacity: 0.6; }
+        .like-count {
+            font-size: 1rem;
+            color: #FFD700;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+        .like-msg { font-size: 0.8rem; color: #888; margin-top: 2px; }
+
+        /* ===== FILA (painel direito) ===== */
+        .fila-titulo {
+            font-size: 1.1rem;
+            color: #aaa;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .fila-titulo .count {
+            background: rgba(0, 156, 59, 0.2);
+            color: #4ade80;
+            padding: 4px 14px;
+            border-radius: 20px;
             font-size: 0.9rem;
-            opacity: 0;
-            transition: opacity 0.4s, bottom 0.4s;
-            pointer-events: none;
-            z-index: 999;
-            white-space: nowrap;
-            max-width: 90%;
+        }
+        .fila-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .fila-item .pos {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #009C3B;
+            min-width: 36px;
+            text-align: center;
+        }
+        .fila-item .info { flex: 1; min-width: 0; }
+        .fila-item .nome { font-size: 1.1rem; font-weight: 600; }
+        .fila-item .musica { font-size: 0.9rem; color: #bbb; }
+        .fila-item .artista { font-size: 0.8rem; color: #888; font-style: italic; }
+        .fila-item .likes {
+            font-size: 0.85rem;
+            color: #FFD700;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .empty { text-align: center; color: #555; font-size: 1.1rem; font-style: italic; padding: 30px 0; }
+
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #0a2e12; color: #fff; padding: 12px 24px; border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9rem; opacity: 0;
+            transition: opacity 0.4s, bottom 0.4s; pointer-events: none; z-index: 999;
+            white-space: nowrap; max-width: 90%;
         }
         .toast.show { opacity: 1; bottom: 50px; }
+
+        @media (max-width: 800px) {
+            .split { flex-direction: column; overflow-y: auto; }
+            .painel-esquerdo { min-height: 50vh; }
+        }
     </style>
 </head>
 <body>
 <header>
     <h1>🎤 ShowTime Festival de Vozes</h1>
-    <p>Fila de apresentação</p>
+    <p>Apresentação ao vivo</p>
 </header>
-<div class="status-bar online" id="statusBar">
-    <span class="status-dot online" id="statusDot"></span>
-    <span id="statusText">Sincronizando...</span>
+
+<div class="split">
+    <!-- ===== PARTE 1: CANDIDATO NO PALCO + IMAGEM + LIKE ===== -->
+    <div class="painel-esquerdo">
+        <div class="imagem-area" id="imagemArea">
+            <div class="sem-imagem">Aguardando candidato no palco...</div>
+        </div>
+        <div class="info-candidato" id="infoCandidato">
+            <div class="nome">—</div>
+            <div class="musica">—</div>
+            <div class="artista">—</div>
+        </div>
+        <div class="like-area">
+            <button class="btn-like" id="btnLike" onclick="darLike()" title="Curtir">⭐</button>
+            <div class="like-count" id="likeCount">0</div>
+            <div class="like-msg" id="likeMsg">Toque na estrela para curtir</div>
+        </div>
+    </div>
+
+    <!-- ===== PARTE 2: FILA DE PRÓXIMOS ===== -->
+    <div class="painel-direito">
+        <div class="fila-titulo">
+            <span>📋 Próximos da fila</span>
+            <span class="count" id="filaCount">0</span>
+        </div>
+        <div id="filaLista">
+            <div class="empty">Carregando...</div>
+        </div>
+    </div>
 </div>
-<div class="fila-grid" id="filaGrid"></div>
-<div class="footer">Dados sincronizados em tempo real com o Google Sheets</div>
 <div class="toast" id="toast"></div>
 <script>
     // ============================================================
@@ -161,9 +219,16 @@
     // ============================================================
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
 
-    const filaGrid = document.getElementById('filaGrid');
-    const statusText = document.getElementById('statusText');
+    const imagemArea = document.getElementById('imagemArea');
+    const infoCandidato = document.getElementById('infoCandidato');
+    const btnLike = document.getElementById('btnLike');
+    const likeCount = document.getElementById('likeCount');
+    const likeMsg = document.getElementById('likeMsg');
+    const filaLista = document.getElementById('filaLista');
+    const filaCount = document.getElementById('filaCount');
     let toastTimer = null;
+    let candidatoAtual = null; // candidato no palco
+    let jaCurtiu = false;
 
     function showToast(msg) {
         const el = document.getElementById('toast');
@@ -173,62 +238,139 @@
         toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
     }
 
-    function escapeHtml(str) {
+    function esc(str) {
+        if (!str) return '';
         const div = document.createElement('div');
-        div.textContent = str || '';
+        div.textContent = str;
         return div.innerHTML;
     }
 
-    // ===== CARREGA A FILA =====
-    async function carregarFila() {
+    // ===== VERIFICA SE ESTE ACESSO JÁ CURTIU ESTE CANDIDATO =====
+    function verificarLikeLocal(linha) {
+        try {
+            const chave = 'showtime_like_' + linha;
+            return localStorage.getItem(chave) === '1';
+        } catch { return false; }
+    }
+
+    function marcarLikeLocal(linha) {
+        try {
+            localStorage.setItem('showtime_like_' + linha, '1');
+        } catch {}
+    }
+
+    // ===== ATUALIZA O PAINEL DO CANDIDATO NO PALCO =====
+    function atualizarPalco(fila) {
+        const noPalco = fila.find(s => s.status === 'No Palco');
+        candidatoAtual = noPalco || null;
+
+        if (!candidatoAtual) {
+            imagemArea.innerHTML = '<div class="sem-imagem">Aguardando candidato no palco...</div>';
+            infoCandidato.innerHTML = '<div class="nome">—</div><div class="musica">—</div><div class="artista">—</div>';
+            likeCount.textContent = '0';
+            likeMsg.textContent = 'Toque na estrela para curtir';
+            btnLike.disabled = true;
+            btnLike.classList.remove('curtido');
+            jaCurtiu = false;
+            return;
+        }
+
+        const c = candidatoAtual;
+        // Imagem (coluna F - linkImagem)
+        if (c.linkImagem) {
+            imagemArea.innerHTML = `<img src="${esc(c.linkImagem)}" alt="Foto do candidato" onerror="this.parentNode.innerHTML='<div class=&quot;sem-imagem&quot;>Imagem indisponível</div>'">`;
+        } else {
+            imagemArea.innerHTML = '<div class="sem-imagem">Sem foto cadastrada</div>';
+        }
+        // Info
+        infoCandidato.innerHTML = `
+            <div class="nome">${esc(c.nome)}</div>
+            <div class="musica">🎵 ${esc(c.musica)}</div>
+            <div class="artista">🎤 ${esc(c.artista || 'Artista')}</div>
+        `;
+        // Like
+        likeCount.textContent = c.likes || 0;
+        jaCurtiu = verificarLikeLocal(c.linha);
+        if (jaCurtiu) {
+            btnLike.classList.add('curtido');
+            btnLike.disabled = true;
+            likeMsg.textContent = 'Você já curtiu este candidato ⭐';
+        } else {
+            btnLike.classList.remove('curtido');
+            btnLike.disabled = false;
+            likeMsg.textContent = 'Toque na estrela para curtir';
+        }
+    }
+
+    // ===== ATUALIZA A FILA =====
+    function atualizarFila(fila) {
+        const pending = fila.filter(s => s.status !== 'No Palco');
+        filaCount.textContent = pending.length;
+        if (!pending.length) {
+            filaLista.innerHTML = '<div class="empty">Fila vazia — aguardando inscrições 🎤</div>';
+            return;
+        }
+        filaLista.innerHTML = pending.map((s, idx) => `
+            <div class="fila-item">
+                <div class="pos">${idx + 1}</div>
+                <div class="info">
+                    <div class="nome">${esc(s.nome)}</div>
+                    <div class="musica">🎵 ${esc(s.musica)}</div>
+                    <div class="artista">🎤 ${esc(s.artista || 'Artista')}</div>
+                </div>
+                <div class="likes">⭐ ${s.likes || 0}</div>
+            </div>
+        `).join('');
+    }
+
+    // ===== DAR LIKE (apenas um por acesso) =====
+    async function darLike() {
+        if (!candidatoAtual) return;
+        if (jaCurtiu) {
+            showToast('⚠️ Você já curtiu este candidato.');
+            return;
+        }
+        try {
+            const res = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ acao: 'like', linha: candidatoAtual.linha })
+            });
+            const json = await res.json();
+            if (json.ok) {
+                marcarLikeLocal(candidatoAtual.linha);
+                jaCurtiu = true;
+                btnLike.classList.add('curtido');
+                btnLike.disabled = true;
+                likeCount.textContent = json.likes !== undefined ? json.likes : (candidatoAtual.likes + 1);
+                likeMsg.textContent = 'Você já curtiu este candidato ⭐';
+                showToast('⭐ Obrigado pelo seu like!');
+                carregarDados();
+            } else {
+                showToast('⚠️ Erro ao curtir. Tente novamente.');
+            }
+        } catch (err) {
+            showToast('⚠️ Erro de conexão.');
+        }
+    }
+
+    // ===== CARREGA DADOS =====
+    async function carregarDados() {
         try {
             const res = await fetch(WEB_APP_URL);
             const json = await res.json();
-            if (!json.ok) {
-                showToast('⚠️ Erro ao carregar a fila.');
-                return;
-            }
-            renderizarFila(json.fila || []);
-            statusText.textContent = '🟢 Fila sincronizada';
+            if (!json.ok) { showToast('⚠️ Erro ao carregar.'); return; }
+            const fila = json.fila || [];
+            atualizarPalco(fila);
+            atualizarFila(fila);
         } catch (err) {
-            statusText.textContent = '🔴 Sem conexão';
-            showToast('⚠️ Erro de conexão. Tentando novamente...');
+            showToast('⚠️ Erro de conexão.');
         }
-    }
-
-    // ===== RENDERIZA OS CARDS =====
-    function renderizarFila(fila) {
-        if (!fila.length) {
-            filaGrid.innerHTML = `
-                <div class="empty" style="grid-column: 1 / -1;">
-                    <div class="icon">🎤</div>
-                    A fila está vazia. Aguardando inscrições...
-                </div>`;
-            return;
-        }
-        let html = '';
-        fila.forEach((item, idx) => {
-            const posicao = idx + 1;
-            const destaque = idx === 0 ? 'destaque' : '';
-            const apoio = item.apoioCantar === 'Sim' || item.apoio === 'Sim'
-                ? '<span class="apoio">🎤 Apoio para cantar</span>'
-                : '';
-            html += `
-                <div class="card ${destaque}">
-                    <div class="posicao">${posicao}º na fila</div>
-                    <div class="nome">${escapeHtml(item.nome)}</div>
-                    <div class="musica">🎵 ${escapeHtml(item.musica)}</div>
-                    <div class="artista">${escapeHtml(item.artista)}</div>
-                    ${apoio}
-                    <div class="hora">Entrou às ${escapeHtml(item.horaCadastro)}</div>
-                </div>`;
-        });
-        filaGrid.innerHTML = html;
     }
 
     // ===== INICIA =====
-    carregarFila();
-    setInterval(carregarFila, 15000); // atualiza a cada 15 segundos
+    carregarDados();
+    setInterval(carregarDados, 10000);
 </script>
 </body>
 </html>
