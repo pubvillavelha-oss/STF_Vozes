@@ -16,12 +16,7 @@
             overflow: hidden;
             height: 100vh;
         }
-        /* ===== HEADER ===== */
-        .display-header {
-            text-align: center;
-            padding: 20px 20px 10px;
-            flex-shrink: 0;
-        }
+        .display-header { text-align: center; padding: 20px 20px 10px; flex-shrink: 0; }
         .display-header h1 {
             font-size: 2.8rem;
             background: linear-gradient(90deg, #009C3B, #FFDF00);
@@ -30,234 +25,79 @@
             background-clip: text;
             letter-spacing: 2px;
         }
-        .display-header .sub {
-            color: #888;
-            font-size: 1rem;
-            margin-top: 4px;
-        }
-        /* ===== STATUS ===== */
-        .status-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-        }
+        .display-header .sub { color: #888; font-size: 1rem; margin-top: 4px; }
+        .status-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
         .status-dot.online { background: #4ade80; }
         .status-dot.offline { background: #f87171; }
         .conn-text { font-size: 0.8rem; color: #888; }
         .avail-pill {
-            display: inline-block;
-            padding: 6px 18px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
+            display: inline-block; padding: 6px 18px; border-radius: 20px;
+            font-size: 0.85rem; font-weight: 700; letter-spacing: 0.5px;
         }
         .avail-pill.open { background: rgba(0, 156, 59, 0.14); color: #4ade80; border: 1px solid rgba(0, 156, 59, 0.25); }
-        /* ===== NOW PLAYING ===== */
-        .now-playing {
-            text-align: center;
-            padding: 16px 20px 20px;
-            flex-shrink: 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        }
-        .now-playing .label {
-            font-size: 0.85rem;
-            color: #009C3B;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            font-weight: 600;
-        }
-        .now-playing .singer {
-            font-size: 2.4rem;
-            font-weight: 700;
-            margin-top: 4px;
-            color: #fff;
-        }
-        .now-playing .music {
-            font-size: 1.3rem;
-            color: #ccc;
-            margin-top: 2px;
-        }
-        .now-playing .artist {
-            font-size: 1rem;
-            color: #999;
-            font-style: italic;
-        }
-        .now-playing .empty-now {
-            font-size: 1.6rem;
-            color: #555;
-            font-style: italic;
-            padding: 10px 0;
-        }
-        /* ===== APOIO (NOW PLAYING) ===== */
+        .now-playing { text-align: center; padding: 16px 20px 20px; flex-shrink: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+        .now-playing .label { font-size: 0.85rem; color: #009C3B; text-transform: uppercase; letter-spacing: 3px; font-weight: 600; }
+        .now-playing .singer { font-size: 2.4rem; font-weight: 700; margin-top: 4px; color: #fff; }
+        .now-playing .music { font-size: 1.3rem; color: #ccc; margin-top: 2px; }
+        .now-playing .artist { font-size: 1rem; color: #999; font-style: italic; }
+        .now-playing .empty-now { font-size: 1.6rem; color: #555; font-style: italic; padding: 10px 0; }
         .apoio-line {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 4px 16px;
-            border-radius: 20px;
-            font-size: 1rem;
-            font-weight: 700;
-            color: #FFDF00;
-            background: rgba(0, 156, 59, 0.15);
-            border: 1px solid rgba(0, 156, 59, 0.35);
+            display: inline-block; margin-top: 10px; padding: 4px 16px; border-radius: 20px;
+            font-size: 1rem; font-weight: 700; color: #FFDF00;
+            background: rgba(0, 156, 59, 0.15); border: 1px solid rgba(0, 156, 59, 0.35);
         }
-        /* ===== QUEUE ===== */
-        .queue-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px 20px 20px;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255,255,255,0.1) transparent;
-        }
+        .queue-container { flex: 1; overflow-y: auto; padding: 16px 20px 20px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent; }
         .queue-container::-webkit-scrollbar { width: 6px; }
         .queue-container::-webkit-scrollbar-track { background: transparent; }
         .queue-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 8px; }
-        .queue-title {
-            font-size: 1.1rem;
-            color: #aaa;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .queue-title .count {
-            background: rgba(0, 156, 59, 0.2);
-            color: #4ade80;
-            padding: 4px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-        }
-        .empty-queue {
-            text-align: center;
-            color: #555;
-            font-size: 1.2rem;
-            font-style: italic;
-            padding: 40px 0;
-        }
-        /* ===== QUEUE ITEMS ===== */
+        .queue-title { font-size: 1.1rem; color: #aaa; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .queue-title .count { background: rgba(0, 156, 59, 0.2); color: #4ade80; padding: 4px 16px; border-radius: 20px; font-size: 0.9rem; }
+        .empty-queue { text-align: center; color: #555; font-size: 1.2rem; font-style: italic; padding: 40px 0; }
         .queue-item {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.04);
-            border-radius: 12px;
-            margin-bottom: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            transition: background 0.2s;
+            display: flex; align-items: center; gap: 16px; padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.04); border-radius: 12px; margin-bottom: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06); transition: background 0.2s;
         }
         .queue-item:hover { background: rgba(255, 255, 255, 0.07); }
-        .item-pos {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: #009C3B;
-            min-width: 48px;
-            text-align: center;
-        }
+        .item-pos { font-size: 1.6rem; font-weight: 800; color: #009C3B; min-width: 48px; text-align: center; }
         .item-info { flex: 1; min-width: 0; }
         .item-name { font-size: 1.3rem; font-weight: 600; }
         .item-music { font-size: 1rem; color: #bbb; margin-top: 2px; }
         .item-artist { font-size: 0.85rem; color: #888; font-style: italic; }
-        /* ===== APOIO (ITEM DA FILA) ===== */
         .item-apoio {
-            display: inline-block;
-            margin-top: 6px;
-            padding: 3px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #FFDF00;
-            background: rgba(0, 156, 59, 0.12);
-            border: 1px solid rgba(0, 156, 59, 0.25);
+            display: inline-block; margin-top: 6px; padding: 3px 12px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: 600; color: #FFDF00;
+            background: rgba(0, 156, 59, 0.12); border: 1px solid rgba(0, 156, 59, 0.25);
         }
-        .item-actions {
-            display: flex;
-            gap: 6px;
-            flex-shrink: 0;
-            align-items: center;
-        }
+        .item-actions { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
         .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.15s, opacity 0.2s;
-            text-decoration: none;
-            display: inline-block;
+            padding: 8px 16px; border: none; border-radius: 10px; font-size: 0.85rem;
+            font-weight: 600; cursor: pointer; transition: transform 0.15s, opacity 0.2s;
+            text-decoration: none; display: inline-block;
         }
         .btn:hover { transform: scale(1.05); }
         .btn:active { transform: scale(0.97); }
         .btn-success { background: rgba(0, 156, 59, 0.18); color: #4ade80; border: 1px solid rgba(0, 156, 59, 0.3); }
         .btn-link { background: rgba(70, 130, 255, 0.18); color: #6ba3ff; border: 1px solid rgba(70, 130, 255, 0.3); }
-        .btn-call-item {
-            background: rgba(255, 223, 0, 0.15);
-            color: #FFDF00;
-            border: 1px solid rgba(255, 223, 0, 0.3);
-        }
-        /* ===== CONTROLES INFERIORES (texto + voz) ===== */
+        .btn-call-item { background: rgba(255, 223, 0, 0.15); color: #FFDF00; border: 1px solid rgba(255, 223, 0, 0.3); }
         .controles {
-            flex-shrink: 0;
-            padding: 12px 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(255, 255, 255, 0.02);
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            flex-wrap: wrap;
+            flex-shrink: 0; padding: 12px 20px; border-top: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.02); display: flex; align-items: center;
+            gap: 14px; flex-wrap: wrap;
         }
-        .texto-chamada {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex: 1;
-            min-width: 200px;
-        }
-        .texto-chamada label {
-            font-size: 0.85rem;
-            color: #aaa;
-            white-space: nowrap;
-        }
+        .texto-chamada { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px; }
+        .texto-chamada label { font-size: 0.85rem; color: #aaa; white-space: nowrap; }
         .texto-chamada input {
-            flex: 1;
-            min-width: 150px;
-            padding: 10px 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            background: rgba(255, 255, 255, 0.9);
-            color: #0a2e12;
+            flex: 1; min-width: 150px; padding: 10px 12px; border: none; border-radius: 8px;
+            font-size: 0.9rem; background: rgba(255, 255, 255, 0.9); color: #0a2e12;
         }
-        .voz-control {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-shrink: 0;
-        }
-        .voz-control label {
-            font-size: 0.85rem;
-            color: #aaa;
-        }
+        .voz-control { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .voz-control label { font-size: 0.85rem; color: #aaa; }
         .voz-control select {
-            padding: 8px 10px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            background: rgba(255, 255, 255, 0.9);
-            color: #0a2e12;
-            max-width: 220px;
+            padding: 8px 10px; border: none; border-radius: 8px; font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.9); color: #0a2e12; max-width: 220px;
         }
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 600px) {
             .display-header h1 { font-size: 1.8rem; }
             .now-playing .singer { font-size: 1.6rem; }
@@ -269,7 +109,6 @@
             .item-actions { width: 100%; justify-content: flex-end; }
             .controles { flex-direction: column; align-items: stretch; }
         }
-        /* ===== FULLSCREEN TV MODE ===== */
         @media (min-width: 1024px) {
             .display-header h1 { font-size: 3.2rem; }
             .now-playing .singer { font-size: 3rem; }
@@ -279,37 +118,23 @@
             .item-music { font-size: 1.2rem; }
             .item-artist { font-size: 1rem; }
         }
-        /* ===== ANIMATION ===== */
         @keyframes fadeSlide {
             from { opacity: 0; transform: translateY(-10px); }
             to   { opacity: 1; transform: translateY(0); }
         }
         .queue-item { animation: fadeSlide 0.3s ease-out; }
         .now-playing { animation: fadeSlide 0.4s ease-out; }
-        /* ===== TOAST ===== */
         .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #0a2e12;
-            color: #fff;
-            padding: 12px 24px;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.9rem;
-            opacity: 0;
-            transition: opacity 0.4s, bottom 0.4s;
-            pointer-events: none;
-            z-index: 999;
-            white-space: nowrap;
-            max-width: 90%;
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #0a2e12; color: #fff; padding: 12px 24px; border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9rem; opacity: 0;
+            transition: opacity 0.4s, bottom 0.4s; pointer-events: none; z-index: 999;
+            white-space: nowrap; max-width: 90%;
         }
         .toast.show { opacity: 1; bottom: 50px; }
     </style>
 </head>
 <body>
-    <!-- HEADER -->
     <div class="display-header">
         <h1>🎤 ShowTime Festival de Vozes</h1>
         <div class="sub">Fila de apresentação</div>
@@ -319,14 +144,12 @@
             <span class="avail-pill open" id="availPill">🟢 Fila aberta</span>
         </div>
     </div>
-    <!-- NOW PLAYING -->
     <div class="now-playing" id="nowPlaying">
         <div class="label">🔴 Cantando agora</div>
         <div id="nowContent">
             <div class="empty-now">Aguardando próximo candidato...</div>
         </div>
     </div>
-    <!-- QUEUE -->
     <div class="queue-container" id="queueContainer">
         <div class="queue-title">
             <span>📋 Próximos da fila</span>
@@ -336,7 +159,6 @@
             <div class="empty-queue">Carregando...</div>
         </div>
     </div>
-    <!-- CONTROLES INFERIORES (texto da chamada + voz) -->
     <div class="controles">
         <div class="texto-chamada">
             <label for="textoChamada">📣 Texto da chamada:</label>
@@ -354,7 +176,6 @@
     // ============================================================
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
 
-    // ===== DOM =====
     const nowContent    = document.getElementById('nowContent');
     const queueList     = document.getElementById('queueList');
     const queueCount    = document.getElementById('queueCount');
@@ -370,13 +191,11 @@
         toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
     }
 
-    // ===== STATUS DE CONEXÃO =====
     function setStatus(online) {
         statusDot.className = 'status-dot ' + (online ? 'online' : 'offline');
         statusText.textContent = online ? 'Online' : 'Offline';
     }
 
-    // ===== ESCAPE =====
     function esc(str) {
         if (!str) return '';
         const div = document.createElement('div');
@@ -384,14 +203,13 @@
         return div.innerHTML;
     }
 
-    // ===== APOIO PARA CANTAR =====
     function getApoio(item) {
         if (!item.apoio) return null;
         const t = String(item.apoio).trim().toLowerCase();
         return (t === 'sim' || t === 's') ? 'Com apoio para cantar' : null;
     }
 
-    // ===== VOZ PARA CHAMAR O CANDIDATO (Web Speech API) =====
+    // ===== VOZ PARA CHAMAR O CANDIDATO =====
     const seletorVoz = document.getElementById('seletorVoz');
     const textoChamada = document.getElementById('textoChamada');
     let vozEscolhida = null;
@@ -399,9 +217,7 @@
 
     function carregarVozes() {
         if (!temVoz) {
-            if (seletorVoz) {
-                seletorVoz.innerHTML = '<option value="">Voz não disponível neste navegador</option>';
-            }
+            if (seletorVoz) seletorVoz.innerHTML = '<option value="">Voz não disponível neste navegador</option>';
             return;
         }
         const vozes = window.speechSynthesis.getVoices();
@@ -423,9 +239,7 @@
         if (vozBR) seletorVoz.value = vozBR.name;
     }
 
-    if (temVoz) {
-        window.speechSynthesis.onvoiceschanged = carregarVozes;
-    }
+    if (temVoz) window.speechSynthesis.onvoiceschanged = carregarVozes;
     if (seletorVoz) {
         seletorVoz.addEventListener('change', function () {
             vozEscolhida = seletorVoz.value || null;
@@ -455,21 +269,17 @@
     let ultimosCandidatos = [];
     function chamarCandidato(linha) {
         const candidato = ultimosCandidatos.find(s => s.linha === linha);
-        if (!candidato) {
-            showToast('⚠️ Candidato não encontrado.');
-            return;
-        }
+        if (!candidato) { showToast('⚠️ Candidato não encontrado.'); return; }
         let texto = (textoChamada && textoChamada.value) ? textoChamada.value.trim() : '';
-        if (!texto) {
-            texto = 'Atenção! Agora é a vez de [nome]!';
-        }
+        if (!texto) texto = 'Atenção! Agora é a vez de [nome]!';
         texto = texto.replace(/\[nome\]/gi, candidato.nome);
         falar(texto);
         showToast('🎤 Chamando ' + candidato.nome + ' para o palco!');
     }
 
-    // ===== MARCAR COMO NO PALCO (atualiza a planilha) =====
+    // ===== MARCAR COMO NO PALCO (atualiza a planilha — sem abrir aba) =====
     async function marcarPalco(linha) {
+        const candidato = ultimosCandidatos.find(s => s.linha === linha);
         try {
             const res = await fetch(WEB_APP_URL, {
                 method: 'POST',
@@ -478,7 +288,7 @@
             });
             const json = await res.json();
             if (json.ok) {
-                showToast('✅ ' + 'Candidato(a) no palco!');
+                showToast('✅ ' + (candidato ? candidato.nome : 'Candidato(a)') + ' no palco!');
                 carregarFila();
             } else {
                 showToast('⚠️ Erro ao atualizar. Tente novamente.');
@@ -491,7 +301,6 @@
     // ===== RENDER =====
     function render(fila) {
         ultimosCandidatos = fila;
-        // Primeiro da fila com status "No Palco" = cantando agora
         const noPalco = fila.find(s => s.status === 'No Palco');
         const current = noPalco || null;
         const pending = fila.filter(s => s.status !== 'No Palco');
@@ -555,11 +364,7 @@
         try {
             const res = await fetch(WEB_APP_URL);
             const json = await res.json();
-            if (!json.ok) {
-                showToast('⚠️ Erro ao carregar a fila.');
-                setStatus(false);
-                return;
-            }
+            if (!json.ok) { showToast('⚠️ Erro ao carregar a fila.'); setStatus(false); return; }
             render(json.fila || []);
             setStatus(true);
         } catch (err) {
@@ -570,12 +375,8 @@
 
     // ===== INICIA =====
     carregarFila();
-    setInterval(carregarFila, 10000); // atualiza a cada 10 segundos
-    try {
-        carregarVozes();
-    } catch (e) {
-        console.error('Erro ao carregar vozes (ignorado):', e);
-    }
+    setInterval(carregarFila, 10000);
+    try { carregarVozes(); } catch (e) { console.error('Erro ao carregar vozes (ignorado):', e); }
 </script>
 </body>
 </html>
