@@ -166,8 +166,8 @@
             </div>
             <div class="form-group">
                 <label for="historia">História do Jurado *</label>
-                <textarea id="historia" placeholder="Conte a trajetória do jurado (mínimo 500 caracteres)..." required></textarea>
-                <div class="counter" id="counter">0 / 500 caracteres</div>
+                <textarea id="historia" placeholder="Conte a trajetória do jurado (mínimo 200 caracteres)..." required></textarea>
+                <div class="counter" id="counter">0 / 200 caracteres</div>
             </div>
             <button type="submit" class="btn" id="btnSalvar">➕ Adicionar jurado</button>
         </form>
@@ -214,8 +214,8 @@
     // ===== CONTADOR DE CARACTERES =====
     inputHistoria.addEventListener('input', () => {
         const len = inputHistoria.value.length;
-        counter.textContent = len + ' / 500 caracteres';
-        counter.className = 'counter ' + (len >= 500 ? 'ok' : (len > 0 ? 'erro' : ''));
+        counter.textContent = len + ' / 200 caracteres';
+        counter.className = 'counter ' + (len >= 200 ? 'ok' : (len > 0 ? 'erro' : ''));
     });
 
     // ===== CARREGA JURADOS =====
@@ -268,8 +268,8 @@
             inputNome.value = j.nome;
             inputEspecialidade.value = j.especialidade;
             inputHistoria.value = j.historia;
-            counter.textContent = j.historia.length + ' / 500 caracteres';
-            counter.className = 'counter ' + (j.historia.length >= 500 ? 'ok' : 'erro');
+            counter.textContent = j.historia.length + ' / 200 caracteres';
+            counter.className = 'counter ' + (j.historia.length >= 200 ? 'ok' : 'erro');
             document.getElementById('btnSalvar').textContent = '💾 Salvar alterações';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (err) {
@@ -302,8 +302,8 @@
     formJurado.addEventListener('submit', async (e) => {
         e.preventDefault();
         const historia = inputHistoria.value.trim();
-        if (historia.length < 500) {
-            showToast('⚠️ A história deve ter pelo menos 500 caracteres.');
+        if (historia.length < 200) {
+            showToast('⚠️ A história deve ter pelo menos 200 caracteres.');
             counter.className = 'counter erro';
             return;
         }
@@ -325,7 +325,7 @@
             if (json.ok) {
                 showToast(editandoLinha ? '✅ Jurado atualizado.' : '✅ Jurado adicionado.');
                 formJurado.reset();
-                counter.textContent = '0 / 500 caracteres';
+                counter.textContent = '0 / 200 caracteres';
                 counter.className = 'counter';
                 editandoLinha = null;
                 document.getElementById('btnSalvar').textContent = '➕ Adicionar jurado';
