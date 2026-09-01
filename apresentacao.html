@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<script src="config.js"></script>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ShowTime Festival de Vozes - Apresentação</title>
+    <!-- ===== CONFIG CENTRAL (URL do Web App + Logo) ===== -->
+    <script src="config.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -259,8 +260,8 @@
 </head>
 <body>
 <header>
-    <!-- ===== LOGOTIPO OFICIAL (lado esquerdo superior) ===== -->
-    <img src="LG_STFV.png" alt="Logo ShowTime Festival de Vozes" class="logo" onerror="this.style.display='none'" />
+    <!-- ===== LOGOTIPO OFICIAL (carregado via config.js) ===== -->
+    <img id="logoShowTime" alt="Logo ShowTime Festival de Vozes" class="logo" />
     <div class="header-texto">
         <h1>🎤 ShowTime Festival de Vozes</h1>
         <p>Apresentação ao vivo</p>
@@ -307,9 +308,8 @@
 <div class="toast" id="toast"></div>
 <script>
     // ============================================================
-    // 🔥 CONFIGURAÇÃO DO GOOGLE SHEETS (WEB APP)
+    // WEB_APP_URL e LOGO_URL vêm do config.js (carregado no <head>)
     // ============================================================
-    // const WEB_APP_URL = 'COLE_AQUI_A_URL_DO_WEB_APP';
 
     const midiaArea = document.getElementById('midiaArea');
     const nomeCandidato = document.getElementById('nomeCandidato');
@@ -328,6 +328,13 @@
     let modoVideo = false; // false = imagem, true = vídeo
     let ultimaLinhaMidia = null; // linha do candidato com mídia renderizada
     let ultimoModoMidia = null;  // modo renderizado (imagem ou vídeo)
+
+    // ===== APLICA O LOGO CENTRALIZADO (config.js) =====
+    const logoEl = document.getElementById('logoShowTime');
+    if (logoEl) {
+        logoEl.src = LOGO_URL;
+        logoEl.onerror = function () { this.style.display = 'none'; };
+    }
 
     function showToast(msg) {
         const el = document.getElementById('toast');
