@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShowTime - Ranking de Resultados</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a2e12, #0f4d1e, #0a2e12);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 24px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        header { text-align: center; padding: 16px 0 24px; }
+        header h1 {
+            font-size: 2.4rem;
+            background: linear-gradient(90deg, #009C3B, #FFDF00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        header p { color: #aaa; margin-top: 6px; font-size: 0.95rem; }
+        .status-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 auto 20px; flex-wrap: wrap; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .status-dot.online { background: #4ade80; }
+        .status-dot.offline { background: #f87171; }
+        .conn-text { font-size: 0.8rem; color: #888; }
+        .stats { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 24px;
+            text-align: center;
+            min-width: 140px;
+        }
+        .stat-card .num { font-size: 1.8rem; font-weight: 800; color: #4ade80; }
+        .stat-card .lbl { font-size: 0.8rem; color: #aaa; margin-top: 2px; }
+        .ranking-item {
+            display: flex; align-items: center; gap: 16px;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            margin-bottom: 10px;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .ranking-item:hover { transform: scale(1.01); border-color: rgba(0, 156, 59, 0.4); }
+        .ranking-item.top1 { border-color: #FFD700; background: rgba(255, 215, 0, 0.08); }
+        .ranking-item.top2 { border-color: #C0C0C0; background: rgba(192, 192, 192, 0.06); }
+        .ranking-item.top3 { border-color: #CD7F32; background: rgba(205, 127, 50, 0.06); }
+        .pos { font-size: 1.8rem; font-weight: 800; min-width: 56px; text-align: center; }
+        .pos.p1 { color: #FFD700; }
+        .pos.p2 { color: #C0C0C0; }
+        .pos.p3 { color: #CD7F32; }
+        .pos.other { color: #009C3B; }
+        .info { flex: 1; min-width: 0; }
+        .info .nome { font-size: 1.3rem; font-weight: 600; }
+        .info .sub { font-size: 0.85rem; color: #888; margin-top: 2px; }
+        .bar-wrap { flex: 1; max-width: 220px; height: 10px; background: rgba(255, 255, 255, 0.08); border-radius: 6px; overflow: hidden; }
+        .bar { height: 100%; background: linear-gradient(90deg, #009C3B, #4ade80); border-radius: 6px; transition: width 0.5s; }
+        .score { text-align: right; min-width: 110px; }
+        .score .total { font-size: 1.5rem; font-weight: 800; color: #4ade80; }
+        .score .media { font-size: 0.8rem; color: #aaa; }
+        .empty { text-align: center; padding: 60px 20px; color: #888; font-size: 1.2rem; }
+        .empty .icon { font-size: 3rem; margin-bottom: 12px; }
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #0a2e12; color: #fff; padding: 12px 24px; border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9rem; opacity: 0;
+            transition: opacity 0.4s, bottom 0.4s; pointer-events: none; z-index: 999;
+            white-space: nowrap; max-width: 90%;
+        }
+        .toast.show { opacity: 1; bottom: 50px; }
+        @media (max-width: 600px) {
+            .ranking-item { flex-wrap: wrap; }
+            .bar-wrap { max-width: 100%; width: 100%; order: 5; }
+            .score { min-width: 80px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>🏆 Ranking ShowTime</h1>
+        <p>Festival de Vozes - Resultados</p>
+    </header>
+    <div class="status-row">
+        <span class="status-dot" id="statusDot"></span>
+        <span class="conn-text" id="statusText">Conectando...</span>
+    </div>
+    <div class="stats">
+        <div class="stat-card"><div class="num" id="statCandidatos">0</div><div class="lbl">Candidatos avaliados</div></div>
+        <div class="stat-card"><div class="num" id="statNotas">0</div><div class="lbl">Notas lançadas</div></div>
+    </div>
+    <div id="rankingList">
+        <div class="empty"><div class="icon">🏆</div>Carregando ranking...</div>
+    </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+    // ============================================================
+    // 🔥 CONFIGURAÇÃO DO GOOGLE SHEETS (WEB APP)
+    // ============================================================
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
+
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const rankingList = document.getElementById('rankingList');
+    const statCandidatos = document.getElementById('statCandidatos');
+    const statNotas = document.getElementById('statNotas');
+    let toastTimer = null;
+
+    function showToast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    function setStatus(online) {
+        statusDot.className = 'status-dot ' + (online ? 'online' : 'offline');
+        statusText.textContent = online ? 'Online' : 'Offline';
+    }
+
+    function esc(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // ===== CARREGA RANKING =====
+    async function carregarRanking() {
+        try {
+            const res = await fetch(WEB_APP_URL + '?acao=ranking');
+            const json = await res.json();
+            if (!json.ok) { showToast('⚠️ Erro ao carregar ranking.'); setStatus(false); return; }
+            renderizar(json.ranking || []);
+            setStatus(true);
+        } catch (err) {
+            setStatus(false);
+            showToast('⚠️ Erro de conexão.');
+        }
+    }
+
+    // ===== RENDERIZA RANKING =====
+    function renderizar(ranking) {
+        statCandidatos.textContent = ranking.length;
+        const totalNotas = ranking.reduce((s, r) => s + r.avaliacoes, 0);
+        statNotas.textContent = totalNotas;
+
+        if (!ranking.length) {
+            rankingList.innerHTML = '<div class="empty"><div class="icon">🎤</div>Ainda não há avaliações lançadas.</div>';
+            return;
+        }
+        const maxTotal = ranking[0].total || 1;
+        rankingList.innerHTML = ranking.map((r, idx) => {
+            const pos = idx + 1;
+            const posClass = pos === 1 ? 'p1' : pos === 2 ? 'p2' : pos === 3 ? 'p3' : 'other';
+            const itemClass = pos === 1 ? 'top1' : pos === 2 ? 'top2' : pos === 3 ? 'top3' : '';
+            const medal = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
+            const media = (r.total / r.avaliacoes).toFixed(1);
+            const pct = Math.round((r.total / maxTotal) * 100);
+            return `
+                <div class="ranking-item ${itemClass}">
+                    <div class="pos ${posClass}">${medal}</div>
+                    <div class="info">
+                        <div class="nome">${esc(r.candidato)}</div>
+                        <div class="sub">${r.avaliacoes} nota(s) lançada(s)</div>
+                    </div>
+                    <div class="bar-wrap"><div class="bar" style="width:${pct}%"></div></div>
+                    <div class="score">
+                        <div class="total">${r.total}</div>
+                        <div class="media">média ${media}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // ===== INICIA =====
+    carregarRanking();
+    setInterval(carregarRanking, 10000);
+</script>
+</body>
+</html>
