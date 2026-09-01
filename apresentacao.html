@@ -30,7 +30,7 @@
         }
         header p { color: #aaa; margin-top: 4px; font-size: 0.9rem; }
 
-        /* ===== TELA DIVIDIDA EM DUAS PARTES ===== */
+        /* ===== TELA DIVIDIDA ===== */
         .split {
             display: flex;
             flex: 1;
@@ -38,89 +38,73 @@
             gap: 16px;
             padding: 0 20px 20px;
         }
+
+        /* ===== COLUNA ESQUERDA: CANDIDATO NO PALCO + FILA ===== */
         .painel-esquerdo {
-            flex: 1.2;
-            display: flex;
-            flex-direction: column;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 16px;
-            min-width: 0;
-        }
-        .painel-direito {
             flex: 1;
             display: flex;
             flex-direction: column;
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 16px;
-            padding: 16px;
+            padding: 20px;
             min-width: 0;
             overflow-y: auto;
         }
-
-        /* ===== IMAGEM DO CANDIDATO ===== */
-        .imagem-area {
-            flex: 1;
+        .no-palco-label {
+            display: inline-block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #4ade80;
+            background: rgba(0, 156, 59, 0.15);
+            border: 1px solid rgba(0, 156, 59, 0.35);
+            padding: 4px 14px;
+            border-radius: 20px;
+            width: fit-content;
+            margin-bottom: 10px;
+        }
+        .candidato-linha {
             display: flex;
             align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
-            overflow: hidden;
-            min-height: 0;
+            gap: 12px;
+            flex-wrap: wrap;
         }
-        .imagem-area img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            border-radius: 12px;
-        }
-        .imagem-area .sem-imagem {
-            color: #666;
-            font-size: 1.1rem;
-            text-align: center;
-            padding: 20px;
-        }
-        .info-candidato {
-            text-align: center;
-            padding: 14px 10px 6px;
-        }
-        .info-candidato .nome { font-size: 1.8rem; font-weight: 800; color: #fff; }
-        .info-candidato .musica { font-size: 1.1rem; color: #4ade80; margin-top: 2px; }
-        .info-candidato .artista { font-size: 0.95rem; color: #999; font-style: italic; }
-
-        /* ===== BOTÃO DE LIKE (ESTRELA) ===== */
-        .like-area {
-            text-align: center;
-            padding: 10px 0 4px;
+        .candidato-linha .nome {
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.1;
         }
         .btn-like {
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 3rem;
+            font-size: 2.6rem;
             color: #555;
             transition: transform 0.15s, color 0.2s;
             line-height: 1;
+            flex-shrink: 0;
         }
         .btn-like:hover { transform: scale(1.15); }
         .btn-like.curtido { color: #FFD700; }
         .btn-like:disabled { cursor: not-allowed; opacity: 0.6; }
         .like-count {
-            font-size: 1rem;
+            font-size: 1.1rem;
             color: #FFD700;
             font-weight: 700;
-            margin-top: 4px;
         }
         .like-msg { font-size: 0.8rem; color: #888; margin-top: 2px; }
+        .musica-info { margin-top: 8px; }
+        .musica-info .musica { font-size: 1.2rem; color: #4ade80; }
+        .musica-info .artista { font-size: 1rem; color: #999; font-style: italic; margin-top: 2px; }
 
-        /* ===== FILA (painel direito) ===== */
+        /* ===== FILA (abaixo do candidato, na coluna esquerda) ===== */
         .fila-titulo {
             font-size: 1.1rem;
             color: #aaa;
-            margin-bottom: 10px;
+            margin: 20px 0 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -162,6 +146,39 @@
         }
         .empty { text-align: center; color: #555; font-size: 1.1rem; font-style: italic; padding: 30px 0; }
 
+        /* ===== COLUNA DIREITA: IMAGEM (todo o espaço) ===== */
+        .painel-direito {
+            flex: 1.4;
+            display: flex;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 12px;
+            min-width: 0;
+        }
+        .imagem-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            min-height: 0;
+        }
+        .imagem-area img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+        .imagem-area .sem-imagem {
+            color: #666;
+            font-size: 1.1rem;
+            text-align: center;
+            padding: 20px;
+        }
+
         .toast {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
             background: #0a2e12; color: #fff; padding: 12px 24px; border-radius: 12px;
@@ -173,7 +190,7 @@
 
         @media (max-width: 800px) {
             .split { flex-direction: column; overflow-y: auto; }
-            .painel-esquerdo { min-height: 50vh; }
+            .painel-direito { min-height: 50vh; }
         }
     </style>
 </head>
@@ -184,31 +201,33 @@
 </header>
 
 <div class="split">
-    <!-- ===== PARTE 1: CANDIDATO NO PALCO + IMAGEM + LIKE ===== -->
+    <!-- ===== COLUNA ESQUERDA: CANDIDATO NO PALCO + LIKE + FILA ===== -->
     <div class="painel-esquerdo">
-        <div class="imagem-area" id="imagemArea">
-            <div class="sem-imagem">Aguardando candidato no palco...</div>
-        </div>
-        <div class="info-candidato" id="infoCandidato">
-            <div class="nome">—</div>
-            <div class="musica">—</div>
-            <div class="artista">—</div>
-        </div>
-        <div class="like-area">
+        <div class="no-palco-label" id="noPalcoLabel">🔴 No Palco</div>
+        <div class="candidato-linha">
+            <span class="nome" id="nomeCandidato">—</span>
             <button class="btn-like" id="btnLike" onclick="darLike()" title="Curtir">⭐</button>
-            <div class="like-count" id="likeCount">0</div>
-            <div class="like-msg" id="likeMsg">Toque na estrela para curtir</div>
+            <span class="like-count" id="likeCount">0</span>
         </div>
-    </div>
+        <div class="like-msg" id="likeMsg">Toque na estrela para curtir</div>
+        <div class="musica-info">
+            <div class="musica" id="musicaCandidato">—</div>
+            <div class="artista" id="artistaCandidato">—</div>
+        </div>
 
-    <!-- ===== PARTE 2: FILA DE PRÓXIMOS ===== -->
-    <div class="painel-direito">
         <div class="fila-titulo">
             <span>📋 Próximos da fila</span>
             <span class="count" id="filaCount">0</span>
         </div>
         <div id="filaLista">
             <div class="empty">Carregando...</div>
+        </div>
+    </div>
+
+    <!-- ===== COLUNA DIREITA: IMAGEM DO CANDIDATO (todo o espaço) ===== -->
+    <div class="painel-direito">
+        <div class="imagem-area" id="imagemArea">
+            <div class="sem-imagem">Aguardando candidato no palco...</div>
         </div>
     </div>
 </div>
@@ -220,14 +239,16 @@
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
 
     const imagemArea = document.getElementById('imagemArea');
-    const infoCandidato = document.getElementById('infoCandidato');
+    const nomeCandidato = document.getElementById('nomeCandidato');
+    const musicaCandidato = document.getElementById('musicaCandidato');
+    const artistaCandidato = document.getElementById('artistaCandidato');
     const btnLike = document.getElementById('btnLike');
     const likeCount = document.getElementById('likeCount');
     const likeMsg = document.getElementById('likeMsg');
     const filaLista = document.getElementById('filaLista');
     const filaCount = document.getElementById('filaCount');
     let toastTimer = null;
-    let candidatoAtual = null; // candidato no palco
+    let candidatoAtual = null;
     let jaCurtiu = false;
 
     function showToast(msg) {
@@ -245,26 +266,10 @@
         return div.innerHTML;
     }
 
-    // ===== VERIFICA SE ESTE ACESSO JÁ CURTIU ESTE CANDIDATO =====
-    function verificarLikeLocal(linha) {
-        try {
-            const chave = 'showtime_like_' + linha;
-            return localStorage.getItem(chave) === '1';
-        } catch { return false; }
-    }
-
-    function marcarLikeLocal(linha) {
-        try {
-            localStorage.setItem('showtime_like_' + linha, '1');
-        } catch {}
-    }
-
-    // ===== ATUALIZA O PAINEL DO CANDIDATO NO PALCO =====
-       // ===== CONVERTE LINK DO GOOGLE DRIVE PARA URL DIRETA DE IMAGEM =====
+    // ===== CONVERTE LINK DO GOOGLE DRIVE PARA URL DIRETA DE IMAGEM =====
     function converterLinkImagem(url) {
         if (!url) return '';
         url = url.trim();
-        // Formato: https://drive.google.com/open?id=XXXX ou /file/d/XXXX/view
         const mOpen = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
         const mFile = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
         const mUc = url.match(/\/uc\?export=view&id=([a-zA-Z0-9_-]+)/);
@@ -277,17 +282,30 @@
         if (id) {
             return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1000';
         }
-        return url; // já é um link direto de imagem
+        return url;
     }
 
-    // ===== ATUALIZA O PAINEL DO CANDIDATO NO PALCO =====
+    // ===== VERIFICA SE ESTE ACESSO JÁ CURTIU =====
+    function verificarLikeLocal(linha) {
+        try {
+            return localStorage.getItem('showtime_like_' + linha) === '1';
+        } catch { return false; }
+    }
+
+    function marcarLikeLocal(linha) {
+        try { localStorage.setItem('showtime_like_' + linha, '1'); } catch {}
+    }
+
+    // ===== ATUALIZA O CANDIDATO NO PALCO =====
     function atualizarPalco(fila) {
         const noPalco = fila.find(s => s.status === 'No Palco');
         candidatoAtual = noPalco || null;
 
         if (!candidatoAtual) {
             imagemArea.innerHTML = '<div class="sem-imagem">Aguardando candidato no palco...</div>';
-            infoCandidato.innerHTML = '<div class="nome">—</div><div class="musica">—</div><div class="artista">—</div>';
+            nomeCandidato.textContent = '—';
+            musicaCandidato.textContent = '—';
+            artistaCandidato.textContent = '—';
             likeCount.textContent = '0';
             likeMsg.textContent = 'Toque na estrela para curtir';
             btnLike.disabled = true;
@@ -297,19 +315,17 @@
         }
 
         const c = candidatoAtual;
-        // Imagem (coluna F - linkImagem) com conversão automática de Drive
+        // Imagem (coluna direita, todo o espaço, sem cortes)
         const urlImagem = converterLinkImagem(c.linkImagem);
         if (urlImagem) {
             imagemArea.innerHTML = `<img src="${esc(urlImagem)}" alt="Foto do candidato" onerror="this.parentNode.innerHTML='<div class=&quot;sem-imagem&quot;>Imagem indisponível</div>'">`;
         } else {
             imagemArea.innerHTML = '<div class="sem-imagem">Sem foto cadastrada</div>';
         }
-        // Info
-        infoCandidato.innerHTML = `
-            <div class="nome">${esc(c.nome)}</div>
-            <div class="musica">🎵 ${esc(c.musica)}</div>
-            <div class="artista">🎤 ${esc(c.artista || 'Artista')}</div>
-        `;
+        // Nome + música + artista (coluna esquerda)
+        nomeCandidato.textContent = c.nome;
+        musicaCandidato.textContent = '🎵 ' + (c.musica || '');
+        artistaCandidato.textContent = '🎤 ' + (c.artista || 'Artista');
         // Like
         likeCount.textContent = c.likes || 0;
         jaCurtiu = verificarLikeLocal(c.linha);
