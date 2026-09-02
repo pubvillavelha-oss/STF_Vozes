@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <!-- ===== CONFIG CENTRAL (logo via config.js) ===== -->
 <script src="config.js"></script>
+
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8" />
@@ -185,10 +186,8 @@
 <script>
     // ============================================================
     // 🔗 URL DO WEB APP (APPS SCRIPT)
-    // Cole aqui a URL do Web App da planilha:
-    // https://script.google.com/macros/s/.../exec
     // ============================================================
-    // const WEB_APP_URL = 'COLE_AQUI_A_URL_DO_WEB_APP';
+    // const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
 
     // ===== DOM =====
     const form = document.getElementById('formInscricao');
@@ -211,10 +210,11 @@
     }
 
     // ===== ENVIO PARA O APPS SCRIPT =====
+    // text/plain evita o preflight (OPTIONS) que o Apps Script não responde
     async function enviarInscricao(dados) {
         const res = await fetch(WEB_APP_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify(dados)
         });
         if (!res.ok) throw new Error('Falha no envio');
@@ -241,10 +241,6 @@
 
         if (!nome || !musica || !artista) {
             showToast('⚠️ Preencha nome, música e artista.');
-            return;
-        }
-        if (WEB_APP_URL === 'COLE_AQUI_A_URL_DO_WEB_APP') {
-            showToast('⚠️ URL do Web App ainda não configurada.');
             return;
         }
 
