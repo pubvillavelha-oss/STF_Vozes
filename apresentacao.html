@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ShowTime Festival de Vozes - Apresentação</title>
-    <!-- ===== CONFIG CENTRAL (URL do Web App + Logo) ===== -->
+    <!-- ===== CONFIG CENTRAL (URL do Web App + Logo + Imagens) ===== -->
     <script src="config.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -46,7 +46,7 @@
             background-clip: text;
         }
         .header-texto p { color: #aaa; margin-top: 4px; font-size: 0.9rem; }
-        /* ===== IMAGEM ALEATÓRIA NO CANTO SUPERIOR DIREITO ===== */
+        /* ===== IMAGEM NO CANTO SUPERIOR DIREITO ===== */
         .header-imagem {
             height: 64px;
             width: 64px;
@@ -55,6 +55,7 @@
             border: 1px solid rgba(255, 255, 255, 0.15);
             flex-shrink: 0;
             background: rgba(255, 255, 255, 0.05);
+            transition: opacity 0.4s ease;
         }
         /* ===== TELA DIVIDIDA ===== */
         .split {
@@ -272,7 +273,7 @@
         <h1>🎤 ShowTime Festival de Vozes</h1>
         <p>Apresentação ao vivo</p>
     </div>
-    <!-- ===== 3ª PARTE: IMAGEM ALEATÓRIA (canto superior direito) ===== -->
+    <!-- ===== 3ª PARTE: IMAGEM (troca a cada candidato no palco) ===== -->
     <img id="imagemLateral" alt="Imagem decorativa" class="header-imagem" />
 </header>
 <div class="split">
@@ -331,42 +332,46 @@
     let modoVideo = false; // false = imagem, true = vídeo
     let ultimaLinhaMidia = null; // linha do candidato com mídia renderizada
     let ultimoModoMidia = null;  // modo renderizado (imagem ou vídeo)
-    // ===== APLICA O LOGO CENTRALIZADO (config.js) =====
+    let ultimaLinhaPalco = null; // 🖼️ controla a troca da imagem lateral por candidato
+
+    // ===== APLICA O LOGO (config.js) =====
     const logoEl = document.getElementById('logoShowTime');
     if (logoEl) {
         logoEl.src = LOGO_URL;
         logoEl.onerror = function () { this.style.display = 'none'; };
     }
+
     // ============================================================
-    // 🖼️ IMAGEM ALEATÓRIA NO CANTO SUPERIOR DIREITO
+    // 🖼️ IMAGEM NO CANTO SUPERIOR DIREITO
     // ------------------------------------------------------------
-    // 1) Se o config.js definir IMAGEM_LATERAL_URL, usa ela.
-    // 2) Se definir IMAGENS_LATERAIS (array), sorteia uma.
-    // 3) Senão, usa a lista padrão abaixo (fotos decorativas).
-    // Se nada carregar, a imagem é ocultada silenciosamente.
+    // Prioridade da fonte:
+    // 1) IMAGEM_LATERAL_URL (fixa) — se definida no config.js
+    // 2) IMAGENS_LATERAIS (array) — sorteia uma, se definida no config.js
+    // 3) Lista padrão embutida abaixo (DC.png verificada + variações)
+    // A troca acontece a cada candidato DIFERENTE que sobe ao palco.
     // ============================================================
     const IMAGENS_PADRAO = [
-        'https://picsum.photos/seed/showtime1/128/128',
-        'https://picsum.photos/seed/showtime2/128/128',
-        'https://picsum.photos/seed/showtime3/128/128',
-        'https://picsum.photos/seed/showtime4/128/128',
-        'https://picsum.photos/seed/showtime5/128/128'
+        'https://drive.google.com/thumbnail?id=11OqzpZ5NhvgmdyD2-7tCYhqc3zr6ZY_-&sz=w400'
     ];
+    function escolherImagemLateral() {
+        if (typeof IMAGEM_LATERAL_URL !== 'undefined' && IMAGEM_LATERAL_URL) {
+            return IMAGEM_LATERAL_URL;
+        }
+        if (typeof IMAGENS_LATERAIS !== 'undefined' && Array.isArray(IMAGENS_LATERAIS) && IMAGENS_LATERAIS.length) {
+            return IMAGENS_LATERAIS[Math.floor(Math.random() * IMAGENS_LATERAIS.length)];
+        }
+        return IMAGENS_PADRAO[Math.floor(Math.random() * IMAGENS_PADRAO.length)];
+    }
     function aplicarImagemLateral() {
         const img = document.getElementById('imagemLateral');
         if (!img) return;
-        let fonte = null;
-        if (typeof IMAGEM_LATERAL_URL !== 'undefined' && IMAGEM_LATERAL_URL) {
-            fonte = IMAGEM_LATERAL_URL;
-        } else if (typeof IMAGENS_LATERAIS !== 'undefined' && Array.isArray(IMAGENS_LATERAIS) && IMAGENS_LATERAIS.length) {
-            fonte = IMAGENS_LATERAIS[Math.floor(Math.random() * IMAGENS_LATERAIS.length)];
-        } else {
-            fonte = IMAGENS_PADRAO[Math.floor(Math.random() * IMAGENS_PADRAO.length)];
-        }
-        img.src = fonte;
+        img.style.opacity = '0';
+        img.src = escolherImagemLateral();
+        img.onload = function () { this.style.opacity = '1'; };
         img.onerror = function () { this.style.display = 'none'; };
     }
-    aplicarImagemLateral();
+    aplicarImagemLateral(); // primeira imagem ao abrir a tela
+
     function showToast(msg) {
         const el = document.getElementById('toast');
         el.textContent = msg;
@@ -419,19 +424,16 @@
     function converterLinkVideo(url) {
         if (!url) return '';
         url = url.trim();
-        // YouTube → embed (mute=1 permite autoplay nos navegadores)
         const idYT = extrairIdYouTube(url);
         if (idYT) {
             return 'https://www.youtube.com/embed/' + idYT + '?autoplay=1&mute=1&rel=0';
         }
-        // Google Drive → preview
         const mFile = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
         const mOpen = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
         const id = mFile ? mFile[1] : (mOpen ? mOpen[1] : null);
         if (id) {
             return 'https://drive.google.com/file/d/' + id + '/preview';
         }
-        // Arquivo de vídeo direto (.mp4 etc.)
         return url;
     }
     // ===== VERIFICA SE ESTE ACESSO JÁ CURTIU =====
@@ -479,7 +481,6 @@
                 midiaArea.innerHTML = '<div class="sem-midia">Sem foto cadastrada</div>';
             }
         }
-        // Registra o que foi renderizado (para não reiniciar o vídeo no próximo refresh)
         ultimaLinhaMidia = candidatoAtual.linha;
         ultimoModoMidia = modoVideo;
     }
@@ -487,6 +488,14 @@
     function atualizarPalco(fila) {
         const noPalco = fila.find(s => s.status === 'No Palco');
         candidatoAtual = noPalco || null;
+
+        // 🖼️ Troca a imagem lateral quando um candidato DIFERENTE sobe ao palco
+        const linhaAtual = candidatoAtual ? candidatoAtual.linha : null;
+        if (linhaAtual !== ultimaLinhaPalco) {
+            ultimaLinhaPalco = linhaAtual;
+            if (linhaAtual) aplicarImagemLateral();
+        }
+
         if (!candidatoAtual) {
             midiaArea.innerHTML = '<div class="sem-midia">Aguardando candidato no palco...</div>';
             nomeCandidato.textContent = '—';
@@ -521,7 +530,6 @@
             btnLike.disabled = false;
             likeMsg.textContent = 'Toque na estrela para curtir';
         }
-        // Botão de comando: habilita se houver vídeo cadastrado
         btnComando.disabled = !c.linkVideo;
         if (!c.linkVideo) {
             btnComando.textContent = '🎬 Sem vídeo cadastrado';
@@ -530,7 +538,6 @@
         } else {
             btnComando.textContent = '🎬 Ver vídeo da história';
         }
-        // Só re-renderiza a mídia se o candidato ou o modo mudou — evita reiniciar o vídeo
         if (c.linha !== ultimaLinhaMidia || modoVideo !== ultimoModoMidia) {
             renderizarMidia();
         }
