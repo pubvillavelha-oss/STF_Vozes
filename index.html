@@ -17,28 +17,18 @@
         }
         .container { max-width: 900px; margin: 0 auto; }
 
-        /* ===== CABEÇALHO COM LOGO À ESQUERDA ===== */
+        /* ===== LOGO CENTRALIZADO (substitui o texto do cabeçalho) ===== */
         header {
             display: flex;
+            justify-content: center;
             align-items: center;
-            gap: 16px;
-            padding: 12px 0 24px;
+            padding: 20px 0 28px;
         }
         .logo {
-            height: 64px;
+            height: 140px;
             width: auto;
             object-fit: contain;
-            flex-shrink: 0;
         }
-        .header-texto { flex: 1; text-align: center; }
-        .header-texto h1 {
-            font-size: 2.4rem;
-            background: linear-gradient(90deg, #009C3B, #FFDF00);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .header-texto p { color: #aaa; margin-top: 6px; font-size: 0.95rem; }
 
         .grid {
             display: grid;
@@ -80,19 +70,15 @@
         .tag.gestao { background: rgba(255, 255, 255, 0.1); color: #ccc; border: 1px solid rgba(255, 255, 255, 0.2); }
         .footer { text-align: center; margin-top: 28px; color: #555; font-size: 0.85rem; }
         @media (max-width: 600px) {
-            .logo { height: 44px; }
-            .header-texto h1 { font-size: 1.6rem; }
+            .logo { height: 96px; }
         }
     </style>
 </head>
 <body>
 <div class="container">
+    <!-- ===== LOGO CENTRALIZADO ===== -->
     <header>
         <img id="logoShowTime" alt="Logo ShowTime Festival de Vozes" class="logo" />
-        <div class="header-texto">
-            <h1>🎤 ShowTime Festival de Vozes</h1>
-            <p>Painel de acesso às páginas do app</p>
-        </div>
     </header>
 
     <div class="grid">
