@@ -47,11 +47,12 @@
             background-clip: text;
         }
         .header-texto p { color: #aaa; margin-top: 4px; font-size: 0.9rem; }
-        /* ===== IMAGEM NO CANTO SUPERIOR DIREITO ===== */
+        /* ===== IMAGEM NO CANTO SUPERIOR DIREITO (sem corte) ===== */
         .header-imagem {
             height: 64px;
-            width: 64px;
-            object-fit: cover;
+            width: auto;          /* largura acompanha a proporção da imagem */
+            max-width: 160px;     /* proteção contra imagens muito largas */
+            object-fit: contain;  /* imagem inteira visível, sem corte */
             border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.15);
             flex-shrink: 0;
@@ -260,7 +261,7 @@
             .split { flex-direction: column; overflow-y: auto; }
             .painel-direito { min-height: 50vh; }
             .logo { height: 44px; }
-            .header-imagem { height: 44px; width: 44px; }
+            .header-imagem { height: 44px; max-width: 110px; }
             .header-texto h1 { font-size: 1.5rem; }
         }
     </style>
