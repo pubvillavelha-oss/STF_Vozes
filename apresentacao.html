@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ShowTime Festival de Vozes - Apresentação</title>
     <!-- ===== CONFIG CENTRAL (URL do Web App + Logo + Imagens) ===== -->
+    <!-- Se o config.js não carregar, o HTML usa as imagens embutidas abaixo -->
     <script src="config.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -342,26 +343,54 @@
     }
 
     // ============================================================
-    // 🖼️ IMAGEM NO CANTO SUPERIOR DIREITO
+    // 🖼️ IMAGEM NO CANTO SUPERIOR DIREITO — VERSÃO ROBUSTA
     // ------------------------------------------------------------
+    // As 3 imagens verificadas estão EMBUTIDAS aqui (IMAGENS_PADRAO),
+    // então funcionam mesmo se o config.js não carregar.
     // Prioridade da fonte:
     // 1) IMAGEM_LATERAL_URL (fixa) — se definida no config.js
     // 2) IMAGENS_LATERAIS (array) — sorteia uma, se definida no config.js
-    // 3) Lista padrão embutida abaixo (DC.png verificada + variações)
+    // 3) IMAGENS_PADRAO (embutidas abaixo) — garantia de funcionamento
     // A troca acontece a cada candidato DIFERENTE que sobe ao palco.
     // ============================================================
     const IMAGENS_PADRAO = [
+        'https://drive.google.com/thumbnail?id=1CmcEvxRKctqdcv3jDwcLQ5-vBRTk-rQK&sz=w400',
+        'https://drive.google.com/thumbnail?id=1D3qVaKSK-QN_CwIbgaZf1nRo6lxPTnNk&sz=w400',
         'https://drive.google.com/thumbnail?id=11OqzpZ5NhvgmdyD2-7tCYhqc3zr6ZY_-&sz=w400'
     ];
-    function escolherImagemLateral() {
-        if (typeof IMAGEM_LATERAL_URL !== 'undefined' && IMAGEM_LATERAL_URL) {
-            return IMAGEM_LATERAL_URL;
+
+    // Converte QUALQUER link do Google Drive (view/uc/file) para URL direta de imagem
+    function converterLinkImagem(url) {
+        if (!url) return '';
+        url = url.trim();
+        const mOpen = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        const mFile = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        const mUc = url.match(/\/uc\?export=view&id=([a-zA-Z0-9_-]+)/);
+        const mThumb = url.match(/\/thumbnail\?id=([a-zA-Z0-9_-]+)/);
+        let id = null;
+        if (mOpen) id = mOpen[1];
+        else if (mFile) id = mFile[1];
+        else if (mUc) id = mUc[1];
+        else if (mThumb) id = mThumb[1];
+        if (id) {
+            return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w400';
         }
-        if (typeof IMAGENS_LATERAIS !== 'undefined' && Array.isArray(IMAGENS_LATERAIS) && IMAGENS_LATERAIS.length) {
-            return IMAGENS_LATERAIS[Math.floor(Math.random() * IMAGENS_LATERAIS.length)];
-        }
-        return IMAGENS_PADRAO[Math.floor(Math.random() * IMAGENS_PADRAO.length)];
+        return url;
     }
+
+    function escolherImagemLateral() {
+        let fonte = null;
+        if (typeof IMAGEM_LATERAL_URL !== 'undefined' && IMAGEM_LATERAL_URL) {
+            fonte = IMAGEM_LATERAL_URL;
+        } else if (typeof IMAGENS_LATERAIS !== 'undefined' && Array.isArray(IMAGENS_LATERAIS) && IMAGENS_LATERAIS.length) {
+            fonte = IMAGENS_LATERAIS[Math.floor(Math.random() * IMAGENS_LATERAIS.length)];
+        } else {
+            fonte = IMAGENS_PADRAO[Math.floor(Math.random() * IMAGENS_PADRAO.length)];
+        }
+        // Converte links do Google Drive (view/uc/file) para URL direta de imagem
+        return converterLinkImagem(fonte);
+    }
+
     function aplicarImagemLateral() {
         const img = document.getElementById('imagemLateral');
         if (!img) return;
@@ -384,24 +413,6 @@
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
-    }
-    // ===== CONVERTE LINK DO GOOGLE DRIVE PARA URL DIRETA DE IMAGEM =====
-    function converterLinkImagem(url) {
-        if (!url) return '';
-        url = url.trim();
-        const mOpen = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-        const mFile = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-        const mUc = url.match(/\/uc\?export=view&id=([a-zA-Z0-9_-]+)/);
-        const mThumb = url.match(/\/thumbnail\?id=([a-zA-Z0-9_-]+)/);
-        let id = null;
-        if (mOpen) id = mOpen[1];
-        else if (mFile) id = mFile[1];
-        else if (mUc) id = mUc[1];
-        else if (mThumb) id = mThumb[1];
-        if (id) {
-            return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1000';
-        }
-        return url;
     }
     // ===== EXTRAI O ID DO YOUTUBE (vários formatos) =====
     function extrairIdYouTube(url) {
