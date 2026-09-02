@@ -1,11 +1,10 @@
 <!DOCTYPE html>
+<script src="config.js"></script>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ShowTime Festival de Vozes - Fila de Apresentação</title>
-    <!-- ===== CONFIG CENTRAL (URL do Web App + Logo) ===== -->
-    <script src="config.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -18,23 +17,17 @@
             overflow: hidden;
             height: 100vh;
         }
-
-        /* ===== CABEÇALHO COM LOGO CENTRALIZADO ===== */
-        .display-header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            padding: 20px 20px 10px;
-            flex-shrink: 0;
+        .display-header { text-align: center; padding: 20px 20px 10px; flex-shrink: 0; }
+        .display-header h1 {
+            font-size: 2.8rem;
+            background: linear-gradient(90deg, #009C3B, #FFDF00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 2px;
         }
-        .logo {
-            height: 140px;
-            width: auto;
-            object-fit: contain;
-        }
-        .status-row { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .display-header .sub { color: #888; font-size: 1rem; margin-top: 4px; }
+        .status-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
         .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
         .status-dot.online { background: #4ade80; }
         .status-dot.offline { background: #f87171; }
@@ -44,7 +37,6 @@
             font-size: 0.85rem; font-weight: 700; letter-spacing: 0.5px;
         }
         .avail-pill.open { background: rgba(0, 156, 59, 0.14); color: #4ade80; border: 1px solid rgba(0, 156, 59, 0.25); }
-
         .now-playing { text-align: center; padding: 16px 20px 20px; flex-shrink: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
         .now-playing .label { font-size: 0.85rem; color: #009C3B; text-transform: uppercase; letter-spacing: 3px; font-weight: 600; }
         .now-playing .singer { font-size: 2.4rem; font-weight: 700; margin-top: 4px; color: #fff; }
@@ -109,7 +101,7 @@
             background: rgba(255, 255, 255, 0.9); color: #0a2e12; max-width: 220px;
         }
         @media (max-width: 600px) {
-            .logo { height: 96px; }
+            .display-header h1 { font-size: 1.8rem; }
             .now-playing .singer { font-size: 1.6rem; }
             .now-playing .music { font-size: 1rem; }
             .item-pos { font-size: 1.2rem; min-width: 36px; }
@@ -120,6 +112,7 @@
             .controles { flex-direction: column; align-items: stretch; }
         }
         @media (min-width: 1024px) {
+            .display-header h1 { font-size: 3.2rem; }
             .now-playing .singer { font-size: 3rem; }
             .now-playing .music { font-size: 1.6rem; }
             .item-pos { font-size: 2rem; min-width: 60px; }
@@ -144,9 +137,9 @@
     </style>
 </head>
 <body>
-    <!-- ===== CABEÇALHO COM LOGO CENTRALIZADO ===== -->
     <div class="display-header">
-        <img id="logoShowTime" alt="Logo ShowTime Festival de Vozes" class="logo" />
+        <h1>🎤 ShowTime Festival de Vozes</h1>
+        <div class="sub">Fila de apresentação</div>
         <div class="status-row">
             <span class="status-dot" id="statusDot"></span>
             <span class="conn-text" id="statusText">Conectando...</span>
@@ -181,15 +174,9 @@
     <div class="toast" id="toast"></div>
 <script>
     // ============================================================
-    // WEB_APP_URL e LOGO_URL vêm do config.js (carregado no <head>)
+    // 🔥 CONFIGURAÇÃO DO GOOGLE SHEETS (WEB APP)
     // ============================================================
-
-    // ===== APLICA O LOGO CENTRALIZADO (config.js) =====
-    const logoEl = document.getElementById('logoShowTime');
-    if (logoEl) {
-        logoEl.src = LOGO_URL;
-        logoEl.onerror = function () { this.style.display = 'none'; };
-    }
+    // const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
 
     const nowContent    = document.getElementById('nowContent');
     const queueList     = document.getElementById('queueList');
@@ -197,6 +184,7 @@
     const statusDot     = document.getElementById('statusDot');
     const statusText    = document.getElementById('statusText');
     let toastTimer = null;
+
     function showToast(msg) {
         const el = document.getElementById('toast');
         el.textContent = msg;
@@ -204,26 +192,31 @@
         clearTimeout(toastTimer);
         toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
     }
+
     function setStatus(online) {
         statusDot.className = 'status-dot ' + (online ? 'online' : 'offline');
         statusText.textContent = online ? 'Online' : 'Offline';
     }
+
     function esc(str) {
         if (!str) return '';
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
     }
+
     function getApoio(item) {
         if (!item.apoio) return null;
         const t = String(item.apoio).trim().toLowerCase();
         return (t === 'sim' || t === 's') ? 'Com apoio para cantar' : null;
     }
+
     // ===== VOZ PARA CHAMAR O CANDIDATO =====
     const seletorVoz = document.getElementById('seletorVoz');
     const textoChamada = document.getElementById('textoChamada');
     let vozEscolhida = null;
     const temVoz = typeof window.speechSynthesis !== 'undefined' && window.speechSynthesis !== null;
+
     function carregarVozes() {
         if (!temVoz) {
             if (seletorVoz) seletorVoz.innerHTML = '<option value="">Voz não disponível neste navegador</option>';
@@ -247,12 +240,14 @@
         const vozBR = vozes.find(v => v.lang === 'pt-BR');
         if (vozBR) seletorVoz.value = vozBR.name;
     }
+
     if (temVoz) window.speechSynthesis.onvoiceschanged = carregarVozes;
     if (seletorVoz) {
         seletorVoz.addEventListener('change', function () {
             vozEscolhida = seletorVoz.value || null;
         });
     }
+
     function falar(texto) {
         if (!temVoz) return;
         window.speechSynthesis.cancel();
@@ -271,6 +266,7 @@
         }
         window.speechSynthesis.speak(utterance);
     }
+
     // ===== CHAMAR CANDIDATO (SÓ FALA — NÃO AVANÇA A FILA) =====
     let ultimosCandidatos = [];
     function chamarCandidato(linha) {
@@ -282,6 +278,7 @@
         falar(texto);
         showToast('🎤 Chamando ' + candidato.nome + ' para o palco!');
     }
+
     // ===== MARCAR COMO NO PALCO (atualiza a planilha — sem abrir aba) =====
     async function marcarPalco(linha) {
         const candidato = ultimosCandidatos.find(s => s.linha === linha);
@@ -302,6 +299,7 @@
             showToast('⚠️ Erro de conexão. Tente novamente.');
         }
     }
+
     // ===== DESFAZER NO PALCO (volta o candidato para a fila) =====
     async function desfazerPalco(linha) {
         const candidato = ultimosCandidatos.find(s => s.linha === linha);
@@ -322,6 +320,7 @@
             showToast('⚠️ Erro de conexão. Tente novamente.');
         }
     }
+
     // ===== RENDER =====
     function render(fila) {
         ultimosCandidatos = fila;
@@ -329,6 +328,7 @@
         const noPalco = fila.find(s => s.status === 'No Palco');
         const current = noPalco || null;
         const pending = fila.filter(s => s.status !== 'No Palco');
+
         // ===== NOW PLAYING: SÓ mostra se o botão "No Palco" foi acionado =====
         if (current) {
             const apoio = getApoio(current);
@@ -344,6 +344,7 @@
         } else {
             nowContent.innerHTML = `<div class="empty-now">Aguardando próximo candidato...</div>`;
         }
+
         // ===== FILA: todos os pendentes, posição a partir de 1 =====
         if (pending.length === 0) {
             queueList.innerHTML = `<div class="empty-queue">Fila vazia — aguardando inscrições 🎤</div>`;
@@ -375,6 +376,7 @@
         }).join('');
         queueCount.textContent = String(pending.length);
     }
+
     // ===== CARREGA A FILA =====
     async function carregarFila() {
         try {
@@ -388,6 +390,7 @@
             showToast('⚠️ Erro de conexão. Tentando novamente...');
         }
     }
+
     // ===== INICIA =====
     carregarFila();
     setInterval(carregarFila, 10000);
