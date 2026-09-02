@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <!-- ===== CONFIG CENTRAL (logo via config.js) ===== -->
 <script src="config.js"></script>
-
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8" />
@@ -210,7 +209,9 @@
     }
 
     // ===== ENVIO PARA O APPS SCRIPT =====
-    // text/plain evita o preflight (OPTIONS) que o Apps Script não responde
+    // CORREÇÃO CORS: text/plain evita o preflight (OPTIONS),
+    // que o Google Apps Script não responde. O JSON continua
+    // indo no corpo da requisição e é lido via e.postData.contents.
     async function enviarInscricao(dados) {
         const res = await fetch(WEB_APP_URL, {
             method: 'POST',
