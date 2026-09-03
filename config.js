@@ -15,6 +15,7 @@ const IMAGENS_LATERAIS = [
     'https://drive.google.com/thumbnail?id=1CmcEvxRKctqdcv3jDwcLQ5-vBRTk-rQK&sz=w400',
     'https://drive.google.com/thumbnail?id=1MNdjkYFzmHPwnsJkM9XYQWYqReYdulVt&sz=w400',
     'https://drive.google.com/thumbnail?id=1D3qVaKSK-QN_CwIbgaZf1nRo6lxPTnNk&sz=w400',
+    'https://drive.google.com/thumbnail?id=1MGMYNDiwzQqhe1RcsuW-xth4vNFwJsNC&sz=w400',
     'https://drive.google.com/thumbnail?id=11OqzpZ5NhvgmdyD2-7tCYhqc3zr6ZY_-&sz=w400',
     'https://drive.google.com/thumbnail?id=1MNdjkYFzmHPwnsJkM9XYQWYqReYdulVt&sz=w400'
 ];
