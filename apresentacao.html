@@ -524,8 +524,8 @@ body {
         }
         const c = candidatoAtual;
         nomeCandidato.textContent = c.nome;
-        musicaCandidato.textContent = '🎵 ' + (c.musica || '');
-        artistaCandidato.textContent = '🎤 ' + (c.artista || 'Artista');
+        musicaCandidato.textContent =  (c.musica || '');
+        // artistaCandidato.textContent =  (c.artista || 'Artista');
         likeCount.textContent = c.likes || 0;
         jaCurtiu = verificarLikeLocal(c.linha);
         if (jaCurtiu) {
