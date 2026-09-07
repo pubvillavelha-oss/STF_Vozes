@@ -16,6 +16,8 @@ const IMAGENS_LATERAIS = [
     'https://drive.google.com/thumbnail?id=1MNdjkYFzmHPwnsJkM9XYQWYqReYdulVt&sz=w400', // Seven Mobby
     'https://drive.google.com/thumbnail?id=1D3qVaKSK-QN_CwIbgaZf1nRo6lxPTnNk&sz=w400', // Peixinho Felix
     'https://drive.google.com/thumbnail?id=1MGMYNDiwzQqhe1RcsuW-xth4vNFwJsNC&sz=w400', // Motinha 
+    'https://drive.google.com/thumbnail?id=1nPaoZZs29SuiWBHJumPcK2WPr5n6eTg3&sz=w400', //Beholdme
+    'https://drive.google.com/thumbnail?id=11Q6d45tJ7kzFz1h6DUjAQ6wkRmxmWuC1&sz=w400', //Imobiliaria Lencois
     'https://drive.google.com/thumbnail?id=11OqzpZ5NhvgmdyD2-7tCYhqc3zr6ZY_-&sz=w400', // Descomplicanto
     'https://drive.google.com/thumbnail?id=1MNdjkYFzmHPwnsJkM9XYQWYqReYdulVt&sz=w400'  // Seven Mobby
 ];
