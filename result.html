@@ -86,14 +86,23 @@
         return url;
     }
 
-    // Foto circular do candidato (com iniciais de reserva se a imagem falhar)
+    // ===== FOTO COM FALLBACK SEGURO =====
+    // CORRIGIDO: não depende de querySelector nem de estrutura fixa.
+    function mostrarIniciais(img) {
+        try {
+            img.style.display = 'none';
+            const ini = img.nextElementSibling; // div .foto-iniciais logo após o <img>
+            if (ini) ini.style.display = 'flex';
+        } catch (e) { /* nunca quebra o fluxo da revelação */ }
+    }
+
     function fotoHTML(r, tam) {
         const t = tam || 84;
         const url = converterLinkImagem(r.imagem);
         const iniciais = `<div class="foto-iniciais" style="width:${t}px;height:${t}px;font-size:${Math.round(t * 0.36)}px;">${esc(iniciaisNome(r.candidato))}</div>`;
         if (!url) return iniciais;
         return `<div class="foto-wrap" style="width:${t}px;height:${t}px;">
-            <img class="foto" src="${esc(url)}" alt="Foto de ${esc(r.candidato)}" style="width:${t}px;height:${t}px;" onerror="this.style.display='none';this.parentNode.querySelector('.foto-iniciais').style.display='flex';">
+            <img class="foto" src="${esc(url)}" alt="Foto de ${esc(r.candidato)}" style="width:${t}px;height:${t}px;" onerror="mostrarIniciais(this)">
             ${iniciais}
         </div>`;
     }
