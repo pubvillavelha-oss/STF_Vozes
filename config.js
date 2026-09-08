@@ -3,8 +3,13 @@
 // Defina a URL do Web App UMA ÚNICA VEZ aqui.
 // Todas as páginas leem esta variável via <script src="config.js">
 // ============================================================
+// config.js — ShowTime Festival de Vozes
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
 window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
+
+// Opcional: áudio de tambores (local ou remoto)
+// const DRUM_URL = 'https://seusite.com/audio/drumroll.mp3';
+
 
 // Caminho do logotipo oficial
 // Opção 1: arquivo local na mesma pasta
