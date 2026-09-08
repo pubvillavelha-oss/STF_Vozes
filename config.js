@@ -4,6 +4,7 @@
 // Todas as páginas leem esta variável via <script src="config.js">
 // ============================================================
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
+window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
 
 // Caminho do logotipo oficial
 // Opção 1: arquivo local na mesma pasta
