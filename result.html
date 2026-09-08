@@ -308,12 +308,14 @@
     } catch (e) {
         APP_URL = window.WEB_APP_URL || 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
     }
-    let LOGO_URL = '';
+    // Lê o logo do config.js SEM redeclarar a variável (evita conflito
+    // com o const LOGO_URL já declarado no config.js).
+    let logoUrl = '';
     try {
-        LOGO_URL = (typeof URL_DO_LOGO !== 'undefined' && URL_DO_LOGO) ? URL_DO_LOGO
+        logoUrl = (typeof URL_DO_LOGO !== 'undefined' && URL_DO_LOGO) ? URL_DO_LOGO
             : ((typeof LOGO_URL !== 'undefined' && LOGO_URL) ? LOGO_URL
             : (window.URL_DO_LOGO || window.LOGO_URL || ''));
-    } catch (e) { LOGO_URL = ''; }
+    } catch (e) { logoUrl = ''; }
     let AUDIO_DRUM_URL = '';
     try {
         AUDIO_DRUM_URL = (typeof DRUM_URL !== 'undefined' && DRUM_URL) ? DRUM_URL : (window.DRUM_URL || '');
@@ -322,8 +324,8 @@
     // ===== LOGO NO CABEÇALHO =====
     const logoEl = document.getElementById('logoShowTime');
     if (logoEl) {
-        if (LOGO_URL) {
-            logoEl.src = LOGO_URL;
+        if (logoUrl) {
+            logoEl.src = logoUrl;
             logoEl.onerror = function () { this.style.display = 'none'; };
         } else {
             logoEl.style.display = 'none';
