@@ -1,5 +1,393 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShowTime - Resultado Final</title>
+    <link rel="icon" href="data:,">
+    <!-- ===== CONFIG CENTRAL ===== -->
+    <!-- config.js deve definir:
+         const WEB_APP_URL = 'https://script.google.com/macros/s/.../exec';
+         const URL_DO_LOGO = 'https://.../logo.png';
+         const DRUM_URL   = 'https://.../drumroll.mp3'; (opcional) -->
+    <script src="config.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a2e12, #0f4d1e, #0a2e12);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 96px 16px 24px;
+            overflow-x: hidden;
+        }
+
+        /* ===== CABEÇALHO FIXO ===== */
+        header.fixo {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 10px 20px;
+            background: rgba(10, 46, 18, 0.96);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+        }
+        .header-logo { flex-shrink: 0; min-width: 0; }
+        .header-logo img { height: 56px; width: auto; object-fit: contain; display: block; }
+        .header-titulo { flex: 1; text-align: center; min-width: 0; }
+        .header-titulo h1 {
+            font-size: 1.6rem;
+            background: linear-gradient(90deg, #009C3B, #FFDF00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            white-space: nowrap;
+        }
+        .header-titulo p { color: #aaa; font-size: 0.8rem; }
+        .header-acoes { flex-shrink: 0; }
+
+        /* ===== BOTÃO DE APRESENTAÇÃO ===== */
+        .btn-revelar {
+            display: inline-block;
+            padding: 13px 26px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 800;
+            font-family: inherit;
+            cursor: pointer;
+            color: #1a1a2e;
+            background: linear-gradient(90deg, #FFDF00, #FFD700);
+            box-shadow: 0 0 24px rgba(255, 215, 0, 0.35);
+            transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+            animation: pulseBtn 1.6s ease-in-out infinite;
+            white-space: nowrap;
+        }
+        .btn-revelar:hover { transform: scale(1.05); box-shadow: 0 0 40px rgba(255, 215, 0, 0.55); }
+        .btn-revelar:active { transform: scale(0.96); }
+        .btn-revelar:disabled { opacity: 0.5; cursor: wait; animation: none; }
+        .btn-revelar.final { background: linear-gradient(90deg, #009C3B, #00b84a); color: #fff; box-shadow: 0 0 24px rgba(0, 156, 59, 0.4); animation: none; }
+        @keyframes pulseBtn {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.04); }
+        }
+
+        /* ===== LAYOUT 3 COLUNAS (meio = 70%) ===== */
+        .layout {
+            display: grid;
+            grid-template-columns: 15% 70% 15%;
+            gap: 14px;
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+        .col { min-height: calc(100vh - 120px); border-radius: 16px; }
+        .col-esquerda, .col-direita {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .col-centro {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .status-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 auto 14px; flex-wrap: wrap; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .status-dot.online { background: #4ade80; }
+        .status-dot.offline { background: #f87171; }
+        .conn-text { font-size: 0.8rem; color: #888; }
+
+        /* ===== PALCO ===== */
+        #palco {
+            position: relative;
+            width: 100%;
+            max-width: 760px;
+            min-height: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .suspense-box { text-align: center; padding: 40px 20px; color: #888; }
+        .suspense-box .icon { font-size: 3.5rem; }
+        .suspense-box .texto { font-size: 1.3rem; margin-top: 14px; font-weight: 600; color: #bbb; }
+        .suspense-box .sub { font-size: 0.9rem; margin-top: 6px; color: #777; }
+
+        /* ===== DRUMROLL + CONTAGEM ===== */
+        #drumroll {
+            position: absolute; inset: 0;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.95));
+            border-radius: 20px;
+            z-index: 20;
+            text-align: center;
+            backdrop-filter: blur(4px);
+        }
+        #drumroll.ativo { display: flex; }
+        #drumroll .baquetas { font-size: 2.6rem; animation: batida 0.5s ease-in-out infinite; }
+        #drumroll .texto { margin-top: 16px; font-size: 1.5rem; font-weight: 800; color: #FFD700; text-transform: uppercase; letter-spacing: 6px; }
+        #drumroll .sub { margin-top: 10px; color: #aaa; font-size: 0.95rem; }
+        .drum-num { margin-top: 6px; font-size: 6.5rem; font-weight: 900; line-height: 1; color: #FFD700; text-shadow: 0 0 45px rgba(255, 215, 0, 0.85); }
+        .drum-num.pop { animation: numPop 0.78s ease-out; }
+        @keyframes numPop {
+            0% { transform: scale(2.4); opacity: 0; }
+            30% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes batida {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.35) rotate(-8deg); }
+        }
+
+        /* ===== CARDS REVELADOS ===== */
+        .revelado {
+            width: 100%;
+            max-width: 640px;
+            text-align: center;
+            padding: 28px 20px;
+            border-radius: 20px;
+            animation: revelar 0.6s ease-out;
+        }
+        @keyframes revelar {
+            0% { opacity: 0; transform: scale(0.85) translateY(20px); filter: blur(6px); }
+            60% { transform: scale(1.03); }
+            100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        }
+        .revelado .place { font-size: 0.95rem; font-weight: 700; text-transform: uppercase; letter-spacing: 4px; }
+        .revelado .nome { font-size: 2.2rem; font-weight: 800; color: #fff; margin-top: 8px; }
+        .revelado .score { font-size: 1.3rem; font-weight: 700; margin-top: 6px; }
+        .revelado .sub { font-size: 0.85rem; color: #999; margin-top: 4px; }
+        .revelado.p-outros { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .revelado.p-outros .place { color: #bbb; }
+        .revelado.p-outros .score { color: #bbb; }
+        .revelado.p3 { background: linear-gradient(180deg, rgba(205, 127, 50, 0.12), rgba(255, 255, 255, 0.03)); border: 2px solid rgba(205, 127, 50, 0.5); }
+        .revelado.p3 .place { color: #CD7F32; }
+        .revelado.p3 .score { color: #CD7F32; }
+        .revelado.p2 { background: linear-gradient(180deg, rgba(192, 192, 192, 0.14), rgba(255, 255, 255, 0.03)); border: 2px solid rgba(192, 192, 192, 0.5); }
+        .revelado.p2 .place { color: #C0C0C0; }
+        .revelado.p2 .score { color: #C0C0C0; }
+
+        /* ===== CAMPEÃO ===== */
+        .revelado.p1 {
+            background: linear-gradient(180deg, rgba(255, 215, 0, 0.18), rgba(0, 156, 59, 0.1));
+            border: 3px solid rgba(255, 215, 0, 0.7);
+            box-shadow: 0 0 60px rgba(255, 215, 0, 0.35);
+            animation: revelarCampeao 0.9s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        @keyframes revelarCampeao {
+            0% { opacity: 0; transform: scale(0.5) rotate(-4deg); filter: blur(10px); }
+            70% { transform: scale(1.06) rotate(0deg); }
+            100% { opacity: 1; transform: scale(1); filter: blur(0); }
+        }
+        .revelado.p1 .trophy { font-size: 4rem; animation: float 2.2s ease-in-out infinite; margin-bottom: 6px; }
+        .revelado.p1 .place { color: #FFD700; font-size: 1.05rem; }
+        .revelado.p1 .nome { font-size: 3rem; background: linear-gradient(90deg, #fff, #FFD700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .revelado.p1 .score { color: #FFD700; font-size: 1.5rem; }
+        .revelado.p1 .likes-badge { color: #FFD700; font-size: 1.1rem; margin-top: 4px; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* ===== FOTOS ===== */
+        .foto-slot { display: flex; justify-content: center; margin: 0 auto 10px; }
+        .foto-slot.mini { display: inline-flex; margin: 0; vertical-align: middle; }
+        .foto-iniciais {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #009C3B, #0f4d1e);
+            color: #FFDF00;
+            font-weight: 800;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 215, 0, 0.55);
+            flex-shrink: 0;
+        }
+        .foto-wrap {
+            position: relative;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 215, 0, 0.55);
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.06);
+            flex-shrink: 0;
+        }
+        .foto-wrap .foto { display: none; object-fit: cover; }
+        .foto-wrap .foto-iniciais { position: absolute; inset: 0; border: none; border-radius: 50%; }
+
+        /* ===== CONFETES ===== */
+        .confete { position: absolute; top: -10px; width: 10px; height: 10px; opacity: 0.9; animation: cair linear forwards; }
+        @keyframes cair {
+            to { transform: translateY(460px) rotate(720deg); opacity: 0; }
+        }
+
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #0a2e12; color: #fff; padding: 12px 24px; border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9rem; opacity: 0;
+            transition: opacity 0.4s, bottom 0.4s; pointer-events: none; z-index: 999;
+            white-space: nowrap; max-width: 90%;
+        }
+        .toast.show { opacity: 1; bottom: 50px; }
+
+        @media (max-width: 800px) {
+            .layout { grid-template-columns: 1fr; }
+            .col-esquerda, .col-direita { display: none; }
+            .header-titulo h1 { font-size: 1.2rem; }
+            .header-logo img { height: 40px; }
+            .btn-revelar { padding: 10px 16px; font-size: 0.85rem; }
+            .revelado .nome { font-size: 1.7rem; }
+            .revelado.p1 .nome { font-size: 2.2rem; }
+            .drum-num { font-size: 5rem; }
+        }
+    </style>
+</head>
+<body>
+<header class="fixo">
+    <div class="header-logo">
+        <img id="logoShowTime" alt="Logo ShowTime Festival de Vozes" />
+    </div>
+    <div class="header-titulo">
+        <h1>🏆 Resultado Final</h1>
+        <p>ShowTime Festival de Vozes</p>
+    </div>
+    <div class="header-acoes">
+        <button class="btn-revelar" id="btnRevelar" onclick="revelarProximo()">🎲 Apresentar Resultados</button>
+    </div>
+</header>
+
+<div class="layout">
+    <aside class="col col-esquerda"></aside>
+
+    <main class="col col-centro">
+        <div class="status-row">
+            <span class="status-dot" id="statusDot"></span>
+            <span class="conn-text" id="statusText">Conectando...</span>
+        </div>
+        <div id="palco">
+            <div class="suspense-box" id="estadoInicial">
+                <div class="icon">🎬</div>
+                <div class="texto">Os resultados estão prontos...</div>
+                <div class="sub">Clique no botão para revelar, um a um, do 4º lugar até o grande campeão.</div>
+            </div>
+            <div id="revelados" style="width:100%; display:flex; flex-direction:column; gap:12px; align-items:center;"></div>
+            <div id="drumroll">
+                <div class="baquetas">🥁</div>
+                <div class="texto">Drumroll...</div>
+                <div class="drum-num" id="drumNum">3</div>
+                <div class="sub">Contagem para a revelação</div>
+            </div>
+        </div>
+    </main>
+
+    <aside class="col col-direita"></aside>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+    // ============================================================
+    // 🔥 CONFIGURAÇÃO
+    // ============================================================
+    let APP_URL = '';
+    try {
+        APP_URL = (typeof WEB_APP_URL !== 'undefined' && WEB_APP_URL)
+            ? WEB_APP_URL
+            : (window.WEB_APP_URL || 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec');
+    } catch (e) {
+        APP_URL = window.WEB_APP_URL || 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
+    }
+    let LOGO_URL = '';
+    try {
+        LOGO_URL = (typeof URL_DO_LOGO !== 'undefined' && URL_DO_LOGO) ? URL_DO_LOGO
+            : ((typeof LOGO_URL !== 'undefined' && LOGO_URL) ? LOGO_URL
+            : (window.URL_DO_LOGO || window.LOGO_URL || ''));
+    } catch (e) { LOGO_URL = ''; }
+    let AUDIO_DRUM_URL = '';
+    try {
+        AUDIO_DRUM_URL = (typeof DRUM_URL !== 'undefined' && DRUM_URL) ? DRUM_URL : (window.DRUM_URL || '');
+    } catch (e) { AUDIO_DRUM_URL = ''; }
+
+    // ===== LOGO NO CABEÇALHO =====
+    const logoEl = document.getElementById('logoShowTime');
+    if (logoEl) {
+        if (LOGO_URL) {
+            logoEl.src = LOGO_URL;
+            logoEl.onerror = function () { this.style.display = 'none'; };
+        } else {
+            logoEl.style.display = 'none';
+        }
+    }
+
+    // ===== DOM =====
+    let statusDot = document.getElementById('statusDot');
+    let statusText = document.getElementById('statusText');
+    let btnRevelar = document.getElementById('btnRevelar');
+    let reveladosEl = document.getElementById('revelados');
+    let drumroll = document.getElementById('drumroll');
+    let drumNum = document.getElementById('drumNum');
+    let estadoInicial = document.getElementById('estadoInicial');
+    let toastTimer = null;
+
+    // ===== ESTADO DA REVELAÇÃO =====
+    let ranking = [];
+    let demais = [];
+    let sequencia = []; // ordem: 4º+ → 3º → 2º → 1º
+    let indice = 0;
+    let revelacaoIniciada = false;
+
+    // ===== ÁUDIO =====
+    let audioDrum = null;
+    let audioCtx = null;
+
+    function tocarDrumroll() {
+        if (AUDIO_DRUM_URL) {
+            try {
+                if (!audioDrum) {
+                    audioDrum = new Audio(AUDIO_DRUM_URL);
+                    audioDrum.volume = 0.9;
+                }
+                audioDrum.currentTime = 0;
+                const p = audioDrum.play();
+                if (p !== undefined) { p.catch(function () { tocarDrumrollSintetizado(); }); return; }
+                return;
+            } catch (e) { /* usa síntese */ }
+        }
+        tocarDrumrollSintetizado();
+    }
+
+    function tocarDrumrollSintetizado() {
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const t0 = audioCtx.currentTime;
+            for (let i = 0; i < 7; i++) {
+                const t = t0 + 0.16 * i + Math.pow(i, 1.6) * 0.05;
+                const dur = 0.12;
+                const buf = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * dur), audioCtx.sampleRate);
+                const d = buf.getChannelData(0);
+                for (let j = 0; j < d.length; j++) d[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / d.length, 2);
+                const src = audioCtx.createBufferSource();
+                src.buffer = buf;
+                const filtro = audioCtx.createBiquadFilter();
+                filtro.type = 'highpass';
+                filtro.frequency.value = 1400;
+                const g = audioCtx.createGain();
+                g.gain.setValueAtTime(0.6, t);
+                g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+                src.connect(filtro); filtro.connect(g); g.connect(audioCtx.destination);
                 src.start(t);
-                // bumbo (senóide descendo)
                 const osc = audioCtx.createOscillator();
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(140, t);
@@ -10,10 +398,9 @@
                 osc.connect(g2); g2.connect(audioCtx.destination);
                 osc.start(t); osc.stop(t + 0.2);
             }
-        } catch (e) { /* navegador sem suporte a áudio */ }
+        } catch (e) { /* sem suporte a áudio */ }
     }
 
-    // 3) Fanfarra final para o campeão (dó-mi-sol) — WebAudio
     function tocarFanfarra() {
         try {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -60,7 +447,10 @@
         return r.avaliacoes ? (r.total / r.avaliacoes).toFixed(1) : '0.0';
     }
 
-    // Iniciais do nome para o "avatar" de reserva quando não há foto
+    function likesDe(r) {
+        return Number(r.likes) || 0;
+    }
+
     function iniciaisNome(nome) {
         const partes = String(nome || '').trim().split(/\s+/).filter(Boolean);
         if (!partes.length) return '?';
@@ -69,10 +459,11 @@
         return (prim + ult).toUpperCase();
     }
 
-    // Converte links do Google Drive (view/uc/file) para URL direta de imagem
-    function converterLinkImagem(url) {
-        if (!url) return '';
-        url = url.trim();
+    // ===== IMAGENS =====
+    function urlsImagem(url) {
+        const lista = [];
+        if (!url) return lista;
+        url = String(url).trim();
         const mOpen = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
         const mFile = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
         const mUc = url.match(/\/uc\?export=view&id=([a-zA-Z0-9_-]+)/);
@@ -82,40 +473,71 @@
         else if (mFile) id = mFile[1];
         else if (mUc) id = mUc[1];
         else if (mThumb) id = mThumb[1];
-        if (id) return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w400';
-        return url;
+        if (id) {
+            lista.push('https://drive.google.com/thumbnail?id=' + id + '&sz=w400');
+            lista.push('https://lh3.googleusercontent.com/d/' + id + '=w400');
+            lista.push('https://drive.google.com/uc?export=view&id=' + id);
+        }
+        if (url.indexOf('http') === 0) lista.push(url);
+        return lista;
     }
 
-    // ===== FOTO COM FALLBACK SEGURO =====
-    // CORRIGIDO: não depende de querySelector nem de estrutura fixa.
+    function carregarFoto(img, urls, i) {
+        if (i >= urls.length) { mostrarIniciais(img); return; }
+        img.onerror = function () { carregarFoto(img, urls, i + 1); };
+        img.onload = function () {
+            if (!img.naturalWidth) { carregarFoto(img, urls, i + 1); }
+            else { img.style.display = 'block'; }
+        };
+        img.src = urls[i];
+    }
+
     function mostrarIniciais(img) {
         try {
+            img.onerror = null;
+            img.onload = null;
             img.style.display = 'none';
-            const ini = img.nextElementSibling; // div .foto-iniciais logo após o <img>
+            const ini = img.previousElementSibling;
             if (ini) ini.style.display = 'flex';
-        } catch (e) { /* nunca quebra o fluxo da revelação */ }
+        } catch (e) { /* ignora */ }
     }
 
     function fotoHTML(r, tam) {
         const t = tam || 84;
-        const url = converterLinkImagem(r.imagem);
-        const iniciais = `<div class="foto-iniciais" style="width:${t}px;height:${t}px;font-size:${Math.round(t * 0.36)}px;">${esc(iniciaisNome(r.candidato))}</div>`;
-        if (!url) return iniciais;
-        return `<div class="foto-wrap" style="width:${t}px;height:${t}px;">
-            <img class="foto" src="${esc(url)}" alt="Foto de ${esc(r.candidato)}" style="width:${t}px;height:${t}px;" onerror="mostrarIniciais(this)">
-            ${iniciais}
-        </div>`;
+        const ini = document.createElement('div');
+        ini.className = 'foto-iniciais';
+        ini.style.width = t + 'px';
+        ini.style.height = t + 'px';
+        ini.style.fontSize = Math.round(t * 0.36) + 'px';
+        ini.textContent = iniciaisNome(r.candidato);
+        const urls = urlsImagem(r.imagem);
+        if (!urls.length) return ini;
+        const wrap = document.createElement('div');
+        wrap.className = 'foto-wrap';
+        wrap.style.width = t + 'px';
+        wrap.style.height = t + 'px';
+        wrap.appendChild(ini);
+        const img = document.createElement('img');
+        img.className = 'foto';
+        img.alt = 'Foto de ' + (r.candidato || '');
+        img.style.width = t + 'px';
+        img.style.height = t + 'px';
+        wrap.appendChild(img);
+        carregarFoto(img, urls, 0);
+        return wrap;
     }
 
-    // Miniatura para a lista de demais classificados
-    function minifoto(r) {
-        const t = 38;
-        const url = converterLinkImagem(r.imagem);
-        const iniciais = `<div style="display:flex;align-items:center;justify-content:center;width:${t}px;height:${t}px;border-radius:50%;background:linear-gradient(135deg,#009C3B,#0f4d1e);color:#FFDF00;font-weight:800;font-size:13px;border:2px solid rgba(255,215,0,.4);flex-shrink:0;">${esc(iniciaisNome(r.candidato))}</div>`;
-        if (!url) return iniciais;
-        return `<div style="position:relative;width:${t}px;height:${t}px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,215,0,.4);flex-shrink:0;background:rgba(255,255,255,.06);">
-            <img src="${esc(url)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.remove();">
-        </div>`;
+    function preencherFotos(container) {
+        if (!container) return;
+        container.querySelectorAll('.foto-slot').forEach(function (slot) {
+            if (slot.querySelector('.foto-wrap, .foto-iniciais')) return;
+            const r = {
+                candidato: slot.getAttribute('data-nome') || '',
+                imagem: slot.getAttribute('data-img') || ''
+            };
+            const t = Number(slot.getAttribute('data-tam')) || 84;
+            slot.appendChild(fotoHTML(r, t));
+        });
     }
 
     // ===== CARREGA RESULTADO =====
@@ -139,11 +561,20 @@
         }
     }
 
-    // ===== PREPARA A SEQUÊNCIA =====
+    // ===== SEQUÊNCIA DA CERIMÔNIA (4º+ → 3º → 2º → 1º) =====
+    function montarSequencia() {
+        sequencia = [];
+        if (demais.length) sequencia.push({ tipo: 'demais' });
+        if (ranking[2]) sequencia.push({ tipo: 'p3', item: ranking[2] });
+        if (ranking[1]) sequencia.push({ tipo: 'p2', item: ranking[1] });
+        if (ranking[0]) sequencia.push({ tipo: 'p1', item: ranking[0] });
+        indice = 0;
+    }
+
     function prepararRevelacao() {
         revelacaoIniciada = false;
-        etapa = 0;
         demais = ranking.slice(3);
+        montarSequencia();
         if (reveladosEl) reveladosEl.innerHTML = '';
         if (!ranking.length) {
             if (estadoInicial) estadoInicial.innerHTML = '<div class="icon">🎤</div><div class="texto">Ainda não há avaliações lançadas.</div><div class="sub">Assim que os jurados avaliarem, os resultados aparecem aqui.</div>';
@@ -152,64 +583,23 @@
         }
         if (btnRevelar) {
             btnRevelar.style.display = 'inline-block';
-            btnRevelar.classList.remove('final');
             btnRevelar.onclick = revelarProximo;
-            const temSegundo = !!ranking[1];
-            const temTerceiro = !!ranking[2];
-            if (demais.length) {
-                btnRevelar.textContent = demais.length === 1
-                    ? '🎲 Revelar o 4º classificado'
-                    : `🎲 Revelar do 4º ao ${demais.length + 3}º lugar`;
-            } else if (temTerceiro) {
-                btnRevelar.textContent = '🎲 Revelar 3º lugar';
-            } else if (temSegundo) {
-                btnRevelar.textContent = '🥈 Revelar 2º lugar';
-            } else {
-                btnRevelar.textContent = '🏆 Revelar Campeão';
-                btnRevelar.classList.add('final');
-            }
+            atualizarBotaoAposRevelacao();
         }
         if (estadoInicial) estadoInicial.style.display = 'block';
     }
 
-    // ===== PRÓXIMO ALVO DA REVELAÇÃO =====
-    function proximoAlvo() {
-        const campeao = ranking[0];
-        const segundo = ranking[1] || null;
-        const terceiro = ranking[2] || null;
-        if (etapa === 0 && demais.length) return { tipo: 'demais' };
-        if (etapa < 1) etapa = 1;
-        if (etapa === 1 && terceiro) return { tipo: 'p3', item: terceiro };
-        if (etapa < 2) etapa = 2;
-        if (etapa === 2 && segundo) return { tipo: 'p2', item: segundo };
-        if (etapa < 3) etapa = 3;
-        return { tipo: 'p1', item: campeao };
-    }
-
-    function proximaEtapa() {
-        if (etapa === 0 && demais.length) etapa = 1;
-        else if (etapa === 1) etapa = 2;
-        else if (etapa === 2) etapa = 3;
-        else etapa = 4;
-    }
-
-    // ===== REVELA O PRÓXIMO (clique) =====
     function revelarProximo() {
-        if (revelacaoIniciada || !ranking.length) return;
+        if (revelacaoIniciada || indice >= sequencia.length) return;
         revelacaoIniciada = true;
         btnRevelar.disabled = true;
         if (estadoInicial) estadoInicial.style.display = 'none';
-        const alvo = proximoAlvo();
-        if (!alvo) {
-            revelacaoIniciada = false;
-            btnRevelar.disabled = false;
-            return;
-        }
+        const alvo = sequencia[indice];
         tocarDrumroll();
         mostrarDrumroll(function () {
             exibir(alvo);
             if (alvo.tipo === 'p1') tocarFanfarra();
-            proximaEtapa();
+            indice++;
             revelacaoIniciada = false;
             btnRevelar.disabled = false;
             if (alvo.tipo === 'p1') finalizarRevelacao();
@@ -217,7 +607,6 @@
         });
     }
 
-    // ===== CONTAGEM REGRESSIVA 3, 2, 1 =====
     function mostrarDrumroll(callback) {
         drumroll.classList.add('ativo');
         const numeros = [3, 2, 1];
@@ -226,7 +615,7 @@
             if (i < numeros.length) {
                 drumNum.textContent = numeros[i];
                 drumNum.classList.remove('pop');
-                void drumNum.offsetWidth; // reinicia a animação
+                void drumNum.offsetWidth;
                 drumNum.classList.add('pop');
                 i++;
                 setTimeout(passo, 820);
@@ -238,60 +627,72 @@
         passo();
     }
 
-    // ===== ATUALIZA O BOTÃO APÓS CADA REVELAÇÃO =====
+    // ===== ATUALIZA O BOTÃO PARA O PRÓXIMO ALVO =====
     function atualizarBotaoAposRevelacao() {
         if (!btnRevelar) return;
-        if (etapa === 1) {
-            btnRevelar.textContent = '🥉 Revelar 3º lugar';
-        } else if (etapa === 2) {
-            btnRevelar.textContent = '🥈 Revelar 2º lugar';
-        } else if (etapa === 3) {
+        const prox = sequencia[indice];
+        if (!prox) return;
+        if (prox.tipo === 'p1') {
             btnRevelar.textContent = '🏆 Revelar o Grande Campeão';
             btnRevelar.classList.add('final');
+        } else if (prox.tipo === 'p2') {
+            btnRevelar.textContent = '🥈 Revelar 2º lugar';
+            btnRevelar.classList.remove('final');
+        } else if (prox.tipo === 'p3') {
+            btnRevelar.textContent = '🥉 Revelar 3º lugar';
+            btnRevelar.classList.remove('final');
+        } else {
+            btnRevelar.textContent = demais.length === 1
+                ? '🎲 Revelar o 4º classificado'
+                : `🎲 Revelar do 4º ao ${demais.length + 3}º lugar`;
+            btnRevelar.classList.remove('final');
         }
     }
 
-    // ===== EXIBE O CARD REVELADO =====
+    // ===== EXIBE OS CARDS (novo resultado sempre ACIMA) =====
     function exibir(alvo) {
         if (alvo.tipo === 'demais') {
             const itens = demais.map(function (r, i) {
                 return `
                     <div style="display:flex;align-items:center;gap:12px;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,0.06);">
                         <span style="font-weight:800;color:#009C3B;min-width:34px;">${i + 4}º</span>
-                        ${minifoto(r)}
+                        <span class="foto-slot mini" data-nome="${esc(r.candidato)}" data-img="${esc(r.imagem || '')}" data-tam="38"></span>
                         <span style="flex:1;text-align:left;">${esc(r.candidato)}</span>
-                        <span style="color:#4ade80;font-weight:700;">${r.total} pts · média ${mediaDe(r)}</span>
+                        <span style="color:#4ade80;font-weight:700;white-space:nowrap;">${r.total} pts · ⭐ ${likesDe(r)}</span>
                     </div>`;
             }).join('');
-            reveladosEl.innerHTML += `
+            reveladosEl.insertAdjacentHTML('afterbegin', `
                 <div class="revelado p-outros">
                     <div class="place">Demais classificados</div>
                     <div style="margin-top:12px;text-align:left;padding:0 10px;">${itens}</div>
-                </div>`;
+                </div>`);
+            preencherFotos(reveladosEl);
             return;
         }
         if (alvo.tipo === 'p3') {
             const r = alvo.item;
-            reveladosEl.innerHTML += `
+            reveladosEl.insertAdjacentHTML('afterbegin', `
                 <div class="revelado p3">
                     <div class="place">🥉 3º Lugar</div>
-                    ${fotoHTML(r, 90)}
+                    <div class="foto-slot" data-nome="${esc(r.candidato)}" data-img="${esc(r.imagem || '')}" data-tam="90"></div>
                     <div class="nome">${esc(r.candidato)}</div>
-                    <div class="score">${r.total} pts</div>
-                    <div class="sub">${r.avaliacoes} nota(s) · média ${mediaDe(r)}</div>
-                </div>`;
+                    <div class="score">${r.total} pts ⭐ ${likesDe(r)} likes</div>
+                    <div class="sub">${r.avaliacoes} nota(s) lançadas · média ${mediaDe(r)} · total de likes: ${likesDe(r)}</div>
+                </div>`);
+            preencherFotos(reveladosEl);
             return;
         }
         if (alvo.tipo === 'p2') {
             const r = alvo.item;
-            reveladosEl.innerHTML += `
+            reveladosEl.insertAdjacentHTML('afterbegin', `
                 <div class="revelado p2">
                     <div class="place">🥈 2º Lugar</div>
-                    ${fotoHTML(r, 90)}
+                    <div class="foto-slot" data-nome="${esc(r.candidato)}" data-img="${esc(r.imagem || '')}" data-tam="90"></div>
                     <div class="nome">${esc(r.candidato)}</div>
-                    <div class="score">${r.total} pts</div>
-                    <div class="sub">${r.avaliacoes} nota(s) · média ${mediaDe(r)}</div>
-                </div>`;
+                    <div class="score">${r.total} pts ⭐ ${likesDe(r)} likes</div>
+                    <div class="sub">${r.avaliacoes} nota(s) lançadas · média ${mediaDe(r)} · total de likes: ${likesDe(r)}</div>
+                </div>`);
+            preencherFotos(reveladosEl);
             return;
         }
         if (alvo.tipo === 'p1') {
@@ -304,12 +705,14 @@
         reveladosEl.innerHTML = `
             <div class="revelado p1" id="cardCampeao">
                 <div class="trophy">🏆</div>
-                ${fotoHTML(campeao, 150)}
+                <div class="foto-slot" data-nome="${esc(campeao.candidato)}" data-img="${esc(campeao.imagem || '')}" data-tam="150"></div>
                 <div class="place">Grande Campeão ShowTime</div>
                 <div class="nome">${esc(campeao.candidato)}</div>
                 <div class="score">${campeao.total} pontos</div>
-                <div class="sub">${campeao.avaliacoes} nota(s) lançada(s) · média ${mediaDe(campeao)}</div>
+                <div class="likes-badge">⭐ ${likesDe(campeao)} likes</div>
+                <div class="sub">${campeao.avaliacoes} nota(s) lançadas · média ${mediaDe(campeao)} · total de likes: ${likesDe(campeao)}</div>
             </div>`;
+        preencherFotos(reveladosEl);
         lancarConfetes();
     }
 
@@ -331,40 +734,27 @@
         }
     }
 
-    // ===== FIM DA REVELAÇÃO =====
+    // ===== FIM DA REVELAÇÃO / REINICIAR =====
     function finalizarRevelacao() {
         btnRevelar.textContent = '🔄 Reiniciar revelação';
         btnRevelar.classList.remove('final');
-        btnRevelar.onclick = function () {
-            palco.innerHTML = `
-                <div class="suspense-box" id="estadoInicial">
-                    <div class="icon">🎬</div>
-                    <div class="texto">Os resultados estão prontos...</div>
-                    <div class="sub">Clique no botão para revelar, um a um, do 3º lugar até o grande campeão.</div>
-                </div>
-                <div id="revelados" style="width:100%; display:flex; flex-direction:column; gap:12px; align-items:center;"></div>
-                <button class="btn-revelar" id="btnRevelar" onclick="revelarProximo()">🎲 Revelar 3º lugar</button>
-                <div id="drumroll">
-                    <div class="baquetas">🥁</div>
-                    <div class="texto">Drumroll...</div>
-                    <div class="drum-num" id="drumNum">3</div>
-                    <div class="sub">Contagem para a revelação</div>
-                </div>`;
-            btnRevelar = document.getElementById('btnRevelar');
-            reveladosEl = document.getElementById('revelados');
-            estadoInicial = document.getElementById('estadoInicial');
-            drumroll = document.getElementById('drumroll');
-            drumNum = document.getElementById('drumNum');
-            btnRevelar.onclick = revelarProximo;
-            prepararRevelacao();
-        };
+        btnRevelar.onclick = reiniciarRevelacao;
+    }
+
+    function reiniciarRevelacao() {
+        if (reveladosEl) reveladosEl.innerHTML = '';
+        if (estadoInicial) {
+            estadoInicial.style.display = 'block';
+            estadoInicial.innerHTML = '<div class="icon">🎬</div><div class="texto">Os resultados estão prontos...</div><div class="sub">Clique no botão para revelar, um a um, do 4º lugar até o grande campeão.</div>';
+        }
+        prepararRevelacao();
     }
 
     // ===== INICIA =====
     carregarResultado();
-    // Atualiza em segundo plano apenas ANTES de o usuário iniciar a revelação
     setInterval(function () {
-        if (!revelacaoIniciada) carregarResultado();
+        if (revelacaoIniciada || indice > 0) return;
+        carregarResultado();
     }, 15000);
 </script>
 </body>
