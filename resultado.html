@@ -445,8 +445,11 @@
         return div.innerHTML;
     }
 
+    // ===== MÉDIA DAS NOTAS (só dos jurados, sem likes) =====
     function mediaDe(r) {
-        return r.avaliacoes ? (r.total / r.avaliacoes).toFixed(1) : '0.0';
+        const base = (r.notaTotal !== undefined && r.notaTotal !== null) ? r.notaTotal : (r.total || 0);
+        return r.avaliacoes ? (base / r.avaliacoes).toFixed(1) : '0.0';
+    }
     }
 
     function likesDe(r) {
