@@ -1,253 +1,41 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ShowTime - Resultado Final</title>
-    <!-- ===== CONFIG CENTRAL (URL do Web App) ===== -->
-    <script src="config.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #0a2e12, #0f4d1e, #0a2e12);
-            min-height: 100vh;
-            color: #e0e0e0;
-            padding: 24px;
-            overflow-x: hidden;
-        }
-        .container { max-width: 900px; margin: 0 auto; }
-        header { text-align: center; padding: 16px 0 24px; }
-        header h1 {
-            font-size: 2.4rem;
-            background: linear-gradient(90deg, #009C3B, #FFDF00);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        header p { color: #aaa; margin-top: 6px; font-size: 0.95rem; }
-        .status-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 auto 20px; flex-wrap: wrap; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-        .status-dot.online { background: #4ade80; }
-        .status-dot.offline { background: #f87171; }
-        .conn-text { font-size: 0.8rem; color: #888; }
-
-        /* ===== ÁREA CENTRAL DE SUSPENSE ===== */
-        #palco {
-            position: relative;
-            min-height: 320px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-        .suspense-box {
-            text-align: center;
-            padding: 40px 20px;
-            color: #888;
-        }
-        .suspense-box .icon { font-size: 3.5rem; }
-        .suspense-box .texto { font-size: 1.3rem; margin-top: 14px; font-weight: 600; color: #bbb; }
-        .suspense-box .sub { font-size: 0.9rem; margin-top: 6px; color: #777; }
-
-        /* ===== BOTÃO DE REVELAÇÃO ===== */
-        .btn-revelar {
-            display: inline-block;
-            padding: 16px 40px;
-            margin-top: 28px;
-            border: none;
-            border-radius: 50px;
-            font-size: 1.15rem;
-            font-weight: 800;
-            font-family: inherit;
-            cursor: pointer;
-            color: #1a1a2e;
-            background: linear-gradient(90deg, #FFDF00, #FFD700);
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.35);
-            transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
-            animation: pulseBtn 1.6s ease-in-out infinite;
-        }
-        .btn-revelar:hover { transform: scale(1.05); box-shadow: 0 0 45px rgba(255, 215, 0, 0.55); }
-        .btn-revelar:active { transform: scale(0.96); }
-        .btn-revelar:disabled { opacity: 0.5; cursor: wait; animation: none; }
-        .btn-revelar.final { background: linear-gradient(90deg, #009C3B, #00b84a); color: #fff; box-shadow: 0 0 30px rgba(0, 156, 59, 0.4); animation: none; }
-        @keyframes pulseBtn {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.04); }
-        }
-
-        /* ===== DRUMROLL (suspense antes de cada revelação) ===== */
-        #drumroll {
-            position: absolute;
-            inset: 0;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: radial-gradient(circle, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.95));
-            border-radius: 20px;
-            z-index: 20;
-            text-align: center;
-            backdrop-filter: blur(4px);
-        }
-        #drumroll.ativo { display: flex; }
-        #drumroll .baquetas { font-size: 2.6rem; animation: batida 0.5s ease-in-out infinite; }
-        #drumroll .texto {
-            margin-top: 16px;
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #FFD700;
-            text-transform: uppercase;
-            letter-spacing: 6px;
-        }
-        #drumroll .sub { margin-top: 8px; color: #aaa; font-size: 0.95rem; }
-        @keyframes batida {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.35) rotate(-8deg); }
-        }
-
-        /* ===== CARD DE RESULTADO REVELADO ===== */
-        .revelado {
-            width: 100%;
-            max-width: 640px;
-            text-align: center;
-            padding: 28px 20px;
-            border-radius: 20px;
-            animation: revelar 0.6s ease-out;
-            margin-bottom: 12px;
-        }
-        @keyframes revelar {
-            0% { opacity: 0; transform: scale(0.85) translateY(20px); filter: blur(6px); }
-            60% { transform: scale(1.03); }
-            100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
-        }
-        /* Posições reveladas */
-        .revelado .place { font-size: 0.95rem; font-weight: 700; text-transform: uppercase; letter-spacing: 4px; }
-        .revelado .nome { font-size: 2.2rem; font-weight: 800; color: #fff; margin-top: 8px; }
-        .revelado .score { font-size: 1.3rem; font-weight: 700; margin-top: 6px; }
-        .revelado .sub { font-size: 0.85rem; color: #999; margin-top: 4px; }
-        .revelado.p-outros { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .revelado.p-outros .place { color: #bbb; }
-        .revelado.p-outros .score { color: #bbb; }
-        .revelado.p3 { background: linear-gradient(180deg, rgba(205, 127, 50, 0.12), rgba(255, 255, 255, 0.03)); border: 2px solid rgba(205, 127, 50, 0.5); }
-        .revelado.p3 .place { color: #CD7F32; }
-        .revelado.p3 .score { color: #CD7F32; }
-        .revelado.p2 { background: linear-gradient(180deg, rgba(192, 192, 192, 0.14), rgba(255, 255, 255, 0.03)); border: 2px solid rgba(192, 192, 192, 0.5); }
-        .revelado.p2 .place { color: #C0C0C0; }
-        .revelado.p2 .score { color: #C0C0C0; }
-        /* Campeão */
-        .revelado.p1 {
-            background: linear-gradient(180deg, rgba(255, 215, 0, 0.18), rgba(0, 156, 59, 0.1));
-            border: 3px solid rgba(255, 215, 0, 0.7);
-            box-shadow: 0 0 60px rgba(255, 215, 0, 0.35);
-            animation: revelarCampeao 0.9s ease-out;
-            position: relative;
-            overflow: hidden;
-        }
-        @keyframes revelarCampeao {
-            0% { opacity: 0; transform: scale(0.5) rotate(-4deg); filter: blur(10px); }
-            70% { transform: scale(1.06) rotate(0deg); }
-            100% { opacity: 1; transform: scale(1); filter: blur(0); }
-        }
-        .revelado.p1 .trophy { font-size: 4rem; animation: float 2.2s ease-in-out infinite; }
-        .revelado.p1 .place { color: #FFD700; font-size: 1.05rem; }
-        .revelado.p1 .nome { font-size: 3rem; background: linear-gradient(90deg, #fff, #FFD700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .revelado.p1 .score { color: #FFD700; font-size: 1.5rem; }
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        /* Confetes dos campeão (CSS puro) */
-        .confete { position: absolute; top: -10px; width: 10px; height: 10px; opacity: 0.9; animation: cair linear forwards; }
-        @keyframes cair {
-            to { transform: translateY(420px) rotate(720deg); opacity: 0; }
-        }
-
-        /* ===== DEMais JÁ REVELADOS (histórico da revelação) ===== */
-        #historico { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; align-items: center; }
-
-        .toast {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: #0a2e12; color: #fff; padding: 12px 24px; border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9rem; opacity: 0;
-            transition: opacity 0.4s, bottom 0.4s; pointer-events: none; z-index: 999;
-            white-space: nowrap; max-width: 90%;
-        }
-        .toast.show { opacity: 1; bottom: 50px; }
-
-        @media (max-width: 600px) {
-            .revelado .nome { font-size: 1.7rem; }
-            .revelado.p1 .nome { font-size: 2.2rem; }
-            .btn-revelar { width: 100%; }
-        }
-    </style>
-</head>
-<body>
-<div class="container">
-    <header>
-        <h1>🏆 Resultado Final</h1>
-        <p>ShowTime Festival de Vozes</p>
-    </header>
-    <div class="status-row">
-        <span class="status-dot" id="statusDot"></span>
-        <span class="conn-text" id="statusText">Conectando...</span>
-    </div>
-
-    <!-- PALCO DA REVELAÇÃO -->
-    <div id="palco">
-        <!-- Estado inicial -->
-        <div class="suspense-box" id="estadoInicial">
-            <div class="icon">🎬</div>
-            <div class="texto">Os resultados estão prontos...</div>
-            <div class="sub">Clique no botão para revelar, um a um, do 3º lugar até o grande campeão.</div>
-        </div>
-        <!-- Cards revelados ficam aqui -->
-        <div id="revelados" style="width:100%; display:flex; flex-direction:column; gap:10px; align-items:center;"></div>
-        <!-- Botão de revelação -->
-        <button class="btn-revelar" id="btnRevelar" onclick="revelarProximo()">🎲 Revelar 3º lugar</button>
-        <!-- Drumroll de suspense -->
-        <div id="drumroll">
-            <div class="baquetas">🥁</div>
-            <div class="texto">Drumroll...</div>
-            <div class="sub">Preparando a revelação</div>
-        </div>
-    </div>
-
-    <!-- Histórico dos já revelados (fica acima do palco central) -->
-    <div id="historico"></div>
-</div>
-<div class="toast" id="toast"></div>
-<script>
-    // ============================================================
-    // 🔥 CONFIGURAÇÃO DO GOOGLE SHEETS (WEB APP)
-    // ============================================================
-    let APP_URL = '';
-    try {
-        APP_URL = (typeof WEB_APP_URL !== 'undefined' && WEB_APP_URL)
-            ? WEB_APP_URL
-            : (window.WEB_APP_URL || 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec');
-    } catch (e) {
-        APP_URL = window.WEB_APP_URL || 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
+                src.start(t);
+                // bumbo (senóide descendo)
+                const osc = audioCtx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(140, t);
+                osc.frequency.exponentialRampToValueAtTime(45, t + 0.16);
+                const g2 = audioCtx.createGain();
+                g2.gain.setValueAtTime(0.8, t);
+                g2.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+                osc.connect(g2); g2.connect(audioCtx.destination);
+                osc.start(t); osc.stop(t + 0.2);
+            }
+        } catch (e) { /* navegador sem suporte a áudio */ }
     }
-    console.log('[Resultado] config.js carregado:', (typeof WEB_APP_URL !== 'undefined' || !!window.WEB_APP_URL));
-    console.log('[Resultado] APP_URL:', APP_URL);
 
-    const statusDot   = document.getElementById('statusDot');
-    const statusText  = document.getElementById('statusText');
-    const btnRevelar  = document.getElementById('btnRevelar');
-    const palco       = document.getElementById('palco');
-    const reveladosEl = document.getElementById('revelados');
-    const historicoEl = document.getElementById('historico');
-    const drumroll    = document.getElementById('drumroll');
-    const estadoInicial = document.getElementById('estadoInicial');
-    let toastTimer = null;
+    // 3) Fanfarra final para o campeão (dó-mi-sol) — WebAudio
+    function tocarFanfarra() {
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const t0 = audioCtx.currentTime;
+            const notas = [261.63, 329.63, 392.00, 523.25];
+            notas.forEach(function (f, i) {
+                const t = t0 + i * 0.12;
+                const o = audioCtx.createOscillator();
+                o.type = 'triangle';
+                o.frequency.value = f;
+                const g = audioCtx.createGain();
+                g.gain.setValueAtTime(0.0001, t);
+                g.gain.exponentialRampToValueAtTime(0.5, t + 0.04);
+                g.gain.exponentialRampToValueAtTime(0.001, t + 0.9);
+                o.connect(g); g.connect(audioCtx.destination);
+                o.start(t); o.stop(t + 1);
+            });
+        } catch (e) {}
+    }
 
-    // ===== ESTADO DA REVELAÇÃO =====
-    let ranking = [];          // ranking completo vindo do servidor
-    let demais  = [];          // classificados a partir do 4º
-    let etapa   = 0;           // 0=demais, 1=3º, 2=2º, 3=1º (campeão)
-    let revelacaoIniciada = false;
-
+    // ===== HELPERS =====
     function showToast(msg) {
         const el = document.getElementById('toast');
         el.textContent = msg;
@@ -272,6 +60,55 @@
         return r.avaliacoes ? (r.total / r.avaliacoes).toFixed(1) : '0.0';
     }
 
+    // Iniciais do nome para o "avatar" de reserva quando não há foto
+    function iniciaisNome(nome) {
+        const partes = String(nome || '').trim().split(/\s+/).filter(Boolean);
+        if (!partes.length) return '?';
+        const prim = partes[0][0] || '';
+        const ult = partes.length > 1 ? (partes[partes.length - 1][0] || '') : '';
+        return (prim + ult).toUpperCase();
+    }
+
+    // Converte links do Google Drive (view/uc/file) para URL direta de imagem
+    function converterLinkImagem(url) {
+        if (!url) return '';
+        url = url.trim();
+        const mOpen = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        const mFile = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        const mUc = url.match(/\/uc\?export=view&id=([a-zA-Z0-9_-]+)/);
+        const mThumb = url.match(/\/thumbnail\?id=([a-zA-Z0-9_-]+)/);
+        let id = null;
+        if (mOpen) id = mOpen[1];
+        else if (mFile) id = mFile[1];
+        else if (mUc) id = mUc[1];
+        else if (mThumb) id = mThumb[1];
+        if (id) return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w400';
+        return url;
+    }
+
+    // Foto circular do candidato (com iniciais de reserva se a imagem falhar)
+    function fotoHTML(r, tam) {
+        const t = tam || 84;
+        const url = converterLinkImagem(r.imagem);
+        const iniciais = `<div class="foto-iniciais" style="width:${t}px;height:${t}px;font-size:${Math.round(t * 0.36)}px;">${esc(iniciaisNome(r.candidato))}</div>`;
+        if (!url) return iniciais;
+        return `<div class="foto-wrap" style="width:${t}px;height:${t}px;">
+            <img class="foto" src="${esc(url)}" alt="Foto de ${esc(r.candidato)}" style="width:${t}px;height:${t}px;" onerror="this.style.display='none';this.parentNode.querySelector('.foto-iniciais').style.display='flex';">
+            ${iniciais}
+        </div>`;
+    }
+
+    // Miniatura para a lista de demais classificados
+    function minifoto(r) {
+        const t = 38;
+        const url = converterLinkImagem(r.imagem);
+        const iniciais = `<div style="display:flex;align-items:center;justify-content:center;width:${t}px;height:${t}px;border-radius:50%;background:linear-gradient(135deg,#009C3B,#0f4d1e);color:#FFDF00;font-weight:800;font-size:13px;border:2px solid rgba(255,215,0,.4);flex-shrink:0;">${esc(iniciaisNome(r.candidato))}</div>`;
+        if (!url) return iniciais;
+        return `<div style="position:relative;width:${t}px;height:${t}px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,215,0,.4);flex-shrink:0;background:rgba(255,255,255,.06);">
+            <img src="${esc(url)}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.remove();">
+        </div>`;
+    }
+
     // ===== CARREGA RESULTADO =====
     async function carregarResultado() {
         try {
@@ -293,94 +130,51 @@
         }
     }
 
-    // ===== PREPARA A SEQUÊNCIA DE REVELAÇÃO =====
+    // ===== PREPARA A SEQUÊNCIA =====
     function prepararRevelacao() {
         revelacaoIniciada = false;
         etapa = 0;
         demais = ranking.slice(3);
-        reveladosEl.innerHTML = '';
-        historicoEl.innerHTML = '';
-        const haDemais = demais.length > 0;
-        const campeao = ranking[0];
-
-        // Sem nenhuma avaliação
+        if (reveladosEl) reveladosEl.innerHTML = '';
         if (!ranking.length) {
-            estadoInicial.innerHTML = '<div class="icon">🎤</div><div class="texto">Ainda não há avaliações lançadas.</div><div class="sub">Assim que os jurados avaliarem, os resultados aparecem aqui.</div>';
-            btnRevelar.style.display = 'none';
+            if (estadoInicial) estadoInicial.innerHTML = '<div class="icon">🎤</div><div class="texto">Ainda não há avaliações lançadas.</div><div class="sub">Assim que os jurados avaliarem, os resultados aparecem aqui.</div>';
+            if (btnRevelar) btnRevelar.style.display = 'none';
             return;
         }
-        // Só um classificado: já apresenta o campeão direto
-        if (ranking.length === 1) {
-            estadoInicial.style.display = 'none';
-            btnRevelar.textContent = '🏆 Revelar Campeão';
-            btnRevelar.classList.add('final');
-            return;
+        if (btnRevelar) {
+            btnRevelar.style.display = 'inline-block';
+            btnRevelar.classList.remove('final');
+            btnRevelar.onclick = revelarProximo;
+            const temSegundo = !!ranking[1];
+            const temTerceiro = !!ranking[2];
+            if (demais.length) {
+                btnRevelar.textContent = demais.length === 1
+                    ? '🎲 Revelar o 4º classificado'
+                    : `🎲 Revelar do 4º ao ${demais.length + 3}º lugar`;
+            } else if (temTerceiro) {
+                btnRevelar.textContent = '🎲 Revelar 3º lugar';
+            } else if (temSegundo) {
+                btnRevelar.textContent = '🥈 Revelar 2º lugar';
+            } else {
+                btnRevelar.textContent = '🏆 Revelar Campeão';
+                btnRevelar.classList.add('final');
+            }
         }
-
-        estadoInicial.style.display = 'block';
-        btnRevelar.style.display = 'inline-block';
-        btnRevelar.classList.remove('final');
-        // Primeiro passo: demais classificados (se existirem), depois 3º, 2º, 1º
-        if (haDemais) {
-            btnRevelar.textContent = `🎲 Revelar ${demais.length}º ao 4º lugar`;
-        } else {
-            btnRevelar.textContent = '🎲 Revelar 3º lugar';
-        }
+        if (estadoInicial) estadoInicial.style.display = 'block';
     }
 
-    // ===== REVELA O PRÓXIMO (clique) =====
-    function revelarProximo() {
-        if (revelacaoIniciada) return; // trava durante a animação
-        revelacaoIniciada = true;
-        btnRevelar.disabled = true;
-        estadoInicial.style.display = 'none';
-
+    // ===== PRÓXIMO ALVO DA REVELAÇÃO =====
+    function proximoAlvo() {
         const campeao = ranking[0];
         const segundo = ranking[1] || null;
         const terceiro = ranking[2] || null;
-
-        // Se só existia o campeão, revela direto
-        if (ranking.length === 1 && etapa === 0) {
-            exibirCampeao(campeao);
-            finalizarRevelacao();
-            return;
-        }
-
-        // Identifica o que será revelado agora
-        const alvo = (function () {
-            if (etapa === 0 && demais.length) return { tipo: 'demais', qtd: demais.length };
-            if (etapa === 1) return { tipo: 'p3', item: terceiro };
-            if (etapa === 2) return { tipo: 'p2', item: segundo };
-            return { tipo: 'p1', item: campeao };
-        })();
-
-        // Se o alvo não existir (ex.: sem 3º lugar), pula para o próximo
-        if ((alvo.tipo === 'p3' && !terceiro) || (alvo.tipo === 'p2' && !segundo)) {
-            proximaEtapa();
-            revelacaoIniciada = false;
-            btnRevelar.disabled = false;
-            atualizarBotaoAposRevelacao();
-            revelarProximo(); // segue direto para o próximo alvo válido
-            return;
-        }
-
-        // ===== DRUMROLL DE SUSPENSE =====
-        drumroll.classList.add('ativo');
-        drumroll.querySelector('.texto').textContent = 'Drumroll...';
-        setTimeout(() => {
-            drumroll.classList.remove('ativo');
-            exibir(alvo);
-            proximaEtapa();
-            revelacaoIniciada = false;
-            btnRevelar.disabled = false;
-
-            // Depois do campeão, não há mais nada para revelar
-            if (alvo.tipo === 'p1') {
-                finalizarRevelacao();
-            } else {
-                atualizarBotaoAposRevelacao();
-            }
-        }, 1800); // suspense de ~1,8s
+        if (etapa === 0 && demais.length) return { tipo: 'demais' };
+        if (etapa < 1) etapa = 1;
+        if (etapa === 1 && terceiro) return { tipo: 'p3', item: terceiro };
+        if (etapa < 2) etapa = 2;
+        if (etapa === 2 && segundo) return { tipo: 'p2', item: segundo };
+        if (etapa < 3) etapa = 3;
+        return { tipo: 'p1', item: campeao };
     }
 
     function proximaEtapa() {
@@ -390,11 +184,54 @@
         else etapa = 4;
     }
 
-    // ===== ATUALIZA O TEXTO DO BOTÃO APÓS CADA REVELAÇÃO =====
+    // ===== REVELA O PRÓXIMO (clique) =====
+    function revelarProximo() {
+        if (revelacaoIniciada || !ranking.length) return;
+        revelacaoIniciada = true;
+        btnRevelar.disabled = true;
+        if (estadoInicial) estadoInicial.style.display = 'none';
+        const alvo = proximoAlvo();
+        if (!alvo) {
+            revelacaoIniciada = false;
+            btnRevelar.disabled = false;
+            return;
+        }
+        tocarDrumroll();
+        mostrarDrumroll(function () {
+            exibir(alvo);
+            if (alvo.tipo === 'p1') tocarFanfarra();
+            proximaEtapa();
+            revelacaoIniciada = false;
+            btnRevelar.disabled = false;
+            if (alvo.tipo === 'p1') finalizarRevelacao();
+            else atualizarBotaoAposRevelacao();
+        });
+    }
+
+    // ===== CONTAGEM REGRESSIVA 3, 2, 1 =====
+    function mostrarDrumroll(callback) {
+        drumroll.classList.add('ativo');
+        const numeros = [3, 2, 1];
+        let i = 0;
+        function passo() {
+            if (i < numeros.length) {
+                drumNum.textContent = numeros[i];
+                drumNum.classList.remove('pop');
+                void drumNum.offsetWidth; // reinicia a animação
+                drumNum.classList.add('pop');
+                i++;
+                setTimeout(passo, 820);
+            } else {
+                drumroll.classList.remove('ativo');
+                callback();
+            }
+        }
+        passo();
+    }
+
+    // ===== ATUALIZA O BOTÃO APÓS CADA REVELAÇÃO =====
     function atualizarBotaoAposRevelacao() {
-        const campeao = ranking[0];
-        const segundo = ranking[1] || null;
-        const terceiro = ranking[2] || null;
+        if (!btnRevelar) return;
         if (etapa === 1) {
             btnRevelar.textContent = '🥉 Revelar 3º lugar';
         } else if (etapa === 2) {
@@ -407,51 +244,58 @@
 
     // ===== EXIBE O CARD REVELADO =====
     function exibir(alvo) {
-        let html = '';
         if (alvo.tipo === 'demais') {
-            const itens = demais.map((r, i) => `
-                <div style="display:flex;justify-content:space-between;gap:14px;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,0.06);">
-                    <span style="font-weight:800;color:#009C3B;min-width:34px;text-align:left;">${i + 4}º</span>
-                    <span style="flex:1;text-align:left;">${esc(r.candidato)}</span>
-                    <span style="color:#4ade80;font-weight:700;">${r.total} pts · média ${mediaDe(r)}</span>
-                </div>`).join('');
-            html = `
+            const itens = demais.map(function (r, i) {
+                return `
+                    <div style="display:flex;align-items:center;gap:12px;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,0.06);">
+                        <span style="font-weight:800;color:#009C3B;min-width:34px;">${i + 4}º</span>
+                        ${minifoto(r)}
+                        <span style="flex:1;text-align:left;">${esc(r.candidato)}</span>
+                        <span style="color:#4ade80;font-weight:700;">${r.total} pts · média ${mediaDe(r)}</span>
+                    </div>`;
+            }).join('');
+            reveladosEl.innerHTML += `
                 <div class="revelado p-outros">
                     <div class="place">Demais classificados</div>
                     <div style="margin-top:12px;text-align:left;padding:0 10px;">${itens}</div>
                 </div>`;
-        } else if (alvo.tipo === 'p3') {
-            const r = alvo.item;
-            html = `
-                <div class="revelado p3">
-                    <div class="place">🥉 3º Lugar</div>
-                    <div class="nome">${esc(r.candidato)}</div>
-                    <div class="score">${r.total} pts</div>
-                    <div class="sub">${r.avaliacoes} nota(s) · média ${mediaDe(r)}</div>
-                </div>`;
-        } else if (alvo.tipo === 'p2') {
-            const r = alvo.item;
-            html = `
-                <div class="revelado p2">
-                    <div class="place">🥈 2º Lugar</div>
-                    <div class="nome">${esc(r.candidato)}</div>
-                    <div class="score">${r.total} pts</div>
-                    <div class="sub">${r.avaliacoes} nota(s) · média ${mediaDe(r)}</div>
-                </div>`;
-        } else if (alvo.tipo === 'p1') {
-            exibirCampeao(alvo.item);
             return;
         }
-        reveladosEl.innerHTML += html;
+        if (alvo.tipo === 'p3') {
+            const r = alvo.item;
+            reveladosEl.innerHTML += `
+                <div class="revelado p3">
+                    <div class="place">🥉 3º Lugar</div>
+                    ${fotoHTML(r, 90)}
+                    <div class="nome">${esc(r.candidato)}</div>
+                    <div class="score">${r.total} pts</div>
+                    <div class="sub">${r.avaliacoes} nota(s) · média ${mediaDe(r)}</div>
+                </div>`;
+            return;
+        }
+        if (alvo.tipo === 'p2') {
+            const r = alvo.item;
+            reveladosEl.innerHTML += `
+                <div class="revelado p2">
+                    <div class="place">🥈 2º Lugar</div>
+                    ${fotoHTML(r, 90)}
+                    <div class="nome">${esc(r.candidato)}</div>
+                    <div class="score">${r.total} pts</div>
+                    <div class="sub">${r.avaliacoes} nota(s) · média ${mediaDe(r)}</div>
+                </div>`;
+            return;
+        }
+        if (alvo.tipo === 'p1') {
+            exibirCampeao(alvo.item);
+        }
     }
 
     // ===== CAMPEÃO COM CONFETES =====
     function exibirCampeao(campeao) {
-        reveladosEl.innerHTML = '';
-        historicoEl.innerHTML = '';
-        document.getElementById('palco').innerHTML = `
+        reveladosEl.innerHTML = `
             <div class="revelado p1" id="cardCampeao">
                 <div class="trophy">🏆</div>
+                ${fotoHTML(campeao, 150)}
                 <div class="place">Grande Campeão ShowTime</div>
                 <div class="nome">${esc(campeao.candidato)}</div>
                 <div class="score">${campeao.total} pontos</div>
@@ -483,26 +327,34 @@
         btnRevelar.textContent = '🔄 Reiniciar revelação';
         btnRevelar.classList.remove('final');
         btnRevelar.onclick = function () {
-            btnRevelar.onclick = revelarProximo;
-            const el = document.getElementById('palco');
-            el.innerHTML = `
+            palco.innerHTML = `
                 <div class="suspense-box" id="estadoInicial">
                     <div class="icon">🎬</div>
                     <div class="texto">Os resultados estão prontos...</div>
                     <div class="sub">Clique no botão para revelar, um a um, do 3º lugar até o grande campeão.</div>
                 </div>
-                <div id="revelados" style="width:100%; display:flex; flex-direction:column; gap:10px; align-items:center;"></div>
-                <button class="btn-revelar" id="btnRevelar">🎲 Revelar 3º lugar</button>
-                <div id="drumroll"><div class="baquetas">🥁</div><div class="texto">Drumroll...</div><div class="sub">Preparando a revelação</div></div>`;
+                <div id="revelados" style="width:100%; display:flex; flex-direction:column; gap:12px; align-items:center;"></div>
+                <button class="btn-revelar" id="btnRevelar" onclick="revelarProximo()">🎲 Revelar 3º lugar</button>
+                <div id="drumroll">
+                    <div class="baquetas">🥁</div>
+                    <div class="texto">Drumroll...</div>
+                    <div class="drum-num" id="drumNum">3</div>
+                    <div class="sub">Contagem para a revelação</div>
+                </div>`;
+            btnRevelar = document.getElementById('btnRevelar');
+            reveladosEl = document.getElementById('revelados');
+            estadoInicial = document.getElementById('estadoInicial');
+            drumroll = document.getElementById('drumroll');
+            drumNum = document.getElementById('drumNum');
+            btnRevelar.onclick = revelarProximo;
             prepararRevelacao();
         };
     }
 
     // ===== INICIA =====
     carregarResultado();
-    // Atualiza em segundo plano apenas ANTES de o usuário iniciar a revelação,
-    // para não estragar o suspense com um refresh automático no meio da apresentação.
-    setInterval(() => {
+    // Atualiza em segundo plano apenas ANTES de o usuário iniciar a revelação
+    setInterval(function () {
         if (!revelacaoIniciada) carregarResultado();
     }, 15000);
 </script>
