@@ -9,7 +9,7 @@ window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H4
 
 // Opcional: áudio de tambores (local ou remoto)
 // const DRUM_URL = 'https://seusite.com/audio/drumroll.mp3';
-const DRUM_URL = 'https://www.epidemicsound.com/sound-effects/tracks/9857eec6-77d1-4688-89ca-3415cf7d5e9d/';
+const DRUM_URL = 'https://drive.google.com/file/d/1VQcBRgj0mFotT8rwIQrAQwt_PkooR8OL/view?usp=sharing';
 
 // Caminho do logotipo oficial
 // Opção 1: arquivo local na mesma pasta
