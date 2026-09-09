@@ -90,7 +90,8 @@
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.4; transform: scale(0.75); }
         }
-        /* — 3ª PARTE: AÇÃO PRINCIPAL (Desfazer No Palco) — */
+        /* — 3ª PARTE: AÇÕES (Desfazer No Palco + Play) — */
+        .hdr-right .btn { width: 100%; max-width: 220px; text-align: center; }
         .btn {
             padding: 10px 18px; border: none; border-radius: 10px; font-size: 0.9rem;
             font-weight: 600; cursor: pointer; transition: transform 0.15s, opacity 0.2s;
@@ -100,8 +101,8 @@
         .btn:active { transform: scale(0.97); }
         .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
         .btn-undo { background: rgba(255, 223, 0, 0.15); color: #FFDF00; border: 1px solid rgba(255, 223, 0, 0.3); }
+        .btn-play { background: rgba(70, 130, 255, 0.18); color: #6ba3ff; border: 1px solid rgba(70, 130, 255, 0.3); }
         .btn-success { background: rgba(0, 156, 59, 0.18); color: #4ade80; border: 1px solid rgba(0, 156, 59, 0.3); }
-        .btn-link { background: rgba(70, 130, 255, 0.18); color: #6ba3ff; border: 1px solid rgba(70, 130, 255, 0.3); }
         .btn-call-item { background: rgba(255, 223, 0, 0.15); color: #FFDF00; border: 1px solid rgba(255, 223, 0, 0.3); }
 
         /* ===== CANDIDATO NO PALCO (destaque) ===== */
@@ -211,7 +212,7 @@
          CABEÇALHO: 3 PARTES IGUAIS
          1ª) Logo + "Fila de Apresentação" abaixo
          2ª) Online • 🟢 Fila aberta • 🔴 Cantando agora
-         3ª) Botão Desfazer No Palco
+         3ª) Desfazer No Palco + Play (abaixo)
          ============================================================ -->
     <header class="topbar">
         <div class="hdr-col hdr-left">
@@ -231,6 +232,7 @@
         </div>
         <div class="hdr-col hdr-right">
             <button class="btn btn-undo" id="btnUndoHeader" disabled title="Volta o candidato atual para a fila">↩️ Desfazer No Palco</button>
+            <button class="btn btn-play" id="btnPlayHeader" disabled title="Abre o link da música do candidato no palco">▶️ Play</button>
         </div>
     </header>
 
@@ -286,6 +288,7 @@
     const liveBadge     = document.getElementById('liveBadge');
     const liveText      = document.getElementById('liveText');
     const btnUndoHeader = document.getElementById('btnUndoHeader');
+    const btnPlayHeader = document.getElementById('btnPlayHeader');
 
     let toastTimer = null;
     let ultimosCandidatos = [];
@@ -307,19 +310,33 @@
         availPill.innerHTML = online ? '🟢 Fila aberta' : '🔴 Fila fechada';
     }
 
-    // ===== BADGE "CANTANDO AGORA" + BOTÃO DESFAZER =====
+    // ===== BADGE "CANTANDO AGORA" + AÇÕES DO CABEÇALHO =====
     function atualizarEstadoPalco(current) {
         linhaNoPalco = current ? current.linha : null;
         if (current) {
             liveBadge.className = 'live-badge live';
             liveText.textContent = '🔴 Cantando agora';
+
+            // Desfazer No Palco
             btnUndoHeader.disabled = false;
             btnUndoHeader.onclick = function () { desfazerPalco(current.linha); };
+
+            // Play — mesmo efeito do botão Play da fila: abre o link da música
+            const temLink = !!(current.link && String(current.link).trim());
+            btnPlayHeader.disabled = !temLink;
+            btnPlayHeader.title = temLink
+                ? 'Abre o link da música do candidato no palco'
+                : 'Candidato sem link de música cadastrado';
+            btnPlayHeader.onclick = temLink
+                ? function () { window.open(current.link, '_blank', 'noopener'); }
+                : null;
         } else {
             liveBadge.className = 'live-badge wait';
             liveText.textContent = '⏳ Aguardando candidato';
             btnUndoHeader.disabled = true;
             btnUndoHeader.onclick = null;
+            btnPlayHeader.disabled = true;
+            btnPlayHeader.onclick = null;
         }
     }
 
@@ -451,7 +468,7 @@
         const current = noPalco || null;
         const pending = fila.filter(s => s.status !== 'No Palco');
 
-        // Cabeçalho: badge "Cantando agora" + botão Desfazer
+        // Cabeçalho: badge "Cantando agora" + botões Desfazer/Play
         atualizarEstadoPalco(current);
 
         if (current) {
@@ -475,7 +492,7 @@
         queueList.innerHTML = pending.map((s, idx) => {
             const pos = idx + 1;
             const linkHtml = s.link
-                ? `<a href="${esc(s.link)}" target="_blank" rel="noopener" class="btn btn-link">🔗 Ouvir</a>`
+                ? `<a href="${esc(s.link)}" target="_blank" rel="noopener" class="btn btn-play">▶️ Play</a>`
                 : '';
             const apoio = getApoio(s);
             return `
