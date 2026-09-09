@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShowTime Festival de Vozes - Votação</title>
+    <!-- ===== CONFIG CENTRAL (URL do Web App + Logo + Imagens) ===== -->
+    <script src="config.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(140deg, #000000 10%, #009C3B 50%, #000000 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        /* ===== CABEÇALHO: LOGO | TÍTULO | IMAGEM ===== */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 12px 20px 10px;
+            flex-shrink: 0;
+        }
+        .logo { height: 88px; width: auto; object-fit: contain; flex-shrink: 0; }
+        .header-texto { flex: 1; text-align: center; min-width: 0; }
+        .header-texto h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, #FFDF00, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header-texto p { color: #aaa; margin-top: 4px; font-size: 0.9rem; }
+        .header-imagem {
+            height: 88px; width: auto; max-width: 220px; object-fit: contain;
+            border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.15);
+            flex-shrink: 0; background: rgba(255, 255, 255, 0.05);
+            transition: opacity 0.4s ease;
+        }
+        /* ===== TELA DIVIDIDA ===== */
+        .split { display: flex; flex: 1; min-height: 0; gap: 16px; padding: 0 20px 20px; }
+        /* ===== PAINEL ESQUERDO: CANDIDATO + LIKE + FILA ===== */
+        .painel-esquerdo {
+            flex: 1; display: flex; flex-direction: column;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px; padding: 20px; min-width: 0; overflow-y: auto;
+        }
+        .no-palco-label {
+            display: inline-block; font-size: 0.85rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 3px; color: #4ade80;
+            background: rgba(0, 156, 59, 0.15);
+            border: 1px solid rgba(0, 156, 59, 0.35);
+            padding: 4px 14px; border-radius: 20px; width: fit-content; margin-bottom: 10px;
+        }
+        .candidato-linha { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+        .candidato-linha .nome { font-size: 2.4rem; font-weight: 800; color: #fff; line-height: 1.1; }
+        /* ===== BOTÃO DE LIKE (votação) ===== */
+        .btn-like {
+            background: rgba(255, 223, 0, 0.12);
+            border: 2px solid rgba(255, 223, 0, 0.45);
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 3rem;
+            width: 86px; height: 86px;
+            color: #FFD700;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.15s, background 0.2s, color 0.2s;
+            line-height: 1; flex-shrink: 0;
+        }
+        .btn-like:hover { transform: scale(1.12); background: rgba(255, 223, 0, 0.22); }
+        .btn-like:active { transform: scale(0.95); }
+        .btn-like.curtido { background: rgba(255, 223, 0, 0.3); color: #FFD700; border-color: #FFD700; }
+        .btn-like:disabled { cursor: not-allowed; opacity: 0.75; }
+        .like-count { font-size: 2rem; color: #FFD700; font-weight: 800; min-width: 40px; }
+        .like-msg { font-size: 0.85rem; color: #aaa; margin-top: 2px; width: 100%; }
+        .musica-info { margin-top: 10px; }
+        .musica-info .musica { font-size: 1.3rem; color: #4ade80; font-weight: 600; }
+        .musica-info .artista { font-size: 1rem; color: #bbb; font-style: italic; margin-top: 2px; }
+        /* ===== FILA ===== */
+        .fila-titulo {
+            font-size: 1.1rem; color: #aaa; margin: 20px 0 10px;
+            display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+        }
+        .fila-titulo .count {
+            background: rgba(0, 156, 59, 0.2); color: #4ade80;
+            padding: 4px 14px; border-radius: 20px; font-size: 0.9rem;
+        }
+        .fila-item {
+            display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.04); border-radius: 10px; margin-bottom: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .fila-item .pos { font-size: 1.3rem; font-weight: 800; color: #009C3B; min-width: 36px; text-align: center; }
+        .fila-item .info { flex: 1; min-width: 0; }
+        .fila-item .nome { font-size: 1.1rem; font-weight: 600; }
+        .fila-item .musica { font-size: 0.9rem; color: #bbb; }
+        .fila-item .artista { font-size: 0.8rem; color: #888; font-style: italic; }
+        .fila-item .likes { font-size: 0.85rem; color: #FFD700; font-weight: 700; flex-shrink: 0; }
+        .empty { text-align: center; color: #555; font-size: 1.1rem; font-style: italic; padding: 30px 0; }
+        /* ===== PAINEL DIREITO: IMAGEM DO CANDIDATO (SEM VÍDEO) ===== */
+        .painel-direito {
+            flex: 1.4; display: flex; background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 12px; min-width: 0;
+        }
+        .midia-area {
+            position: relative; flex: 1; display: flex; align-items: center; justify-content: center;
+            background: rgba(0, 0, 0, 0.35); border-radius: 12px; overflow: hidden; min-height: 0;
+        }
+        .midia-area img { width: 100%; height: 100%; object-fit: contain; border-radius: 12px; }
+        .midia-area .sem-midia { color: #666; font-size: 1.1rem; text-align: center; padding: 20px; }
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #0a2e12; color: #fff; padding: 12px 24px; border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9rem; opacity: 0;
+            transition: opacity 0.4s, bottom 0.4s; pointer-events: none; z-index: 999;
+            white-space: nowrap; max-width: 90%;
+        }
+        .toast.show { opacity: 1; bottom: 50px; }
+        @media (max-width: 800px) {
+            .split { flex-direction: column; overflow-y: auto; }
+            .painel-direito { min-height: 45vh; }
+            .logo { height: 56px; }
+            .header-imagem { height: 56px; max-width: 140px; }
+            .header-texto h1 { font-size: 1.4rem; }
+            .candidato-linha .nome { font-size: 1.8rem; }
+            .btn-like { font-size: 2.4rem; width: 70px; height: 70px; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <img id="logoShowTime" alt="Logo ShowTime Festival de Vozes" class="logo" />
+    <div class="header-texto">
+        <h1>ShowTime Festival de Vozes</h1>
+        <p>Votação ao vivo — 1 voto por aparelho</p>
+    </div>
+    <img id="imagemLateral" alt="Imagem decorativa" class="header-imagem" />
+</header>
+<div class="split">
+    <!-- ===== COLUNA ESQUERDA: CANDIDATO + LIKE + FILA ===== -->
+    <div class="painel-esquerdo">
+        <div class="no-palco-label" id="noPalcoLabel">🔴 No Palco</div>
+        <div class="candidato-linha">
+            <span class="nome" id="nomeCandidato">—</span>
+            <button class="btn-like" id="btnLike" onclick="darLike()" title="Curtir este candidato">⭐</button>
+            <span class="like-count" id="likeCount">0</span>
+        </div>
+        <div class="like-msg" id="likeMsg">Toque na estrela para curtir</div>
+        <div class="musica-info">
+            <div class="musica" id="musicaCandidato">—</div>
+            <div class="artista" id="artistaCandidato">—</div>
+        </div>
+        <div class="fila-titulo">
+            <span>📋 Próximo Candidato</span>
+            <span class="count" id="filaCount">0</span>
+        </div>
+        <div id="filaLista">
+            <div class="empty">Carregando...</div>
+        </div>
+    </div>
+    <!-- ===== COLUNA DIREITA: IMAGEM DO CANDIDATO (fixa, sem vídeo) ===== -->
+    <div class="painel-direito">
+        <div class="midia-area" id="midiaArea">
+            <div class="sem-midia">Aguardando candidato no palco...</div>
+        </div>
+    </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+    // ============================================================
+    // WEB_APP_URL e LOGO_URL vêm do config.js (carregado no <head>)
+    // ============================================================
+    const midiaArea = document.getElementById('midiaArea');
+    const nomeCandidato = document.getElementById('nomeCandidato');
+    const musicaCandidato = document.getElementById('musicaCandidato');
+    const artistaCandidato = document.getElementById('artistaCandidato');
+    const btnLike = document.getElementById('btnLike');
+    const likeCount = document.getElementById('likeCount');
+    const likeMsg = document.getElementById('likeMsg');
+    const filaLista = document.getElementById('filaLista');
+    const filaCount = document.getElementById('filaCount');
+    let toastTimer = null;
+    let candidatoAtual = null;
+    let jaCurtiu = false;
+    let ultimaLinhaPalco = null;
+
+    // ============================================================
+    // 🛡️ IDENTIDADE DO DISPOSITIVO — 1 LIKE POR APARELHO
+    // (mesmo padrão do st_candidatos: fingerprint + deviceId)
+    // ============================================================
+    const DEVICE_STORAGE_KEY = 'showtime_device_id_v1';
+    function gerarUUID() {
+        if (window.crypto && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = (Math.random() * 16) | 0;
+            const v = c === 'x' ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+        });
+    }
+    function getDeviceId() {
+        try {
+            let id = localStorage.getItem(DEVICE_STORAGE_KEY);
+            if (!id) { id = gerarUUID(); localStorage.setItem(DEVICE_STORAGE_KEY, id); }
+            return id;
+        } catch { return gerarUUID(); }
+    }
+    function hashFingerprint(str) {
+        let h = 0x811c9dc5;
+        for (let i = 0; i < str.length; i++) {
+            h ^= str.charCodeAt(i);
+            h = Math.imul(h, 0x01000193);
+        }
+        return (h >>> 0).toString(36);
+    }
+    function getDeviceFeatures() {
+        const nav = navigator;
+        return [
+            nav.userAgent, nav.language || '', (nav.languages || []).join(','),
+            Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+            screen.width + 'x' + screen.height + 'x' + screen.colorDepth,
+            window.devicePixelRatio || 1, nav.platform || '',
+            nav.hardwareConcurrency || '', nav.deviceMemory || '', nav.maxTouchPoints || 0
+        ].join('|');
+    }
+    function getCanvasFingerprint() {
+        try {
+            const canvas = document.createElement('canvas');
+            canvas.width = 240; canvas.height = 60;
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = 'top'; ctx.font = '14px Arial';
+            ctx.fillStyle = '#f60'; ctx.fillRect(0, 0, 240, 60);
+            ctx.fillStyle = '#fff'; ctx.fillText('ShowTime::voto', 2, 2);
+            return canvas.toDataURL();
+        } catch { return ''; }
+    }
+    function getDeviceFingerprint() {
+        return hashFingerprint(getDeviceFeatures() + '|' + getCanvasFingerprint());
+    }
+    function getLikeKey(linha) {
+        return 'showtime_like_' + getDeviceFingerprint() + '_' + linha;
+    }
+    function verificarLikeLocal(linha) {
+        try { return localStorage.getItem(getLikeKey(linha)) === '1'; } catch { return false; }
+    }
+    function marcarLikeLocal(linha) {
+        try { localStorage.setItem(getLikeKey(linha), '1'); } catch {}
+    }
+
+    // ===== APLICA O LOGO (config.js) =====
+    const logoEl = document.getElementById('logoShowTime');
+    if (logoEl) {
+        logoEl.src = LOGO_URL;
+        logoEl.onerror = function () { this.style.display = 'none'; };
+    }
+
+    // ===== IMAGEM DECORATIVA NO CABEÇALHO (troca por candidato) =====
+    const IMAGENS_PADRAO = [
+        'https://drive.google.com/thumbnail?id=1CmcEvxRKctqdcv3jDwcLQ5-vBRTk-rQK&sz=w400',
+        'https://drive.google.com/thumbnail?id=1D3qVaKSK-QN_CwIbgaZf1nRo6lxPTnNk&sz=w400',
+        'https://drive.google.com/thumbnail?id=11OqzpZ5NhvgmdyD2-7tCYhqc3zr6ZY_-&sz=w400'
+    ];
+    function converterLinkImagem(url) {
+        if (!url) return '';
+        url = url.trim();
+        const mOpen = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        const mFile = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+        const mUc = url.match(/\/uc\?export=view&id=([a-zA-Z0-9_-]+)/);
+        const mThumb = url.match(/\/thumbnail\?id=([a-zA-Z0-9_-]+)/);
+        let id = null;
+        if (mOpen) id = mOpen[1];
+        else if (mFile) id = mFile[1];
+        else if (mUc) id = mUc[1];
+        else if (mThumb) id = mThumb[1];
+        if (id) return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w400';
+        return url;
+    }
+    function escolherImagemLateral() {
+        let fonte = null;
+        if (typeof IMAGEM_LATERAL_URL !== 'undefined' && IMAGEM_LATERAL_URL) fonte = IMAGEM_LATERAL_URL;
+        else if (typeof IMAGENS_LATERAIS !== 'undefined' && Array.isArray(IMAGENS_LATERAIS) && IMAGENS_LATERAIS.length)
+            fonte = IMAGENS_LATERAIS[Math.floor(Math.random() * IMAGENS_LATERAIS.length)];
+        else fonte = IMAGENS_PADRAO[Math.floor(Math.random() * IMAGENS_PADRAO.length)];
+        return converterLinkImagem(fonte);
+    }
+    function aplicarImagemLateral() {
+        const img = document.getElementById('imagemLateral');
+        if (!img) return;
+        img.style.opacity = '0';
+        img.src = escolherImagemLateral();
+        img.onload = function () { this.style.opacity = '1'; };
+        img.onerror = function () { this.style.display = 'none'; };
+    }
+    aplicarImagemLateral();
+
+    function showToast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+    function esc(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // ===== RENDERIZA APENAS A IMAGEM DO CANDIDATO (sem alternar vídeo) =====
+    function renderizarMidia() {
+        if (!candidatoAtual) {
+            midiaArea.innerHTML = '<div class="sem-midia">Aguardando candidato no palco...</div>';
+            return;
+        }
+        const urlImagem = converterLinkImagem(candidatoAtual.linkImagem);
+        if (urlImagem) {
+            midiaArea.innerHTML = `<img src="${esc(urlImagem)}" alt="Foto do candidato" onerror="this.parentNode.innerHTML='<div class=&quot;sem-midia&quot;>Imagem indisponível</div>'">`;
+        } else {
+            midiaArea.innerHTML = '<div class="sem-midia">Sem foto cadastrada</div>';
+        }
+    }
+
+    // ===== ATUALIZA O CANDIDATO NO PALCO =====
+    function atualizarPalco(fila) {
+        const noPalco = fila.find(s => s.status === 'No Palco');
+        candidatoAtual = noPalco || null;
+        const linhaAtual = candidatoAtual ? candidatoAtual.linha : null;
+        if (linhaAtual !== ultimaLinhaPalco) {
+            ultimaLinhaPalco = linhaAtual;
+            if (linhaAtual) aplicarImagemLateral();
+        }
+        if (!candidatoAtual) {
+            midiaArea.innerHTML = '<div class="sem-midia">Aguardando candidato no palco...</div>';
+            nomeCandidato.textContent = '—';
+            musicaCandidato.textContent = '—';
+            artistaCandidato.textContent = '—';
+            likeCount.textContent = '0';
+            likeMsg.textContent = 'Toque na estrela para curtir';
+            btnLike.disabled = true;
+            btnLike.classList.remove('curtido');
+            jaCurtiu = false;
+            return;
+        }
+        const c = candidatoAtual;
+        nomeCandidato.textContent = c.nome;
+        musicaCandidato.textContent = '🎵 ' + (c.musica || '');
+        artistaCandidato.textContent = '🎤 ' + (c.artista || 'Artista');
+        likeCount.textContent = c.likes || 0;
+        jaCurtiu = verificarLikeLocal(c.linha);
+        if (jaCurtiu) {
+            btnLike.classList.add('curtido');
+            btnLike.disabled = true;
+            likeMsg.textContent = 'Este aparelho já curtiu este candidato ⭐';
+        } else {
+            btnLike.classList.remove('curtido');
+            btnLike.disabled = false;
+            likeMsg.textContent = 'Toque na estrela para curtir (1 voto por aparelho)';
+        }
+        renderizarMidia();
+    }
+
+    // ===== ATUALIZA A FILA =====
+    function atualizarFila(fila) {
+        const pending = fila.filter(s => s.status !== 'No Palco');
+        filaCount.textContent = pending.length;
+        if (!pending.length) {
+            filaLista.innerHTML = '<div class="empty">Fila vazia — aguardando inscrições 🎤</div>';
+            return;
+        }
+        filaLista.innerHTML = pending.map((s, idx) => `
+            <div class="fila-item">
+                <div class="pos">${idx + 1}</div>
+                <div class="info">
+                    <div class="nome">${esc(s.nome)}</div>
+                    <div class="musica">🎵 ${esc(s.musica)}</div>
+                    <div class="artista">🎤 ${esc(s.artista || 'Artista')}</div>
+                </div>
+                <div class="likes">⭐ ${s.likes || 0}</div>
+            </div>
+        `).join('');
+    }
+
+    // ===== DAR LIKE (1 voto por aparelho, validado no servidor) =====
+    async function darLike() {
+        if (!candidatoAtual) return;
+        if (jaCurtiu) {
+            showToast('⚠️ Este aparelho já curtiu este candidato.');
+            return;
+        }
+        try {
+            const res = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({
+                    acao: 'like',
+                    linha: candidatoAtual.linha,
+                    deviceId: getDeviceId(),
+                    deviceFingerprint: getDeviceFingerprint()
+                })
+            });
+            const json = await res.json();
+            if (json.ok) {
+                marcarLikeLocal(candidatoAtual.linha);
+                jaCurtiu = true;
+                btnLike.classList.add('curtido');
+                btnLike.disabled = true;
+                likeCount.textContent = json.likes !== undefined ? json.likes : (candidatoAtual.likes + 1);
+                if (json.jaVotou) {
+                    likeMsg.textContent = 'Este aparelho já curtiu este candidato ⭐';
+                    showToast('⭐ Este aparelho já havia curtido este candidato.');
+                } else {
+                    likeMsg.textContent = 'Este aparelho já curtiu este candidato ⭐';
+                    showToast('⭐ Obrigado pelo seu voto!');
+                }
+                carregarDados();
+            } else {
+                showToast('⚠️ ' + (json.erro || 'Erro ao curtir. Tente novamente.'));
+            }
+        } catch (err) {
+            showToast('⚠️ Erro de conexão.');
+        }
+    }
+
+    // ===== CARREGA DADOS =====
+    async function carregarDados() {
+        try {
+            const res = await fetch(WEB_APP_URL);
+            const json = await res.json();
+            if (!json.ok) { showToast('⚠️ Erro ao carregar.'); return; }
+            const fila = json.fila || [];
+            atualizarPalco(fila);
+            atualizarFila(fila);
+        } catch (err) {
+            showToast('⚠️ Erro de conexão.');
+        }
+    }
+
+    // ===== INICIA =====
+    carregarDados();
+    setInterval(carregarDados, 10000);
+</script>
+</body>
+</html>
