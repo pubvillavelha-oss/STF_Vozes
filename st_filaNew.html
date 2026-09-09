@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShowTime Festival de Vozes - Fila de Apresentação</title>
+    <!-- ===== CONFIG CENTRAL (URL do Web App + Logo) ===== -->
+    <script src="config.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a2e12, #0f4d1e, #0a2e12);
+            min-height: 100vh;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* ============================================================
+           CABEÇALHO — 3 PARTES IGUAIS (GRID SIMÉTRICO)
+           Esquerda: Logo + Título | Centro: Status ao vivo | Direita: Ação
+           ============================================================ */
+        .topbar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 colunas iguais */
+            align-items: center;
+            gap: 16px;
+            padding: 14px 20px;
+            flex-shrink: 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.18);
+        }
+        .hdr-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-width: 0;
+        }
+        /* — 1ª PARTE: LOGO + TÍTULO ABAIXO DO LOGO — */
+        .hdr-left .logo {
+            height: 68px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
+        }
+        .hdr-left h1 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-align: center;
+            background: linear-gradient(90deg, #009C3B, #FFDF00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+        /* — 2ª PARTE: STATUS AO VIVO (Online / Fila aberta / Cantando agora) — */
+        .conn-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #aaa;
+            font-weight: 600;
+        }
+        .status-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+        .status-dot.online { background: #4ade80; box-shadow: 0 0 8px rgba(74, 222, 128, 0.7); }
+        .status-dot.offline { background: #f87171; box-shadow: 0 0 8px rgba(248, 113, 113, 0.7); }
+        .avail-pill {
+            display: inline-block; padding: 5px 18px; border-radius: 20px;
+            font-size: 0.85rem; font-weight: 700; letter-spacing: 0.5px;
+        }
+        .avail-pill.open { background: rgba(0, 156, 59, 0.14); color: #4ade80; border: 1px solid rgba(0, 156, 59, 0.25); }
+        .avail-pill.closed { background: rgba(248, 113, 113, 0.14); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); }
+        .live-badge {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 5px 16px; border-radius: 20px;
+            font-size: 0.85rem; font-weight: 700; letter-spacing: 0.5px;
+        }
+        .live-badge.live { background: rgba(255, 60, 60, 0.14); color: #ff9090; border: 1px solid rgba(255, 60, 60, 0.35); }
+        .live-badge.wait { background: rgba(255, 255, 255, 0.06); color: #888; border: 1px solid rgba(255, 255, 255, 0.12); }
+        .badge-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+        .live-badge.live .badge-dot { animation: pulse 1.2s ease-in-out infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.75); }
+        }
+        /* — 3ª PARTE: AÇÃO PRINCIPAL (Desfazer No Palco) — */
+        .btn {
+            padding: 10px 18px; border: none; border-radius: 10px; font-size: 0.9rem;
+            font-weight: 600; cursor: pointer; transition: transform 0.15s, opacity 0.2s;
+            text-decoration: none; display: inline-block;
+        }
+        .btn:hover { transform: scale(1.05); }
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+        .btn-undo { background: rgba(255, 223, 0, 0.15); color: #FFDF00; border: 1px solid rgba(255, 223, 0, 0.3); }
+        .btn-success { background: rgba(0, 156, 59, 0.18); color: #4ade80; border: 1px solid rgba(0, 156, 59, 0.3); }
+        .btn-link { background: rgba(70, 130, 255, 0.18); color: #6ba3ff; border: 1px solid rgba(70, 130, 255, 0.3); }
+        .btn-call-item { background: rgba(255, 223, 0, 0.15); color: #FFDF00; border: 1px solid rgba(255, 223, 0, 0.3); }
+
+        /* ===== CANDIDATO NO PALCO (destaque) ===== */
+        .now-playing {
+            text-align: center; padding: 18px 20px 16px; flex-shrink: 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .now-playing .singer { font-size: 2.4rem; font-weight: 700; color: #fff; line-height: 1.1; }
+        .now-playing .music { font-size: 1.3rem; color: #ccc; margin-top: 2px; }
+        .now-playing .artist { font-size: 1rem; color: #999; font-style: italic; }
+        .now-playing .empty-now { font-size: 1.4rem; color: #555; font-style: italic; padding: 8px 0; }
+        .apoio-line {
+            display: inline-block; margin-top: 10px; padding: 4px 16px; border-radius: 20px;
+            font-size: 0.9rem; font-weight: 700; color: #FFDF00;
+            background: rgba(0, 156, 59, 0.15); border: 1px solid rgba(0, 156, 59, 0.35);
+        }
+
+        /* ===== FILA ===== */
+        .queue-container { flex: 1; overflow-y: auto; padding: 16px 20px 20px; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent; }
+        .queue-container::-webkit-scrollbar { width: 6px; }
+        .queue-container::-webkit-scrollbar-track { background: transparent; }
+        .queue-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 8px; }
+        .queue-title { font-size: 1.1rem; color: #aaa; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .queue-title .count { background: rgba(0, 156, 59, 0.2); color: #4ade80; padding: 4px 16px; border-radius: 20px; font-size: 0.9rem; }
+        .empty-queue { text-align: center; color: #555; font-size: 1.2rem; font-style: italic; padding: 40px 0; }
+        .queue-item {
+            display: flex; align-items: center; gap: 16px; padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.04); border-radius: 12px; margin-bottom: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06); transition: background 0.2s;
+        }
+        .queue-item:hover { background: rgba(255, 255, 255, 0.07); }
+        .item-pos { font-size: 1.6rem; font-weight: 800; color: #009C3B; min-width: 48px; text-align: center; }
+        .item-info { flex: 1; min-width: 0; }
+        .item-name { font-size: 1.3rem; font-weight: 600; }
+        .item-music { font-size: 1rem; color: #bbb; margin-top: 2px; }
+        .item-artist { font-size: 0.85rem; color: #888; font-style: italic; }
+        .item-apoio {
+            display: inline-block; margin-top: 6px; padding: 3px 12px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: 600; color: #FFDF00;
+            background: rgba(0, 156, 59, 0.12); border: 1px solid rgba(0, 156, 59, 0.25);
+        }
+        .item-actions { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
+
+        /* ===== CONTROLES (chamada + voz) ===== */
+        .controles {
+            flex-shrink: 0; padding: 12px 20px; border-top: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.02); display: flex; align-items: center;
+            gap: 14px; flex-wrap: wrap;
+        }
+        .texto-chamada { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px; }
+        .texto-chamada label { font-size: 0.85rem; color: #aaa; white-space: nowrap; }
+        .texto-chamada input {
+            flex: 1; min-width: 150px; padding: 10px 12px; border: none; border-radius: 8px;
+            font-size: 0.9rem; background: rgba(255, 255, 255, 0.9); color: #0a2e12;
+        }
+        .voz-control { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .voz-control label { font-size: 0.85rem; color: #aaa; }
+        .voz-control select {
+            padding: 8px 10px; border: none; border-radius: 8px; font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.9); color: #0a2e12; max-width: 220px;
+        }
+
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .queue-item { animation: fadeSlide 0.3s ease-out; }
+        .now-playing { animation: fadeSlide 0.4s ease-out; }
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #0a2e12; color: #fff; padding: 12px 24px; border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1); font-size: 0.9rem; opacity: 0;
+            transition: opacity 0.4s, bottom 0.4s; pointer-events: none; z-index: 999;
+            white-space: nowrap; max-width: 90%;
+        }
+        .toast.show { opacity: 1; bottom: 50px; }
+
+        /* ===== RESPONSIVIDADE ===== */
+        @media (max-width: 900px) {
+            .topbar { grid-template-columns: 1fr; gap: 10px; }
+            .hdr-center { flex-direction: row; flex-wrap: wrap; }
+        }
+        @media (max-width: 600px) {
+            .hdr-left .logo { height: 52px; }
+            .now-playing .singer { font-size: 1.6rem; }
+            .now-playing .music { font-size: 1rem; }
+            .item-pos { font-size: 1.2rem; min-width: 36px; }
+            .item-name { font-size: 1rem; }
+            .item-music { font-size: 0.85rem; }
+            .queue-item { flex-wrap: wrap; }
+            .item-actions { width: 100%; justify-content: flex-end; }
+            .controles { flex-direction: column; align-items: stretch; }
+        }
+        @media (min-width: 1024px) {
+            .hdr-left h1 { font-size: 1.25rem; }
+            .now-playing .singer { font-size: 3rem; }
+            .now-playing .music { font-size: 1.6rem; }
+            .item-pos { font-size: 2rem; min-width: 60px; }
+            .item-name { font-size: 1.6rem; }
+            .item-music { font-size: 1.2rem; }
+            .item-artist { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- ============================================================
+         CABEÇALHO: 3 PARTES IGUAIS
+         1ª) Logo + "Fila de Apresentação" abaixo
+         2ª) Online • 🟢 Fila aberta • 🔴 Cantando agora
+         3ª) Botão Desfazer No Palco
+         ============================================================ -->
+    <header class="topbar">
+        <div class="hdr-col hdr-left">
+            <img id="logoShowTime" alt="Logo ShowTime Festival de Vozes" class="logo" />
+            <h1>Fila de Apresentação</h1>
+        </div>
+        <div class="hdr-col hdr-center">
+            <div class="conn-row">
+                <span class="status-dot" id="statusDot"></span>
+                <span class="conn-text" id="statusText">Conectando...</span>
+            </div>
+            <span class="avail-pill open" id="availPill">🟢 Fila aberta</span>
+            <div class="live-badge wait" id="liveBadge">
+                <span class="badge-dot"></span>
+                <span id="liveText">Aguardando candidato</span>
+            </div>
+        </div>
+        <div class="hdr-col hdr-right">
+            <button class="btn btn-undo" id="btnUndoHeader" disabled title="Volta o candidato atual para a fila">↩️ Desfazer No Palco</button>
+        </div>
+    </header>
+
+    <!-- ===== CANDIDATO NO PALCO (destaque central) ===== -->
+    <div class="now-playing" id="nowPlaying">
+        <div id="nowContent">
+            <div class="empty-now">Aguardando próximo candidato...</div>
+        </div>
+    </div>
+
+    <!-- ===== FILA DE ESPERA ===== -->
+    <div class="queue-container" id="queueContainer">
+        <div class="queue-title">
+            <span>📋 Próximos da fila</span>
+            <span class="count" id="queueCount">0</span>
+        </div>
+        <div id="queueList">
+            <div class="empty-queue">Carregando...</div>
+        </div>
+    </div>
+
+    <!-- ===== CONTROLES ===== -->
+    <div class="controles">
+        <div class="texto-chamada">
+            <label for="textoChamada">📣 Texto da chamada:</label>
+            <input type="text" id="textoChamada" value="Atenção! Agora é a vez de [nome]!" maxlength="200">
+        </div>
+        <div class="voz-control">
+            <label for="seletorVoz">🗣️ Voz:</label>
+            <select id="seletorVoz"></select>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+<script>
+    // ===== APLICA O LOGO (config.js) =====
+    const logoEl = document.getElementById('logoShowTime');
+    if (logoEl) {
+        logoEl.src = LOGO_URL;
+        logoEl.onerror = function () { this.style.display = 'none'; };
+    }
+
+    // ============================================================
+    // 🔥 CONFIGURAÇÃO DO GOOGLE SHEETS (WEB APP) — WEB_APP_URL do config.js
+    // ============================================================
+    const nowContent    = document.getElementById('nowContent');
+    const queueList     = document.getElementById('queueList');
+    const queueCount    = document.getElementById('queueCount');
+    const statusDot     = document.getElementById('statusDot');
+    const statusText    = document.getElementById('statusText');
+    const availPill     = document.getElementById('availPill');
+    const liveBadge     = document.getElementById('liveBadge');
+    const liveText      = document.getElementById('liveText');
+    const btnUndoHeader = document.getElementById('btnUndoHeader');
+
+    let toastTimer = null;
+    let ultimosCandidatos = [];
+    let linhaNoPalco = null;
+
+    function showToast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    // ===== STATUS DE CONEXÃO + DISPONIBILIDADE =====
+    function setStatus(online) {
+        statusDot.className = 'status-dot ' + (online ? 'online' : 'offline');
+        statusText.textContent = online ? 'Online' : 'Offline';
+        availPill.className = 'avail-pill ' + (online ? 'open' : 'closed');
+        availPill.innerHTML = online ? '🟢 Fila aberta' : '🔴 Fila fechada';
+    }
+
+    // ===== BADGE "CANTANDO AGORA" + BOTÃO DESFAZER =====
+    function atualizarEstadoPalco(current) {
+        linhaNoPalco = current ? current.linha : null;
+        if (current) {
+            liveBadge.className = 'live-badge live';
+            liveText.textContent = '🔴 Cantando agora';
+            btnUndoHeader.disabled = false;
+            btnUndoHeader.onclick = function () { desfazerPalco(current.linha); };
+        } else {
+            liveBadge.className = 'live-badge wait';
+            liveText.textContent = '⏳ Aguardando candidato';
+            btnUndoHeader.disabled = true;
+            btnUndoHeader.onclick = null;
+        }
+    }
+
+    function esc(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    function getApoio(item) {
+        if (!item.apoio) return null;
+        const t = String(item.apoio).trim().toLowerCase();
+        return (t === 'sim' || t === 's') ? 'Com apoio para cantar' : null;
+    }
+
+    // ===== VOZ PARA CHAMAR O CANDIDATO =====
+    const seletorVoz = document.getElementById('seletorVoz');
+    const textoChamada = document.getElementById('textoChamada');
+    let vozEscolhida = null;
+    const temVoz = typeof window.speechSynthesis !== 'undefined' && window.speechSynthesis !== null;
+
+    function carregarVozes() {
+        if (!temVoz) {
+            if (seletorVoz) seletorVoz.innerHTML = '<option value="">Voz não disponível neste navegador</option>';
+            return;
+        }
+        const vozes = window.speechSynthesis.getVoices();
+        const vozesPT = vozes.filter(v => v.lang.toLowerCase().startsWith('pt'));
+        const listaVozes = vozesPT.length > 0 ? vozesPT : vozes;
+        if (!seletorVoz) return;
+        seletorVoz.innerHTML = '';
+        if (listaVozes.length === 0) {
+            seletorVoz.innerHTML = '<option value="">Voz padrão do sistema</option>';
+            return;
+        }
+        listaVozes.forEach(voz => {
+            const opcao = document.createElement('option');
+            opcao.value = voz.name;
+            opcao.textContent = voz.name + ' (' + voz.lang + ')';
+            seletorVoz.appendChild(opcao);
+        });
+        const vozBR = vozes.find(v => v.lang === 'pt-BR');
+        if (vozBR) seletorVoz.value = vozBR.name;
+    }
+    if (temVoz) window.speechSynthesis.onvoiceschanged = carregarVozes;
+    if (seletorVoz) {
+        seletorVoz.addEventListener('change', function () {
+            vozEscolhida = seletorVoz.value || null;
+        });
+    }
+
+    function falar(texto) {
+        if (!temVoz) return;
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(texto);
+        utterance.lang = 'pt-BR';
+        utterance.rate = 1;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+        const vozes = window.speechSynthesis.getVoices();
+        if (vozEscolhida) {
+            const voz = vozes.find(v => v.name === vozEscolhida);
+            if (voz) utterance.voice = voz;
+        } else {
+            const vozBR = vozes.find(v => v.lang === 'pt-BR');
+            if (vozBR) utterance.voice = vozBR;
+        }
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // ===== CHAMAR CANDIDATO (só fala — não avança a fila) =====
+    function chamarCandidato(linha) {
+        const candidato = ultimosCandidatos.find(s => s.linha === linha);
+        if (!candidato) { showToast('⚠️ Candidato não encontrado.'); return; }
+        let texto = (textoChamada && textoChamada.value) ? textoChamada.value.trim() : '';
+        if (!texto) texto = 'Atenção! Agora é a vez de [nome]!';
+        texto = texto.replace(/\[nome\]/gi, candidato.nome);
+        falar(texto);
+        showToast('🎤 Chamando ' + candidato.nome + ' para o palco!');
+    }
+
+    // ===== MARCAR COMO NO PALCO (atualiza a planilha) =====
+    async function marcarPalco(linha) {
+        const candidato = ultimosCandidatos.find(s => s.linha === linha);
+        try {
+            const res = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ acao: 'palco', linha: linha })
+            });
+            const json = await res.json();
+            if (json.ok) {
+                showToast('✅ ' + (candidato ? candidato.nome : 'Candidato(a)') + ' no palco!');
+                carregarFila();
+            } else {
+                showToast('⚠️ Erro ao atualizar. Tente novamente.');
+            }
+        } catch (err) {
+            showToast('⚠️ Erro de conexão. Tente novamente.');
+        }
+    }
+
+    // ===== DESFAZER NO PALCO (volta o candidato para a fila) =====
+    async function desfazerPalco(linha) {
+        const candidato = ultimosCandidatos.find(s => s.linha === linha);
+        try {
+            const res = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ acao: 'desfazerPalco', linha: linha })
+            });
+            const json = await res.json();
+            if (json.ok) {
+                showToast('↩️ ' + (candidato ? candidato.nome : 'Candidato(a)') + ' voltou para a fila.');
+                carregarFila();
+            } else {
+                showToast('⚠️ Erro ao desfazer. Tente novamente.');
+            }
+        } catch (err) {
+            showToast('⚠️ Erro de conexão. Tente novamente.');
+        }
+    }
+
+    // ===== RENDER =====
+    function render(fila) {
+        ultimosCandidatos = fila;
+        const noPalco = fila.find(s => s.status === 'No Palco');
+        const current = noPalco || null;
+        const pending = fila.filter(s => s.status !== 'No Palco');
+
+        // Cabeçalho: badge "Cantando agora" + botão Desfazer
+        atualizarEstadoPalco(current);
+
+        if (current) {
+            const apoio = getApoio(current);
+            nowContent.innerHTML = `
+                <div class="singer">${esc(current.nome)}</div>
+                <div class="music">🎵 ${esc(current.musica)}</div>
+                <div class="artist">🎤 ${esc(current.artista || 'Artista')}</div>
+                ${apoio ? `<div class="apoio-line">🤝 ${esc(apoio)}</div>` : ''}
+            `;
+        } else {
+            nowContent.innerHTML = `<div class="empty-now">Aguardando próximo candidato...</div>`;
+        }
+
+        if (pending.length === 0) {
+            queueList.innerHTML = `<div class="empty-queue">Fila vazia — aguardando inscrições 🎤</div>`;
+            queueCount.textContent = '0';
+            return;
+        }
+
+        queueList.innerHTML = pending.map((s, idx) => {
+            const pos = idx + 1;
+            const linkHtml = s.link
+                ? `<a href="${esc(s.link)}" target="_blank" rel="noopener" class="btn btn-link">🔗 Ouvir</a>`
+                : '';
+            const apoio = getApoio(s);
+            return `
+                <div class="queue-item">
+                    <div class="item-pos">${pos}</div>
+                    <div class="item-info">
+                        <div class="item-name">${esc(s.nome)}</div>
+                        <div class="item-music">🎵 ${esc(s.musica)}</div>
+                        <div class="item-artist">🎤 ${esc(s.artista || 'Artista')}</div>
+                        ${apoio ? `<div class="item-apoio">🤝 ${esc(apoio)}</div>` : ''}
+                    </div>
+                    <div class="item-actions">
+                        ${linkHtml}
+                        <button class="btn btn-call-item" onclick="chamarCandidato(${s.linha})">🎤 Chamar</button>
+                        <button class="btn btn-success" onclick="marcarPalco(${s.linha})">✔ No Palco</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        queueCount.textContent = String(pending.length);
+    }
+
+    // ===== CARREGA A FILA =====
+    async function carregarFila() {
+        try {
+            const res = await fetch(WEB_APP_URL);
+            const json = await res.json();
+            if (!json.ok) { showToast('⚠️ Erro ao carregar a fila.'); setStatus(false); return; }
+            render(json.fila || []);
+            setStatus(true);
+        } catch (err) {
+            setStatus(false);
+            showToast('⚠️ Erro de conexão. Tentando novamente...');
+        }
+    }
+
+    // ===== INICIA =====
+    carregarFila();
+    setInterval(carregarFila, 10000);
+    try { carregarVozes(); } catch (e) { console.error('Erro ao carregar vozes (ignorado):', e); }
+</script>
+</body>
+</html>
