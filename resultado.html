@@ -9,7 +9,8 @@
     <!-- config.js deve definir:
          const WEB_APP_URL = 'https://script.google.com/macros/s/.../exec';
          const URL_DO_LOGO = 'https://.../logo.png';
-         const DRUM_URL   = 'https://.../drumroll.mp3'; (opcional) -->
+         const DRUM_URL   = 'https://.../drumroll.mp3'; (opcional)
+         const DRUM_DURACAO = 12; (opcional — segundos do som para sincronizar a revelação) -->
     <script src="config.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -340,12 +341,20 @@
     // ===== ÁUDIO =====
     let audioDrum = null;
     let audioCtx = null;
+    let drumDuracao = 3; // segundos do drumroll (ajustado automaticamente pela duração do MP3)
+
     function tocarDrumroll() {
         if (audioDrumUrl) {
             try {
                 if (!audioDrum) {
                     audioDrum = new Audio(audioDrumUrl);
                     audioDrum.volume = 0.9;
+                    // Captura a duração real do arquivo assim que o navegador ler o MP3
+                    audioDrum.addEventListener('loadedmetadata', function () {
+                        if (audioDrum && audioDrum.duration && isFinite(audioDrum.duration)) {
+                            drumDuracao = audioDrum.duration;
+                        }
+                    });
                 }
                 audioDrum.currentTime = 0;
                 const p = audioDrum.play();
@@ -582,9 +591,24 @@
             else atualizarBotaoAposRevelacao();
         });
     }
+    // ===== DRUMROLL: CONTAGEM DISTRIBUÍDA PELA DURAÇÃO DO SOM =====
     function mostrarDrumroll(callback) {
         drumroll.classList.add('ativo');
         const numeros = [3, 2, 1];
+
+        // Prioridade da duração:
+        // 1) DRUM_DURACAO definido no config.js (mais confiável)
+        // 2) Duração real do áudio (detectada via loadedmetadata)
+        // 3) Padrão: 3 segundos
+        let alvo = drumDuracao;
+        try {
+            if (typeof DRUM_DURACAO !== 'undefined' && DRUM_DURACAO) {
+                alvo = Number(DRUM_DURACAO) || drumDuracao;
+            }
+        } catch (e) {}
+
+        // Cada número (3, 2, 1) ocupa 1/3 da duração total do som
+        const passoMs = Math.max(350, Math.round((alvo * 1000) / numeros.length));
         let i = 0;
         function passo() {
             if (i < numeros.length) {
@@ -593,10 +617,10 @@
                 void drumNum.offsetWidth;
                 drumNum.classList.add('pop');
                 i++;
-                setTimeout(passo, 820);
+                setTimeout(passo, passoMs);
             } else {
                 drumroll.classList.remove('ativo');
-                callback();
+                callback(); // revela o candidato exatamente quando o som termina
             }
         }
         passo();
