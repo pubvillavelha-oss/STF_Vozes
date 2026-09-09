@@ -21,7 +21,6 @@
             padding: 96px 16px 24px;
             overflow-x: hidden;
         }
-
         /* ===== CABEÇALHO FIXO ===== */
         header.fixo {
             position: fixed;
@@ -50,7 +49,6 @@
         }
         .header-titulo p { color: #aaa; font-size: 0.8rem; }
         .header-acoes { flex-shrink: 0; }
-
         /* ===== BOTÃO DE APRESENTAÇÃO ===== */
         .btn-revelar {
             display: inline-block;
@@ -76,7 +74,6 @@
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.04); }
         }
-
         /* ===== LAYOUT 3 COLUNAS (meio = 70%) ===== */
         .layout {
             display: grid;
@@ -98,13 +95,11 @@
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.07);
         }
-
         .status-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 auto 14px; flex-wrap: wrap; }
         .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
         .status-dot.online { background: #4ade80; }
         .status-dot.offline { background: #f87171; }
         .conn-text { font-size: 0.8rem; color: #888; }
-
         /* ===== PALCO ===== */
         #palco {
             position: relative;
@@ -120,7 +115,6 @@
         .suspense-box .icon { font-size: 3.5rem; }
         .suspense-box .texto { font-size: 1.3rem; margin-top: 14px; font-weight: 600; color: #bbb; }
         .suspense-box .sub { font-size: 0.9rem; margin-top: 6px; color: #777; }
-
         /* ===== DRUMROLL + CONTAGEM ===== */
         #drumroll {
             position: absolute; inset: 0;
@@ -149,7 +143,6 @@
             0%, 100% { transform: scale(1) rotate(0deg); }
             50% { transform: scale(1.35) rotate(-8deg); }
         }
-
         /* ===== CARDS REVELADOS ===== */
         .revelado {
             width: 100%;
@@ -177,7 +170,6 @@
         .revelado.p2 { background: linear-gradient(180deg, rgba(192, 192, 192, 0.14), rgba(255, 255, 255, 0.03)); border: 2px solid rgba(192, 192, 192, 0.5); }
         .revelado.p2 .place { color: #C0C0C0; }
         .revelado.p2 .score { color: #C0C0C0; }
-
         /* ===== CAMPEÃO ===== */
         .revelado.p1 {
             background: linear-gradient(180deg, rgba(255, 215, 0, 0.18), rgba(0, 156, 59, 0.1));
@@ -201,7 +193,6 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
         }
-
         /* ===== FOTOS ===== */
         .foto-slot { display: flex; justify-content: center; margin: 0 auto 10px; }
         .foto-slot.mini { display: inline-flex; margin: 0; vertical-align: middle; }
@@ -226,13 +217,11 @@
         }
         .foto-wrap .foto { display: none; object-fit: cover; }
         .foto-wrap .foto-iniciais { position: absolute; inset: 0; border: none; border-radius: 50%; }
-
         /* ===== CONFETES ===== */
         .confete { position: absolute; top: -10px; width: 10px; height: 10px; opacity: 0.9; animation: cair linear forwards; }
         @keyframes cair {
             to { transform: translateY(460px) rotate(720deg); opacity: 0; }
         }
-
         .toast {
             position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
             background: #0a2e12; color: #fff; padding: 12px 24px; border-radius: 12px;
@@ -241,7 +230,6 @@
             white-space: nowrap; max-width: 90%;
         }
         .toast.show { opacity: 1; bottom: 50px; }
-
         @media (max-width: 800px) {
             .layout { grid-template-columns: 1fr; }
             .col-esquerda, .col-direita { display: none; }
@@ -267,10 +255,8 @@
         <button class="btn-revelar" id="btnRevelar" onclick="revelarProximo()">🎲 Apresentar Resultados</button>
     </div>
 </header>
-
 <div class="layout">
     <aside class="col col-esquerda"></aside>
-
     <main class="col col-centro">
         <div class="status-row">
             <span class="status-dot" id="statusDot"></span>
@@ -291,39 +277,43 @@
             </div>
         </div>
     </main>
-
     <aside class="col col-direita"></aside>
 </div>
-
 <div class="toast" id="toast"></div>
 <script>
     // ============================================================
     // 🔥 CONFIGURAÇÃO
+    // ------------------------------------------------------------
+    // CORREÇÃO: variáveis locais renomeadas (appUrl, logoUrl,
+    // audioDrumUrl) para NÃO colidirem com os globais do config.js
+    // (WEB_APP_URL, LOGO_URL, URL_DO_LOGO, DRUM_URL).
+    // Redeclarar um nome global com let/const gera SyntaxError
+    // e derruba o script inteiro.
     // ============================================================
-    let APP_URL = '';
+    let appUrl = '';
     try {
-        APP_URL = (typeof WEB_APP_URL !== 'undefined' && WEB_APP_URL)
+        appUrl = (typeof WEB_APP_URL !== 'undefined' && WEB_APP_URL)
             ? WEB_APP_URL
             : (window.WEB_APP_URL || 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec');
     } catch (e) {
-        APP_URL = window.WEB_APP_URL || 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
+        appUrl = window.WEB_APP_URL || 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
     }
-    let LOGO_URL = '';
+    let logoUrl = '';
     try {
-        LOGO_URL = (typeof URL_DO_LOGO !== 'undefined' && URL_DO_LOGO) ? URL_DO_LOGO
-            : ((typeof LOGO_URL !== 'undefined' && LOGO_URL) ? LOGO_URL
-            : (window.URL_DO_LOGO || window.LOGO_URL || ''));
-    } catch (e) { LOGO_URL = ''; }
-    let AUDIO_DRUM_URL = '';
+        logoUrl = (typeof LOGO_URL !== 'undefined' && LOGO_URL) ? LOGO_URL
+            : ((typeof URL_DO_LOGO !== 'undefined' && URL_DO_LOGO) ? URL_DO_LOGO
+            : (window.LOGO_URL || window.URL_DO_LOGO || ''));
+    } catch (e) { logoUrl = ''; }
+    let audioDrumUrl = '';
     try {
-        AUDIO_DRUM_URL = (typeof DRUM_URL !== 'undefined' && DRUM_URL) ? DRUM_URL : (window.DRUM_URL || '');
-    } catch (e) { AUDIO_DRUM_URL = ''; }
+        audioDrumUrl = (typeof DRUM_URL !== 'undefined' && DRUM_URL) ? DRUM_URL : (window.DRUM_URL || '');
+    } catch (e) { audioDrumUrl = ''; }
 
     // ===== LOGO NO CABEÇALHO =====
     const logoEl = document.getElementById('logoShowTime');
     if (logoEl) {
-        if (LOGO_URL) {
-            logoEl.src = LOGO_URL;
+        if (logoUrl) {
+            logoEl.src = logoUrl;
             logoEl.onerror = function () { this.style.display = 'none'; };
         } else {
             logoEl.style.display = 'none';
@@ -350,12 +340,11 @@
     // ===== ÁUDIO =====
     let audioDrum = null;
     let audioCtx = null;
-
     function tocarDrumroll() {
-        if (AUDIO_DRUM_URL) {
+        if (audioDrumUrl) {
             try {
                 if (!audioDrum) {
-                    audioDrum = new Audio(AUDIO_DRUM_URL);
+                    audioDrum = new Audio(audioDrumUrl);
                     audioDrum.volume = 0.9;
                 }
                 audioDrum.currentTime = 0;
@@ -366,7 +355,6 @@
         }
         tocarDrumrollSintetizado();
     }
-
     function tocarDrumrollSintetizado() {
         try {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -400,7 +388,6 @@
             }
         } catch (e) { /* sem suporte a áudio */ }
     }
-
     function tocarFanfarra() {
         try {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -430,27 +417,22 @@
         clearTimeout(toastTimer);
         toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
     }
-
     function setStatus(online) {
         statusDot.className = 'status-dot ' + (online ? 'online' : 'offline');
         statusText.textContent = online ? 'Online' : 'Offline';
     }
-
     function esc(str) {
         if (!str) return '';
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
     }
-
     function mediaDe(r) {
         return r.avaliacoes ? (r.total / r.avaliacoes).toFixed(1) : '0.0';
     }
-
     function likesDe(r) {
         return Number(r.likes) || 0;
     }
-
     function iniciaisNome(nome) {
         const partes = String(nome || '').trim().split(/\s+/).filter(Boolean);
         if (!partes.length) return '?';
@@ -481,7 +463,6 @@
         if (url.indexOf('http') === 0) lista.push(url);
         return lista;
     }
-
     function carregarFoto(img, urls, i) {
         if (i >= urls.length) { mostrarIniciais(img); return; }
         img.onerror = function () { carregarFoto(img, urls, i + 1); };
@@ -491,7 +472,6 @@
         };
         img.src = urls[i];
     }
-
     function mostrarIniciais(img) {
         try {
             img.onerror = null;
@@ -501,7 +481,6 @@
             if (ini) ini.style.display = 'flex';
         } catch (e) { /* ignora */ }
     }
-
     function fotoHTML(r, tam) {
         const t = tam || 84;
         const ini = document.createElement('div');
@@ -526,7 +505,6 @@
         carregarFoto(img, urls, 0);
         return wrap;
     }
-
     function preencherFotos(container) {
         if (!container) return;
         container.querySelectorAll('.foto-slot').forEach(function (slot) {
@@ -543,12 +521,12 @@
     // ===== CARREGA RESULTADO =====
     async function carregarResultado() {
         try {
-            if (!APP_URL) {
+            if (!appUrl) {
                 showToast('⚠️ config.js não carregou ou WEB_APP_URL não definida.');
                 setStatus(false);
                 return;
             }
-            const res = await fetch(APP_URL + '?acao=ranking');
+            const res = await fetch(appUrl + '?acao=ranking');
             const json = await res.json();
             if (!json.ok) { showToast('⚠️ Erro ao carregar resultado.'); setStatus(false); return; }
             ranking = json.ranking || [];
@@ -570,7 +548,6 @@
         if (ranking[0]) sequencia.push({ tipo: 'p1', item: ranking[0] });
         indice = 0;
     }
-
     function prepararRevelacao() {
         revelacaoIniciada = false;
         demais = ranking.slice(3);
@@ -588,7 +565,6 @@
         }
         if (estadoInicial) estadoInicial.style.display = 'block';
     }
-
     function revelarProximo() {
         if (revelacaoIniciada || indice >= sequencia.length) return;
         revelacaoIniciada = true;
@@ -606,7 +582,6 @@
             else atualizarBotaoAposRevelacao();
         });
     }
-
     function mostrarDrumroll(callback) {
         drumroll.classList.add('ativo');
         const numeros = [3, 2, 1];
@@ -715,7 +690,6 @@
         preencherFotos(reveladosEl);
         lancarConfetes();
     }
-
     function lancarConfetes() {
         const card = document.getElementById('cardCampeao');
         if (!card) return;
@@ -740,7 +714,6 @@
         btnRevelar.classList.remove('final');
         btnRevelar.onclick = reiniciarRevelacao;
     }
-
     function reiniciarRevelacao() {
         if (reveladosEl) reveladosEl.innerHTML = '';
         if (estadoInicial) {
