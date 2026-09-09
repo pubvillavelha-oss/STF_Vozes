@@ -11,6 +11,8 @@ window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H4
 // const DRUM_URL = 'https://seusite.com/audio/drumroll.mp3';
 const DRUM_URL = 'https://raw.githubusercontent.com/PUBVILLAVELHA-OSS/STF_Vozes/main/Suspense.mp3';
 
+const DRUM_DURACAO = 5; // ← substitua pela duração exata do seu suspense.mp3
+
 // Caminho do logotipo oficial
 // Opção 1: arquivo local na mesma pasta
 const LOGO_URL = 'https://raw.githubusercontent.com/PUBVILLAVELHA-OSS/STF_Vozes/main/LG_STFV.png';
