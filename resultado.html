@@ -450,8 +450,15 @@
         return (prim + ult).toUpperCase();
     }
 
-    // ===== IMAGENS =====
-    function urlsImagem(url) {
+    // ============================================================
+    // 📸 IMAGENS — ALTA RESOLUÇÃO PARA O TELÃO
+    // ------------------------------------------------------------
+    // A resolução da thumbnail é escolhida pelo tamanho exibido:
+    //   - mini (lista 48px)        → w400
+    //   - pódio (3º/2º, 120px)     → w800
+    //   - campeão (200px)          → w1600
+    // ============================================================
+    function urlsImagem(url, tamanho) {
         const lista = [];
         if (!url) return lista;
         url = String(url).trim();
@@ -464,9 +471,10 @@
         else if (mFile) id = mFile[1];
         else if (mUc) id = mUc[1];
         else if (mThumb) id = mThumb[1];
+        const sz = tamanho || 1600;
         if (id) {
-            lista.push('https://drive.google.com/thumbnail?id=' + id + '&sz=w400');
-            lista.push('https://lh3.googleusercontent.com/d/' + id + '=w400');
+            lista.push('https://drive.google.com/thumbnail?id=' + id + '&sz=w' + sz);
+            lista.push('https://lh3.googleusercontent.com/d/' + id + '=w' + sz);
             lista.push('https://drive.google.com/uc?export=view&id=' + id);
         }
         if (url.indexOf('http') === 0) lista.push(url);
@@ -519,13 +527,15 @@
     }
     function fotoHTML(r, tam) {
         const t = tam || 84;
+        // Resolução da foto conforme o tamanho exibido (nitidez no telão)
+        const tamanhoUrl = t >= 120 ? 1600 : (t >= 70 ? 800 : 400);
         const ini = document.createElement('div');
         ini.className = 'foto-iniciais';
         ini.style.width = t + 'px';
         ini.style.height = t + 'px';
         ini.style.fontSize = Math.round(t * 0.36) + 'px';
         ini.textContent = iniciaisNome(r.candidato);
-        const urls = urlsImagem(r.imagem);
+        const urls = urlsImagem(r.imagem, tamanhoUrl);
         if (!urls.length) return ini;
         const wrap = document.createElement('div');
         wrap.className = 'foto-wrap';
@@ -682,7 +692,7 @@
                 return `
                     <div style="display:flex;align-items:center;gap:12px;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,0.06);">
                         <span style="font-weight:800;color:#009C3B;min-width:34px;">${i + 4}º</span>
-                        <span class="foto-slot mini" data-nome="${esc(r.candidato)}" data-img="${esc(r.imagem || '')}" data-tam="38"></span>
+                        <span class="foto-slot mini" data-nome="${esc(r.candidato)}" data-img="${esc(r.imagem || '')}" data-tam="48"></span>
                         <span style="flex:1;text-align:left;">${esc(r.candidato)}</span>
                         <span style="color:#4ade80;font-weight:700;white-space:nowrap;">${r.total} pts · ⭐ ${likesDe(r)}</span>
                     </div>`;
@@ -700,7 +710,7 @@
             reveladosEl.insertAdjacentHTML('afterbegin', `
                 <div class="revelado p3">
                     <div class="place">🥉 3º Lugar</div>
-                    <div class="foto-slot" data-nome="${esc(r.candidato)}" data-img="${esc(r.imagem || '')}" data-tam="90"></div>
+                    <div class="foto-slot" data-nome="${esc(r.candidato)}" data-img="${esc(r.imagem || '')}" data-tam="120"></div>
                     <div class="nome">${esc(r.candidato)}</div>
                     <div class="score">${r.total} pts ⭐ ${likesDe(r)} likes</div>
                     <div class="sub">${r.avaliacoes} nota(s) lançadas · média ${mediaDe(r)} · total de likes: ${likesDe(r)}</div>
@@ -713,7 +723,7 @@
             reveladosEl.insertAdjacentHTML('afterbegin', `
                 <div class="revelado p2">
                     <div class="place">🥈 2º Lugar</div>
-                    <div class="foto-slot" data-nome="${esc(r.candidato)}" data-img="${esc(r.imagem || '')}" data-tam="90"></div>
+                    <div class="foto-slot" data-nome="${esc(r.candidato)}" data-img="${esc(r.imagem || '')}" data-tam="120"></div>
                     <div class="nome">${esc(r.candidato)}</div>
                     <div class="score">${r.total} pts ⭐ ${likesDe(r)} likes</div>
                     <div class="sub">${r.avaliacoes} nota(s) lançadas · média ${mediaDe(r)} · total de likes: ${likesDe(r)}</div>
@@ -731,7 +741,7 @@
         reveladosEl.innerHTML = `
             <div class="revelado p1" id="cardCampeao">
                 <div class="trophy">🏆</div>
-                <div class="foto-slot" data-nome="${esc(campeao.candidato)}" data-img="${esc(campeao.imagem || '')}" data-tam="150"></div>
+                <div class="foto-slot" data-nome="${esc(campeao.candidato)}" data-img="${esc(campeao.imagem || '')}" data-tam="200"></div>
                 <div class="place">Grande Campeão ShowTime</div>
                 <div class="nome">${esc(campeao.candidato)}</div>
                 <div class="score">${campeao.total} pontos</div>
