@@ -9,7 +9,7 @@ window.WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H4
 
 // Opcional: áudio de tambores (local ou remoto)
 // const DRUM_URL = 'https://seusite.com/audio/drumroll.mp3';
-const DRUM_URL = 'https://drive.google.com/uc?export=download&id=1VQcBRgj0mFotT8rwIQrAQwt_PkooR8OL';
+const DRUM_URL = 'https://raw.githubusercontent.com/PUBVILLAVELHA-OSS/STF_Vozes/main/suspense.mp3';
 
 // Caminho do logotipo oficial
 // Opção 1: arquivo local na mesma pasta
