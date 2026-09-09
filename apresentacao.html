@@ -5,23 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ShowTime Festival de Vozes - Apresentação</title>
     <!-- ===== CONFIG CENTRAL (URL do Web App + Logo + Imagens) ===== -->
-    <!-- Se o config.js não carregar, o HTML usa as imagens  embutidas abaixo -->
+    <!-- Se o config.js não carregar, o HTML usa as imagens embutidas abaixo -->
     <script src="config.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: linear-gradient(140deg, #000000 10%, #009C3B 50%, #000000 100%);
-    min-height: 100vh;
-    color: #e0e0e0;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
-}
-
-
-
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(140deg, #000000 10%, #009C3B 50%, #000000 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
         /* ===== CABEÇALHO EM 3 PARTES: LOGO | TEXTO | IMAGEM ===== */
         header {
             display: flex;
@@ -301,7 +298,7 @@ body {
             <span class="modo-atual" id="modoAtual">Modo: <b>Imagem</b></span>
         </div>
         <div class="fila-titulo">
-            <span> Próximo Candidato </span>
+            <span>📋 Próximo Candidato</span>
             <span class="count" id="filaCount">0</span>
         </div>
         <div id="filaLista">
@@ -338,12 +335,14 @@ body {
     let ultimaLinhaMidia = null; // linha do candidato com mídia renderizada
     let ultimoModoMidia = null;  // modo renderizado (imagem ou vídeo)
     let ultimaLinhaPalco = null; // 🖼️ controla a troca da imagem lateral por candidato
+
     // ===== APLICA O LOGO (config.js) =====
     const logoEl = document.getElementById('logoShowTime');
     if (logoEl) {
         logoEl.src = LOGO_URL;
         logoEl.onerror = function () { this.style.display = 'none'; };
     }
+
     // ============================================================
     // 🖼️ IMAGEM NO CANTO SUPERIOR DIREITO — VERSÃO ROBUSTA
     // ------------------------------------------------------------
@@ -360,8 +359,16 @@ body {
         'https://drive.google.com/thumbnail?id=1D3qVaKSK-QN_CwIbgaZf1nRo6lxPTnNk&sz=w400',
         'https://drive.google.com/thumbnail?id=11OqzpZ5NhvgmdyD2-7tCYhqc3zr6ZY_-&sz=w400'
     ];
+
+    // ============================================================
+    // 🔎 CONVERSÃO DE LINK DO GOOGLE DRIVE PARA IMAGEM DIRETA
+    // ------------------------------------------------------------
+    // tamanho (px de largura via Google thumbnail):
+    //   - 1600 → foto principal do candidato (quadro grande, nítido)
+    //   - 400  → imagem decorativa do cabeçalho (pequena)
+    // ============================================================
     // Converte QUALQUER link do Google Drive (view/uc/file) para URL direta de imagem
-    function converterLinkImagem(url) {
+    function converterLinkImagem(url, tamanho) {
         if (!url) return '';
         url = url.trim();
         const mOpen = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
@@ -373,11 +380,13 @@ body {
         else if (mFile) id = mFile[1];
         else if (mUc) id = mUc[1];
         else if (mThumb) id = mThumb[1];
+        const sz = tamanho || 1600;
         if (id) {
-            return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w400';
+            return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w' + sz;
         }
         return url;
     }
+
     function escolherImagemLateral() {
         let fonte = null;
         if (typeof IMAGEM_LATERAL_URL !== 'undefined' && IMAGEM_LATERAL_URL) {
@@ -387,9 +396,10 @@ body {
         } else {
             fonte = IMAGENS_PADRAO[Math.floor(Math.random() * IMAGENS_PADRAO.length)];
         }
-        // Converte links do Google Drive (view/uc/file) para URL direta de imagem
-        return converterLinkImagem(fonte);
+        // Imagem decorativa do cabeçalho mantém resolução leve (400px)
+        return converterLinkImagem(fonte, 400);
     }
+
     function aplicarImagemLateral() {
         const img = document.getElementById('imagemLateral');
         if (!img) return;
@@ -399,6 +409,7 @@ body {
         img.onerror = function () { this.style.display = 'none'; };
     }
     aplicarImagemLateral(); // primeira imagem ao abrir a tela
+
     function showToast(msg) {
         const el = document.getElementById('toast');
         el.textContent = msg;
@@ -406,12 +417,14 @@ body {
         clearTimeout(toastTimer);
         toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
     }
+
     function esc(str) {
         if (!str) return '';
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
     }
+
     // ===== EXTRAI O ID DO YOUTUBE (vários formatos) =====
     function extrairIdYouTube(url) {
         if (!url) return null;
@@ -429,6 +442,7 @@ body {
         }
         return null;
     }
+
     // ===== CONVERTE LINK DO YOUTUBE/DRIVE PARA URL REPRODUZÍVEL =====
     function converterLinkVideo(url) {
         if (!url) return '';
@@ -445,15 +459,18 @@ body {
         }
         return url;
     }
+
     // ===== VERIFICA SE ESTE ACESSO JÁ CURTIU =====
     function verificarLikeLocal(linha) {
         try {
             return localStorage.getItem('showtime_like_' + linha) === '1';
         } catch { return false; }
     }
+
     function marcarLikeLocal(linha) {
         try { localStorage.setItem('showtime_like_' + linha, '1'); } catch {}
     }
+
     // ===== RENDERIZA A MÍDIA (imagem ou vídeo) =====
     function renderizarMidia() {
         if (!candidatoAtual) {
@@ -483,7 +500,8 @@ body {
                 midiaArea.innerHTML = `<video src="${esc(urlVideo)}" controls autoplay></video>`;
             }
         } else {
-            const urlImagem = converterLinkImagem(c.linkImagem);
+            // 🔎 Foto principal em ALTÍSSIMA resolução (1600px) para o telão
+            const urlImagem = converterLinkImagem(c.linkImagem, 1600);
             if (urlImagem) {
                 midiaArea.innerHTML = `<img src="${esc(urlImagem)}" alt="Foto do candidato" onerror="this.parentNode.innerHTML='<div class=&quot;sem-midia&quot;>Imagem indisponível</div>'">`;
             } else {
@@ -493,6 +511,7 @@ body {
         ultimaLinhaMidia = candidatoAtual.linha;
         ultimoModoMidia = modoVideo;
     }
+
     // ===== ATUALIZA O CANDIDATO NO PALCO =====
     function atualizarPalco(fila) {
         const noPalco = fila.find(s => s.status === 'No Palco');
@@ -524,8 +543,8 @@ body {
         }
         const c = candidatoAtual;
         nomeCandidato.textContent = c.nome;
-        musicaCandidato.textContent =  (c.musica || '');
-        // artistaCandidato.textContent =  (c.artista || 'Artista');
+        musicaCandidato.textContent = '🎵 ' + (c.musica || '');
+        // artistaCandidato.textContent = '🎤 ' + (c.artista || 'Artista');
         likeCount.textContent = c.likes || 0;
         jaCurtiu = verificarLikeLocal(c.linha);
         if (jaCurtiu) {
@@ -549,6 +568,7 @@ body {
             renderizarMidia();
         }
     }
+
     // ===== ALTERNA IMAGEM / VÍDEO =====
     function alternarMidia() {
         if (!candidatoAtual) return;
@@ -570,6 +590,7 @@ body {
         }
         renderizarMidia();
     }
+
     // ===== ATUALIZA A FILA =====
     function atualizarFila(fila) {
         const pending = fila.filter(s => s.status !== 'No Palco');
@@ -583,13 +604,14 @@ body {
                 <div class="pos">${idx + 1}</div>
                 <div class="info">
                     <div class="nome">${esc(s.nome)}</div>
-                    <div class="musica">${esc(s.musica)}</div>
-                    <div class="artista">${esc(s.artista || 'Artista')}</div>
+                    <div class="musica">🎵 ${esc(s.musica)}</div>
+                    <div class="artista">🎤 ${esc(s.artista || 'Artista')}</div>
                 </div>
                 <div class="likes">⭐ ${s.likes || 0}</div>
             </div>
         `).join('');
     }
+
     // ===== DAR LIKE (apenas um por acesso) =====
     async function darLike() {
         if (!candidatoAtual) return;
@@ -620,6 +642,7 @@ body {
             showToast('⚠️ Erro de conexão.');
         }
     }
+
     // ===== CARREGA DADOS =====
     async function carregarDados() {
         try {
@@ -633,6 +656,7 @@ body {
             showToast('⚠️ Erro de conexão.');
         }
     }
+
     // ===== INICIA =====
     carregarDados();
     setInterval(carregarDados, 10000);
