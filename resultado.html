@@ -472,14 +472,36 @@
         if (url.indexOf('http') === 0) lista.push(url);
         return lista;
     }
+
+    // ===== CARREGA A FOTO COM LOG E TIMEOUT =====
+    // Tenta cada URL da lista em sequência. Registra no console o que
+    // acontece (sucesso ou falha) e pula URLs que não respondem em 8s.
     function carregarFoto(img, urls, i) {
         if (i >= urls.length) { mostrarIniciais(img); return; }
-        img.onerror = function () { carregarFoto(img, urls, i + 1); };
+        let carregou = false;
+        function tentarProxima() {
+            if (carregou) return;
+            carregarFoto(img, urls, i + 1);
+        }
+        img.onerror = function () {
+            console.warn('[Foto] URL falhou (' + i + '):', urls[i]);
+            tentarProxima();
+        };
         img.onload = function () {
-            if (!img.naturalWidth) { carregarFoto(img, urls, i + 1); }
-            else { img.style.display = 'block'; }
+            if (!img.naturalWidth) {
+                console.warn('[Foto] URL retornou sem imagem (' + i + '):', urls[i]);
+                tentarProxima();
+            } else {
+                carregou = true;
+                img.style.display = 'block';
+                console.log('[Foto] carregada com sucesso:', urls[i]);
+            }
         };
         img.src = urls[i];
+        // Se a URL não responder em 8s, pula para a próxima
+        setTimeout(function () {
+            if (!carregou && !img.complete) tentarProxima();
+        }, 8000);
     }
     function mostrarIniciais(img) {
         try {
@@ -705,7 +727,7 @@
             <div class="revelado p1" id="cardCampeao">
                 <div class="trophy">🏆</div>
                 <div class="foto-slot" data-nome="${esc(campeao.candidato)}" data-img="${esc(campeao.imagem || '')}" data-tam="150"></div>
-                <div class="place">Vencedor do ShowTime 2026</div>
+                <div class="place">Grande Campeão ShowTime</div>
                 <div class="nome">${esc(campeao.candidato)}</div>
                 <div class="score">${campeao.total} pontos</div>
                 <div class="likes-badge">⭐ ${likesDe(campeao)} likes</div>
