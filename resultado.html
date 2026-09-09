@@ -260,7 +260,7 @@
         <img id="logoShowTime" alt="Logo ShowTime Festival de Vozes" />
     </div>
     <div class="header-titulo">
-        <h1>🏆 Resultado Final</h1>
+        <h1>Resultado Final</h1>
         <p>ShowTime Festival de Vozes</p>
     </div>
     <div class="header-acoes">
@@ -280,7 +280,7 @@
             <div class="suspense-box" id="estadoInicial">
                 <div class="icon">🎬</div>
                 <div class="texto">Os resultados estão prontos...</div>
-                <div class="sub">Clique no botão para revelar, um a um, do 4º lugar até o grande campeão.</div>
+                <div class="sub">Clique no botão para revelar, um a um, do 4º lugar até o vencedor.</div>
             </div>
             <div id="revelados" style="width:100%; display:flex; flex-direction:column; gap:12px; align-items:center;"></div>
             <div id="drumroll">
@@ -308,14 +308,12 @@
     } catch (e) {
         APP_URL = window.WEB_APP_URL || 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
     }
-    // Lê o logo do config.js SEM redeclarar a variável (evita conflito
-    // com o const LOGO_URL já declarado no config.js).
-    let logoUrl = '';
+    let LOGO_URL = '';
     try {
-        logoUrl = (typeof URL_DO_LOGO !== 'undefined' && URL_DO_LOGO) ? URL_DO_LOGO
+        LOGO_URL = (typeof URL_DO_LOGO !== 'undefined' && URL_DO_LOGO) ? URL_DO_LOGO
             : ((typeof LOGO_URL !== 'undefined' && LOGO_URL) ? LOGO_URL
             : (window.URL_DO_LOGO || window.LOGO_URL || ''));
-    } catch (e) { logoUrl = ''; }
+    } catch (e) { LOGO_URL = ''; }
     let AUDIO_DRUM_URL = '';
     try {
         AUDIO_DRUM_URL = (typeof DRUM_URL !== 'undefined' && DRUM_URL) ? DRUM_URL : (window.DRUM_URL || '');
@@ -324,8 +322,8 @@
     // ===== LOGO NO CABEÇALHO =====
     const logoEl = document.getElementById('logoShowTime');
     if (logoEl) {
-        if (logoUrl) {
-            logoEl.src = logoUrl;
+        if (LOGO_URL) {
+            logoEl.src = LOGO_URL;
             logoEl.onerror = function () { this.style.display = 'none'; };
         } else {
             logoEl.style.display = 'none';
@@ -445,11 +443,8 @@
         return div.innerHTML;
     }
 
-    // ===== MÉDIA DAS NOTAS (só dos jurados, sem likes) =====
     function mediaDe(r) {
-        const base = (r.notaTotal !== undefined && r.notaTotal !== null) ? r.notaTotal : (r.total || 0);
-        return r.avaliacoes ? (base / r.avaliacoes).toFixed(1) : '0.0';
-    }
+        return r.avaliacoes ? (r.total / r.avaliacoes).toFixed(1) : '0.0';
     }
 
     function likesDe(r) {
@@ -638,13 +633,13 @@
         const prox = sequencia[indice];
         if (!prox) return;
         if (prox.tipo === 'p1') {
-            btnRevelar.textContent = '🏆 Revelar o Grande Campeão';
+            btnRevelar.textContent = 'Apresentar o Vencedor';
             btnRevelar.classList.add('final');
         } else if (prox.tipo === 'p2') {
-            btnRevelar.textContent = '🥈 Revelar 2º lugar';
+            btnRevelar.textContent = 'Revelar 2º lugar';
             btnRevelar.classList.remove('final');
         } else if (prox.tipo === 'p3') {
-            btnRevelar.textContent = '🥉 Revelar 3º lugar';
+            btnRevelar.textContent = 'Revelar 3º lugar';
             btnRevelar.classList.remove('final');
         } else {
             btnRevelar.textContent = demais.length === 1
