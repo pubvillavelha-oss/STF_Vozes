@@ -206,7 +206,7 @@
     let toastTimer = null;
     let quesitos = [];
     let notas = {};
-    let dicas = []; // registros da aba Dicas: { jurado, candidato, perguntas, quesito }
+    let dicas = []; // registros da aba Dicas: { jurado, candidato, perguntas, quesito, quesitos }
     function showToast(msg) {
         const el = document.getElementById('toast');
         el.textContent = msg;
@@ -284,12 +284,12 @@
         }
     }
     // ============================================================
-    // 📋 DICAS DA ABA DICAS (Code.gs v5 — GET padrão devolve `dicas`)
-    // Cada dica: { jurado, candidato, perguntas, quesito }
+    // 📋 DICAS DA ABA DICAS (Code.gs v6 — endpoint leve ?acao=dicas)
+    // Cada dica: { jurado, candidato, perguntas, quesito, quesitos:[...] }
     // ============================================================
     async function carregarDicas() {
         try {
-            const res = await fetch(WEB_APP_URL);
+            const res = await fetch(WEB_APP_URL + '?acao=dicas');
             const json = await res.json();
             if (!json.ok) return;
             dicas = json.dicas || [];
@@ -307,8 +307,9 @@
         if (!alvo) return [];
         const candidatoSel = normalizarTexto(selectCandidato.value);
         return (dicas || []).filter(function (d) {
-            const campos = String(d.quesito || '')
-                .split(',').map(normalizarTexto).filter(Boolean);
+            const campos = (d.quesitos && d.quesitos.length)
+                ? d.quesitos.map(normalizarTexto)
+                : String(d.quesito || '').split(',').map(normalizarTexto).filter(Boolean);
             if (!campos.includes(alvo)) return false;
             if (candidatoSel && normalizarTexto(d.candidato) !== candidatoSel) return false;
             return true;
@@ -434,7 +435,7 @@
     carregarQuesitos();
     carregarDicas();
     setInterval(carregarCandidatos, 10000); // atualiza quando o operador marcar novo No Palco
-    setInterval(carregarDicas, 30000);      // mantém as dicas atualizadas
+    setInterval(carregarDicas, 30000);      // polling leve: só as dicas (?acao=dicas)
 </script>
 </body>
 </html>
