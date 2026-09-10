@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- ===== NOME VISÍVEL: ShowTime Festival de Vozes | PROJETO INTERNO: STFVozes ===== -->
+    <title>ShowTime Festival de Vozes - Acesso</title>
+    <!-- ===== CONFIG CENTRAL (URL do Web App + Logo) ===== -->
+    <script src="config.js"></script>
+    <!-- ===== FIREBASE SDKs (Auth + Firestore) ===== -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a2e12, #0f4d1e, #0a2e12);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 24px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+
+        /* ===== TELAS CHEIAS (loading / login) ===== */
+        .tela-cheia {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0a2e12, #0f4d1e, #0a2e12);
+            z-index: 100;
+            padding: 20px;
+        }
+        .loading-text { font-size: 1.1rem; color: #aaa; }
+
+        /* ===== CARD DE LOGIN ===== */
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 32px 28px;
+            text-align: center;
+        }
+        .login-card .logo-login {
+            height: 110px;
+            width: auto;
+            object-fit: contain;
+            margin-bottom: 8px;
+        }
+        .login-card h1 {
+            font-size: 1.4rem;
+            background: linear-gradient(90deg, #009C3B, #FFDF00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+        .login-card .sub { color: #999; font-size: 0.9rem; margin-bottom: 22px; }
+        .form-group { margin-bottom: 14px; text-align: left; }
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #ccc;
+            margin-bottom: 4px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.35);
+            color: #fff;
+            font-size: 1rem;
+            transition: border 0.2s;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #009C3B;
+            box-shadow: 0 0 0 3px rgba(0, 156, 59, 0.2);
+        }
+        .form-group input::placeholder { color: #777; }
+        .msg-erro {
+            display: none;
+            background: rgba(255, 70, 70, 0.1);
+            border: 1px solid rgba(255, 70, 70, 0.25);
+            color: #ff8a8a;
+            font-size: 0.85rem;
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-bottom: 14px;
+            text-align: left;
+        }
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.2s;
+            background: linear-gradient(90deg, #009C3B, #00b84a);
+            color: #fff;
+        }
+        .btn:hover { transform: scale(1.02); }
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .divisor {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #777;
+            font-size: 0.8rem;
+            margin: 18px 0;
+        }
+        .divisor::before, .divisor::after { content: ''; flex: 1; height: 1px; background: rgba(255, 255, 255, 0.12); }
+        .btn-google {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 10px;
+            background: transparent;
+            color: #e0e0e0;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+        }
+        .btn-google:hover { background: rgba(255, 255, 255, 0.08); transform: scale(1.02); }
+        .btn-google:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .link-modo {
+            margin-top: 18px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        .link-modo a { color: #4ade80; cursor: pointer; text-decoration: none; font-weight: 600; }
+        .link-modo a:hover { text-decoration: underline; }
+        .login-note { margin-top: 16px; font-size: 0.75rem; color: #666; line-height: 1.4; }
+
+        /* ===== MENU ===== */
+        header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 0 28px;
+            position: relative;
+        }
+        .logo { height: 140px; width: auto; object-fit: contain; }
+        .user-area {
+            position: absolute;
+            top: 8px;
+            right: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+        .user-area .user-nome { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .btn-sair {
+            padding: 6px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 8px;
+            background: transparent;
+            color: #e0e0e0;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-sair:hover { background: rgba(255, 70, 70, 0.15); border-color: rgba(255, 70, 70, 0.4); }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+        }
+        .menu-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 10px;
+            padding: 24px 16px;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            text-decoration: none;
+            color: #e0e0e0;
+            transition: transform 0.2s, border-color 0.2s, background 0.2s;
+        }
+        .menu-card:hover {
+            transform: scale(1.03);
+            border-color: rgba(0, 156, 59, 0.6);
+            background: rgba(0, 156, 59, 0.1);
+        }
+        .menu-card .icon { font-size: 2.4rem; }
+        .menu-card .titulo { font-size: 1.1rem; font-weight: 700; color: #fff; }
+        .menu-card .desc { font-size: 0.85rem; color: #999; line-height: 1.4; }
+        .menu-card .tag {
+            font-size: 0.75rem;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .tag.operador { background: rgba(255, 223, 0, 0.12); color: #FFDF00; border: 1px solid rgba(255, 223, 0, 0.3); }
+        .tag.jurado { background: rgba(0, 156, 59, 0.15); color: #4ade80; border: 1px solid rgba(0, 156, 59, 0.3); }
+        .tag.publico { background: rgba(70, 130, 255, 0.15); color: #6ba3ff; border: 1px solid rgba(70, 130, 255, 0.3); }
+        .tag.gestao { background: rgba(255, 255, 255, 0.1); color: #ccc; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .footer { text-align: center; margin-top: 28px; color: #555; font-size: 0.85rem; }
+        @media (max-width: 600px) {
+            .logo { height: 96px; }
+            .user-area { position: static; justify-content: center; margin-bottom: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== TELA DE CARREGAMENTO (evita "piscar" o menu) ===== -->
+<div class="tela-cheia" id="telaLoading">
+    <div class="loading-text">Verificando acesso...</div>
+</div>
+
+<!-- ===== TELA DE LOGIN ===== -->
+<div class="tela-cheia" id="telaLogin" style="display:none">
+    <div class="login-card">
+        <img id="logoLogin" alt="Logo ShowTime Festival de Vozes" class="logo-login" />
+        <h1 id="tituloLogin">Entrar</h1>
+        <div class="sub">Acesso ao painel do ShowTime Festival de Vozes</div>
+
+        <div class="msg-erro" id="msgErro"></div>
+
+        <form id="formLogin" autocomplete="on">
+            <div class="form-group">
+                <label for="loginEmail">E-mail</label>
+                <input type="email" id="loginEmail" placeholder="seu@email.com" required autocomplete="email" />
+            </div>
+            <div class="form-group">
+                <label for="loginSenha">Senha</label>
+                <input type="password" id="loginSenha" placeholder="••••••••" required minlength="6" autocomplete="current-password" />
+            </div>
+            <button type="submit" class="btn" id="btnSubmit">Entrar</button>
+        </form>
+
+        <div class="divisor">ou</div>
+
+        <button type="button" class="btn-google" id="btnGoogle">Entrar com Google</button>
+
+        <div class="link-modo">
+            <span id="textoModo">Não tem conta?</span>
+            <a id="linkModo">Criar conta</a>
+        </div>
+        <div class="login-note">Após criar a conta, o acesso aos módulos internos depende da liberação na coleção <b>permissoes</b> do Firebase.</div>
+    </div>
+</div>
+
+<!-- ===== MENU PRINCIPAL (só aparece após login) ===== -->
+<div class="container" id="telaMenu" style="display:none">
+    <header>
+        <img id="logoShowTime" alt="Logo ShowTime Festival de Vozes" class="logo" />
+        <div class="user-area" id="userArea" style="display:none">
+            <span class="user-nome" id="userNome"></span>
+            <button type="button" class="btn-sair" id="btnSair">Sair</button>
+        </div>
+    </header>
+    <div class="grid">
+        <a class="menu-card" href="st_candidatos.html" data-roles="publico">
+            <div class="icon">📝</div>
+            <div class="titulo">Inscrição</div>
+            <div class="desc">Formulário para o candidato entrar na fila com nome, música e artista</div>
+            <span class="tag publico">Público</span>
+        </a>
+        <a class="menu-card" href="st_fila.html" data-roles="operador">
+            <div class="icon">📋</div>
+            <div class="titulo">Fila de Apresentação</div>
+            <div class="desc">Painel do operador: chamar candidato, marcar No Palco e desfazer</div>
+            <span class="tag operador">Operador</span>
+        </a>
+        <a class="menu-card" href="apresentacao.html" data-roles="operador">
+            <div class="icon">🖥️</div>
+            <div class="titulo">Apresentação</div>
+            <div class="desc">Tela do palco: imagem/vídeo da história do candidato e likes do público</div>
+            <span class="tag operador">Operador</span>
+        </a>
+        <a class="menu-card" href="quesitos.html" data-roles="gestao">
+            <div class="icon">📋</div>
+            <div class="titulo">Quesitos</div>
+            <div class="desc">Cadastro das perguntas que serão lidas aos jurados</div>
+            <span class="tag gestao">Gestão</span>
+        </a>
+        <a class="menu-card" href="jurados.html" data-roles="gestao">
+            <div class="icon">👨‍⚖️</div>
+            <div class="titulo">Jurados</div>
+            <div class="desc">Cadastro de jurados com nome, especialidade e história</div>
+            <span class="tag gestao">Gestão</span>
+        </a>
+        <a class="menu-card" href="avaliacao.html" data-roles="jurado">
+            <div class="icon">⭐</div>
+            <div class="titulo">Avaliação</div>
+            <div class="desc">Formulário dos jurados com notas de 5 a 10 e observações</div>
+            <span class="tag jurado">Jurado</span>
+        </a>
+        <a class="menu-card" href="ranking.html" data-roles="gestao">
+            <div class="icon">📊</div>
+            <div class="titulo">Ranking</div>
+            <div class="desc">Notas somadas por candidato, com barras e médias</div>
+            <span class="tag gestao">Gestão</span>
+        </a>
+        <a class="menu-card" href="resultado.html" data-roles="publico">
+            <div class="icon">🏆</div>
+            <div class="titulo">Resultado Final</div>
+            <div class="desc">Campeão em destaque, pódio e demais classificados</div>
+            <span class="tag publico">Público</span>
+        </a>
+    </div>
+    <div class="footer">ShowTime Festival de Vozes · 3ª Edição</div>
+</div>
+
+<script>
+    // ============================================================
+    // 🔥 CONFIGURAÇÃO DO FIREBASE — PROJETO STFVozes
+    // ------------------------------------------------------------
+    // ATENÇÃO: projeto NOVO no Firebase. Substitua os valores
+    // abaixo pelas credenciais do novo projeto.
+    // Onde pegar: Firebase Console → Configurações do projeto (⚙️)
+    //   → "Seus apps" → App Web → "Configuração do SDK"
+    // ============================================================
+    const firebaseConfig = {
+        apiKey: "COLE_AQUI_A_API_KEY",
+        authDomain: "SEU_PROJETO.firebaseapp.com",
+        projectId: "SEU_PROJETO",
+        storageBucket: "SEU_PROJETO.firebasestorage.app",
+        messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+        appId: "SEU_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // ===== DOM =====
+    const telaLoading = document.getElementById('telaLoading');
+    const telaLogin   = document.getElementById('telaLogin');
+    const telaMenu    = document.getElementById('telaMenu');
+    const formLogin   = document.getElementById('formLogin');
+    const inputEmail  = document.getElementById('loginEmail');
+    const inputSenha  = document.getElementById('loginSenha');
+    const msgErro     = document.getElementById('msgErro');
+    const btnSubmit   = document.getElementById('btnSubmit');
+    const btnGoogle   = document.getElementById('btnGoogle');
+    const tituloLogin = document.getElementById('tituloLogin');
+    const textoModo   = document.getElementById('textoModo');
+    const linkModo    = document.getElementById('linkModo');
+    const userArea    = document.getElementById('userArea');
+    const userNome    = document.getElementById('userNome');
+    const btnSair     = document.getElementById('btnSair');
+
+    let modoCriarConta = false;
+
+    // ===== LOGO (config.js) =====
+    const logoMenu = document.getElementById('logoShowTime');
+    if (logoMenu && typeof LOGO_URL !== 'undefined') {
+        logoMenu.src = LOGO_URL;
+        logoMenu.onerror = function () { this.style.display = 'none'; };
+    }
+    const logoLogin = document.getElementById('logoLogin');
+    if (logoLogin && typeof LOGO_URL !== 'undefined') {
+        logoLogin.src = LOGO_URL;
+        logoLogin.onerror = function () { this.style.display = 'none'; };
+    }
+
+    // ===== CONTROLE DE TELAS =====
+    function mostrarTela(tela) {
+        telaLoading.style.display = 'none';
+        telaLogin.style.display   = 'none';
+        telaMenu.style.display    = 'none';
+        tela.style.display        = '';
+    }
+
+    // ===== MENSAGENS DE ERRO AMIGÁVEIS =====
+    function mensagemErro(code) {
+        const map = {
+            'auth/invalid-email': 'E-mail inválido.',
+            'auth/user-disabled': 'Este usuário foi desativado.',
+            'auth/user-not-found': 'E-mail ou senha incorretos.',
+            'auth/wrong-password': 'E-mail ou senha incorretos.',
+            'auth/invalid-credential': 'E-mail ou senha incorretos.',
+            'auth/email-already-in-use': 'Este e-mail já está cadastrado.',
+            'auth/weak-password': 'A senha deve ter pelo menos 6 caracteres.',
+            'auth/too-many-requests': 'Muitas tentativas. Aguarde alguns minutos e tente novamente.',
+            'auth/popup-closed-by-user': 'Login cancelado.',
+            'auth/network-request-failed': 'Sem conexão com a internet.',
+            'auth/configuration-not-found': 'Métodos de login não configurados no Firebase (ative E-mail/Senha e Google).',
+            'auth/operation-not-allowed': 'Este método de login não está habilitado no Firebase.'
+        };
+        return map[code] || 'Erro ao entrar. Tente novamente.';
+    }
+    function exibirErro(msg) {
+        msgErro.textContent = msg;
+        msgErro.style.display = 'block';
+    }
+    function limparErro() {
+        msgErro.style.display = 'none';
+        msgErro.textContent = '';
+    }
+
+    // ===== CONTROLE DE CARREGAMENTO DO FORM =====
+    function setLoading(ativo) {
+        btnSubmit.disabled = ativo;
+        btnGoogle.disabled = ativo;
+        btnSubmit.textContent = ativo
+            ? (modoCriarConta ? 'Criando conta...' : 'Entrando...')
+            : (modoCriarConta ? 'Criar conta' : 'Entrar');
+    }
+
+    // ===== ALTERNAR ENTRE ENTRAR / CRIAR CONTA =====
+    function alternarModo() {
+        modoCriarConta = !modoCriarConta;
+        limparErro();
+        if (modoCriarConta) {
+            tituloLogin.textContent = 'Criar conta';
+            btnSubmit.textContent = 'Criar conta';
+            textoModo.textContent = 'Já tem conta?';
+            linkModo.textContent = 'Entrar';
+            inputSenha.autocomplete = 'new-password';
+        } else {
+            tituloLogin.textContent = 'Entrar';
+            btnSubmit.textContent = 'Entrar';
+            textoModo.textContent = 'Não tem conta?';
+            linkModo.textContent = 'Criar conta';
+            inputSenha.autocomplete = 'current-password';
+        }
+    }
+    linkModo.addEventListener('click', alternarModo);
+
+    // ============================================================
+    // 🔐 CONTROLE DE ACESSO POR PAPEL
+    // Coleção "permissoes/{uid}" no Firestore do projeto STFVozes:
+    //   - doc NÃO existe          -> "publico" (Inscrição + Resultado)
+    //   - campo "papel" ou "role" -> usa esse papel
+    //   - doc existe sem papel    -> "gestao" (acesso total / admin)
+    // ============================================================
+    const CARDS = Array.from(document.querySelectorAll('.menu-card'));
+
+    function aplicarPermissoes(papel) {
+        const role = papel || 'publico';
+        const ehGestao = (role === 'gestao' || role === 'admin');
+        CARDS.forEach(card => {
+            const permitidos = (card.dataset.roles || 'publico').split(',').map(s => s.trim());
+            const visivel = ehGestao || permitidos.includes(role);
+            card.style.display = visivel ? '' : 'none';
+        });
+    }
+
+    async function carregarPapel(uid) {
+        try {
+            const doc = await db.collection('permissoes').doc(uid).get();
+            if (!doc.exists) return 'publico';
+            const data = doc.data();
+            if (data.papel) return String(data.papel).toLowerCase();
+            if (data.role) return String(data.role).toLowerCase();
+            return 'gestao'; // doc existe sem papel -> admin
+        } catch (err) {
+            console.error('Erro ao carregar papel:', err);
+            return 'publico';
+        }
+    }
+
+    // ===== ESTADO DE AUTENTICAÇÃO =====
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            const papel = await carregarPapel(user.uid);
+            aplicarPermissoes(papel);
+            userNome.textContent = user.displayName || user.email || 'Usuário';
+            userArea.style.display = 'flex';
+            mostrarTela(telaMenu);
+        } else {
+            userArea.style.display = 'none';
+            mostrarTela(telaLogin);
+        }
+    });
+
+    // ===== LOGIN / CRIAR CONTA (e-mail e senha) =====
+    formLogin.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        limparErro();
+        const email = inputEmail.value.trim();
+        const senha = inputSenha.value;
+        if (!email || !senha) {
+            exibirErro('Preencha e-mail e senha.');
+            return;
+        }
+        setLoading(true);
+        try {
+            if (modoCriarConta) {
+                await auth.createUserWithEmailAndPassword(email, senha);
+            } else {
+                await auth.signInWithEmailAndPassword(email, senha);
+            }
+        } catch (err) {
+            exibirErro(mensagemErro(err.code));
+            setLoading(false);
+        }
+    });
+
+    // ===== LOGIN COM GOOGLE =====
+    btnGoogle.addEventListener('click', async () => {
+        limparErro();
+        setLoading(true);
+        try {
+            await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+        } catch (err) {
+            exibirErro(mensagemErro(err.code));
+            setLoading(false);
+        }
+    });
+
+    // ===== SAIR =====
+    btnSair.addEventListener('click', async () => {
+        try {
+            await auth.signOut();
+        } catch (err) {
+            console.error('Erro ao sair:', err);
+        }
+    });
+</script>
+</body>
+</html>
