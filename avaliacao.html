@@ -206,6 +206,7 @@
     let toastTimer = null;
     let quesitos = [];
     let notas = {};
+    let observacoes = {}; // ✅ FIX: variável declarada (antes causava ReferenceError)
     let dicas = []; // registros da aba Dicas: { jurado, candidato, perguntas, quesito, quesitos }
     function showToast(msg) {
         const el = document.getElementById('toast');
@@ -386,6 +387,13 @@
         `;
         }).join('');
     }
+    // ===== SALVA O QUE O JURADO DIGITA NAS OBSERVAÇÕES (sobrevive ao re-render) =====
+    quesitosList.addEventListener('input', function (e) {
+        const el = e.target;
+        if (el && el.matches && el.matches('textarea[data-obs]')) {
+            observacoes[el.dataset.obs] = el.value;
+        }
+    });
     // ===== MARCA NOTA =====
     function marcarNota(linha, nota) {
         notas[linha] = nota;
