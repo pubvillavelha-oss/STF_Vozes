@@ -59,6 +59,7 @@
             margin-bottom: 6px;
         }
         label .req { color: #4ade80; }
+        label .opc { color: #888; font-weight: 500; }
         select, textarea {
             width: 100%;
             padding: 12px 16px;
@@ -88,6 +89,45 @@
         }
         select::placeholder, textarea::placeholder { color: #777; }
         select:disabled, textarea:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* ===== QUESITOS EM CHECKBOX (opcional) ===== */
+        .quesitos-grupo {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 8px;
+        }
+        .quesito-check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 10px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #ccc;
+            user-select: none;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .quesito-check:hover { border-color: rgba(0, 156, 59, 0.5); }
+        .quesito-check input[type="checkbox"] {
+            width: 17px;
+            height: 17px;
+            accent-color: #009C3B;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .quesito-check.selecionado {
+            border-color: rgba(0, 156, 59, 0.6);
+            background: rgba(0, 156, 59, 0.12);
+            color: #fff;
+        }
+        .quesito-check.vazio {
+            font-style: italic;
+            color: #777;
+            cursor: default;
+        }
 
         /* ===== BOTÃO ===== */
         .btn {
@@ -223,10 +263,10 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="selectQuesito">Quesito <span class="req">*</span></label>
-                <select id="selectQuesito" required>
-                    <option value="">Carregando quesitos...</option>
-                </select>
+                <label>Quesito <span class="opc">(opcional)</span></label>
+                <div class="quesitos-grupo" id="quesitosGrupo">
+                    <div class="quesito-check vazio">Carregando quesitos...</div>
+                </div>
             </div>
             <div class="form-group">
                 <label for="perguntas">Perguntas <span class="req">*</span></label>
@@ -261,13 +301,12 @@
     //
     // CONTRATO COM O BACKEND (Google Apps Script - Code.gs v5)
     // ------------------------------------------------------------
-    // GET  (doGet)  → { ok:true, jurados:["Nome 1",...],
-    //                   candidatos:["Nome 1",...],
-    //                   quesitos:["Afinação",...],
-    //                   dicas:[{ jurado, candidato, perguntas, quesito }] }
-    // POST (doPost) → body JSON { acao:"salvarDica",
-    //                   jurado:"...", candidato:"...",
-    //                   perguntas:"...", quesito:"..." }
+    // GET  (doGet)  → { ok:true, jurados:[...], candidatos:[...],
+    //                   quesitos:["Afinação",...], dicas:[{...}] }
+    // POST (doPost) → body JSON { acao:"salvarDica", jurado, candidato,
+    //                   perguntas, quesito }   ← quesito é OPCIONAL e
+    //                   pode vir vazio ou com vários quesitos separados
+    //                   por ", " (ex.: "Afinação, Interpretação")
     //                → { ok:true }
     // ============================================================
 
@@ -276,7 +315,7 @@
     const formCard    = document.getElementById('formCard');
     const selectJurado = document.getElementById('selectJurado');
     const selectCandidato = document.getElementById('selectCandidato');
-    const selectQuesito = document.getElementById('selectQuesito');
+    const quesitosGrupo = document.getElementById('quesitosGrupo');
     const inputPerguntas = document.getElementById('perguntas');
     const btnSubmit   = document.getElementById('btnSubmit');
     const successMsg  = document.getElementById('successMsg');
@@ -306,7 +345,7 @@
         return div.innerHTML;
     }
 
-    // ===== POPULA UM SELECT A PARTIR DE UM ARRAY =====
+    // ===== POPULA UM SELECT (jurado / candidato) =====
     function preencherSelect(select, itens, placeholder) {
         select.innerHTML = '<option value="">' + esc(placeholder) + '</option>';
         (itens || []).forEach(function (item) {
@@ -316,6 +355,46 @@
             select.appendChild(opt);
         });
         select.disabled = false;
+    }
+
+    // ===== RENDERIZA QUESITOS COMO CHECKBOX (preserva seleção) =====
+    function renderizarQuesitos(quesitos) {
+        // Guarda o que já está marcado antes de reconstruir
+        const selecionados = new Set();
+        quesitosGrupo.querySelectorAll('input[type="checkbox"]:checked').forEach(function (cb) {
+            selecionados.add(cb.value);
+        });
+
+        quesitosGrupo.innerHTML = '';
+        if (!quesitos || !quesitos.length) {
+            quesitosGrupo.innerHTML = '<div class="quesito-check vazio">Nenhum quesito cadastrado</div>';
+            return;
+        }
+        quesitos.forEach(function (q) {
+            const label = document.createElement('label');
+            label.className = 'quesito-check';
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.value = q;
+            cb.checked = selecionados.has(q);
+            // destaque visual quando marcado
+            cb.addEventListener('change', function () {
+                label.classList.toggle('selecionado', cb.checked);
+            });
+            if (cb.checked) label.classList.add('selecionado');
+            label.appendChild(cb);
+            label.appendChild(document.createTextNode(q));
+            quesitosGrupo.appendChild(label);
+        });
+    }
+
+    // ===== LÊ OS QUESITOS MARCADOS =====
+    function getQuesitosSelecionados() {
+        const selecionados = [];
+        quesitosGrupo.querySelectorAll('input[type="checkbox"]:checked').forEach(function (cb) {
+            selecionados.push(cb.value);
+        });
+        return selecionados;
     }
 
     // ===== RENDERIZA A LISTA DE DICAS =====
@@ -343,18 +422,37 @@
         }).join('');
     }
 
-    // ===== CARREGA DADOS (jurados, candidatos, quesitos e dicas) =====
-    async function carregarDados() {
+    // ============================================================
+    // CARREGAMENTO SEPARADO (corrige o "looping" que perdia a seleção)
+    // ------------------------------------------------------------
+    // Antes, o polling recarregava o formulário inteiro a cada 15s,
+    // repopulando os seletores e apagando a seleção em andamento.
+    // Agora:
+    //   carregarFormulario() → roda UMA VEZ ao abrir (e após o envio)
+    //   carregarDicas()      → polling leve, atualiza SÓ a lista
+    // ============================================================
+    async function carregarFormulario() {
         try {
             const res = await fetch(WEB_APP_URL);
             const json = await res.json();
             if (!json.ok) { showToast('⚠️ Erro ao carregar dados.'); return; }
             preencherSelect(selectJurado, json.jurados, 'Selecione o jurado');
             preencherSelect(selectCandidato, json.candidatos, 'Selecione o candidato');
-            preencherSelect(selectQuesito, json.quesitos, 'Selecione o quesito');
+            renderizarQuesitos(json.quesitos);
             renderizarDicas(json.dicas);
         } catch (err) {
             showToast('⚠️ Erro de conexão.');
+        }
+    }
+
+    // Polling leve: só atualiza a lista de dicas, sem tocar no formulário
+    async function carregarDicas() {
+        try {
+            const res = await fetch(WEB_APP_URL);
+            const json = await res.json();
+            if (json.ok) renderizarDicas(json.dicas);
+        } catch (err) {
+            // silencioso: não interrompe o uso do formulário
         }
     }
 
@@ -384,10 +482,12 @@
         e.preventDefault();
         const jurado = selectJurado.value.trim();
         const candidato = selectCandidato.value.trim();
-        const quesito = selectQuesito.value.trim();
         const perguntas = inputPerguntas.value.trim();
-        if (!jurado || !candidato || !quesito || !perguntas) {
-            showToast('⚠️ Preencha jurado, candidato, quesito e perguntas.');
+        // Quesito é opcional: junta os marcados com ", " ou envia vazio
+        const quesito = getQuesitosSelecionados().join(', ');
+
+        if (!jurado || !candidato || !perguntas) {
+            showToast('⚠️ Preencha jurado, candidato e perguntas.');
             return;
         }
         btnSubmit.disabled = true;
@@ -396,18 +496,12 @@
         if (ok) {
             form.style.display = 'none';
             successMsg.style.display = 'block';
-            carregarDados();
+            carregarDicas();
             setTimeout(function () {
                 form.style.display = 'block';
                 successMsg.style.display = 'none';
                 form.reset();
-                selectJurado.disabled = true;
-                selectCandidato.disabled = true;
-                selectQuesito.disabled = true;
-                selectJurado.innerHTML = '<option value="">Carregando jurados...</option>';
-                selectCandidato.innerHTML = '<option value="">Carregando candidatos...</option>';
-                selectQuesito.innerHTML = '<option value="">Carregando quesitos...</option>';
-                carregarDados();
+                carregarFormulario();
             }, 4000);
         } else {
             btnSubmit.disabled = false;
@@ -417,8 +511,8 @@
     });
 
     // ===== INICIA =====
-    carregarDados();
-    setInterval(carregarDados, 15000);
+    carregarFormulario();
+    setInterval(carregarDicas, 15000);
 </script>
 </body>
 </html>
