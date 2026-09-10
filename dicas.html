@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShowTime Festival de Vozes - Dicas</title>
+    <!-- ===== CONFIG CENTRAL (URL do Web App + Logo) ===== -->
+    <script src="config.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a2e12, #0f4d1e, #0a2e12);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        .container { max-width: 720px; margin: 0 auto; }
+
+        /* ===== CABEÇALHO: LOGO + TÍTULO ===== */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 12px 0 24px;
+            flex-wrap: wrap;
+        }
+        .logo {
+            height: 96px;
+            width: auto;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+        .header-texto { text-align: center; }
+        .header-texto h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #009C3B, #FFDF00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header-texto p { color: #aaa; margin-top: 4px; font-size: 0.9rem; }
+
+        /* ===== CARD DO FORMULÁRIO ===== */
+        .card {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 28px 24px;
+        }
+        .form-group { margin-bottom: 16px; }
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #ccc;
+            margin-bottom: 6px;
+        }
+        label .req { color: #4ade80; }
+        select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.35);
+            color: #fff;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border 0.2s;
+            appearance: none;
+        }
+        select {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234ade80' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 18px;
+            padding-right: 44px;
+            cursor: pointer;
+        }
+        select option { background: #0a2e12; color: #fff; }
+        textarea { resize: vertical; min-height: 110px; }
+        select:focus, textarea:focus {
+            outline: none;
+            border-color: #009C3B;
+            box-shadow: 0 0 0 3px rgba(0, 156, 59, 0.2);
+        }
+        select::placeholder, textarea::placeholder { color: #777; }
+        select:disabled, textarea:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* ===== BOTÃO ===== */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.2s;
+            background: linear-gradient(90deg, #009C3B, #00b84a);
+            color: #fff;
+            margin-top: 8px;
+        }
+        .btn:hover { transform: scale(1.02); }
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        /* ===== MENSAGEM DE SUCESSO ===== */
+        .success-msg {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            background: rgba(70, 200, 70, 0.1);
+            border: 1px solid rgba(70, 200, 70, 0.2);
+            border-radius: 12px;
+            margin-top: 16px;
+        }
+        .success-msg .icon { font-size: 2rem; }
+        .success-msg .text { font-size: 1.1rem; color: #6bff6b; margin-top: 8px; font-weight: 600; }
+        .success-msg .sub { font-size: 0.85rem; color: #999; margin-top: 4px; }
+
+        /* ===== LISTA DE DICAS ENVIADAS ===== */
+        .dicas-titulo {
+            font-size: 1.1rem;
+            color: #aaa;
+            margin: 24px 0 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .dicas-titulo .count {
+            background: rgba(0, 156, 59, 0.2);
+            color: #4ade80;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        .dica-item {
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+        .dica-item .topo {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .dica-item .jurado { font-size: 0.85rem; color: #4ade80; font-weight: 600; }
+        .dica-item .candidato { font-size: 0.85rem; color: #FFD700; font-weight: 600; }
+        .dica-item .perguntas { font-size: 0.95rem; color: #e0e0e0; margin-top: 6px; white-space: pre-wrap; }
+        .dica-item .data { font-size: 0.75rem; color: #666; margin-top: 6px; }
+        .empty { text-align: center; color: #555; font-size: 1rem; font-style: italic; padding: 24px 0; }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0a2e12;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.4s, bottom 0.4s;
+            pointer-events: none;
+            z-index: 999;
+            white-space: nowrap;
+            max-width: 90%;
+        }
+        .toast.show { opacity: 1; bottom: 50px; }
+
+        .footer { text-align: center; margin-top: 24px; color: #555; font-size: 0.85rem; }
+
+        @media (max-width: 600px) {
+            .logo { height: 72px; }
+            .header-texto h1 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- ===== CABEÇALHO: LOGO + TÍTULO ===== -->
+    <header>
+        <img id="logoShowTime" alt="Logo ShowTime Festival de Vozes" class="logo" />
+        <div class="header-texto">
+            <h1>Dicas dos Jurados</h1>
+            <p>Registre perguntas e orientações para os candidatos</p>
+        </div>
+    </header>
+
+    <!-- ===== FORMULÁRIO ===== -->
+    <div class="card" id="formCard">
+        <form id="formDica">
+            <div class="form-group">
+                <label for="selectJurado">Jurado <span class="req">*</span></label>
+                <select id="selectJurado" required>
+                    <option value="">Carregando jurados...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="selectCandidato">Candidato <span class="req">*</span></label>
+                <select id="selectCandidato" required>
+                    <option value="">Carregando candidatos...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="perguntas">Perguntas <span class="req">*</span></label>
+                <textarea id="perguntas" placeholder="Escreva aqui as perguntas ou orientações para o candidato..." required></textarea>
+            </div>
+            <button type="submit" class="btn" id="btnSubmit">💬 Enviar Dica</button>
+        </form>
+        <div class="success-msg" id="successMsg">
+            <div class="icon">✅</div>
+            <div class="text">Dica registrada!</div>
+            <div class="sub">Obrigado por contribuir com o festival 🎤</div>
+        </div>
+    </div>
+
+    <!-- ===== DICAS ENVIADAS ===== -->
+    <div class="dicas-titulo">
+        <span>Dicas Enviadas</span>
+        <span class="count" id="dicasCount">0</span>
+    </div>
+    <div id="dicasLista">
+        <div class="empty">Carregando...</div>
+    </div>
+
+    <div class="footer">ShowTime Festival de Vozes · 3ª Edição</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+    // ============================================================
+    // WEB_APP_URL e LOGO_URL vêm do config.js (carregado no <head>)
+    // ============================================================
+    //
+    // CONTRATO COM O BACKEND (Google Apps Script - Code.gs)
+    // ------------------------------------------------------------
+    // GET  (doGet)  → { ok:true, jurados:["Nome 1",...],
+    //                   candidatos:["Nome 1",...], dicas:[{...}] }
+    // POST (doPost) → body JSON { acao:"salvarDica",
+    //                   jurado:"...", candidato:"...", perguntas:"..." }
+    //                → { ok:true }
+    // ============================================================
+
+    // ===== DOM =====
+    const form        = document.getElementById('formDica');
+    const formCard    = document.getElementById('formCard');
+    const selectJurado = document.getElementById('selectJurado');
+    const selectCandidato = document.getElementById('selectCandidato');
+    const inputPerguntas = document.getElementById('perguntas');
+    const btnSubmit   = document.getElementById('btnSubmit');
+    const successMsg  = document.getElementById('successMsg');
+    const dicasLista  = document.getElementById('dicasLista');
+    const dicasCount  = document.getElementById('dicasCount');
+    let toastTimer = null;
+
+    // ===== APLICA O LOGO (config.js) =====
+    const logoEl = document.getElementById('logoShowTime');
+    if (logoEl) {
+        logoEl.src = LOGO_URL;
+        logoEl.onerror = function () { this.style.display = 'none'; };
+    }
+
+    // ===== UTILITÁRIOS =====
+    function showToast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+    function esc(str) {
+        if (str === null || str === undefined) return '';
+        const div = document.createElement('div');
+        div.textContent = String(str);
+        return div.innerHTML;
+    }
+
+    // ===== POPULA UM SELECT A PARTIR DE UM ARRAY =====
+    function preencherSelect(select, itens, placeholder) {
+        select.innerHTML = '<option value="">' + esc(placeholder) + '</option>';
+        (itens || []).forEach(function (item) {
+            const opt = document.createElement('option');
+            opt.value = item;
+            opt.textContent = item;
+            select.appendChild(opt);
+        });
+        select.disabled = false;
+    }
+
+    // ===== RENDERIZA A LISTA DE DICAS =====
+    function renderizarDicas(dicas) {
+        dicasCount.textContent = (dicas || []).length;
+        if (!dicas || !dicas.length) {
+            dicasLista.innerHTML = '<div class="empty">Nenhuma dica registrada ainda 💬</div>';
+            return;
+        }
+        dicasLista.innerHTML = dicas.map(function (d) {
+            return `
+                <div class="dica-item">
+                    <div class="topo">
+                        <span class="jurado">👨‍⚖️ ${esc(d.jurado)}</span>
+                        <span class="candidato">🎤 ${esc(d.candidato)}</span>
+                    </div>
+                    <div class="perguntas">${esc(d.perguntas)}</div>
+                    <div class="data">${esc(d.data || '')}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // ===== CARREGA DADOS (jurados, candidatos e dicas) =====
+    async function carregarDados() {
+        try {
+            const res = await fetch(WEB_APP_URL);
+            const json = await res.json();
+            if (!json.ok) { showToast('⚠️ Erro ao carregar dados.'); return; }
+            preencherSelect(selectJurado, json.jurados, 'Selecione o jurado');
+            preencherSelect(selectCandidato, json.candidatos, 'Selecione o candidato');
+            renderizarDicas(json.dicas);
+        } catch (err) {
+            showToast('⚠️ Erro de conexão.');
+        }
+    }
+
+    // ===== ENVIA A DICA =====
+    async function salvarDica(jurado, candidato, perguntas) {
+        try {
+            const res = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({
+                    acao: 'salvarDica',
+                    jurado: jurado,
+                    candidato: candidato,
+                    perguntas: perguntas
+                })
+            });
+            const json = await res.json();
+            return json.ok === true;
+        } catch (err) {
+            return false;
+        }
+    }
+
+    // ===== SUBMIT =====
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const jurado = selectJurado.value.trim();
+        const candidato = selectCandidato.value.trim();
+        const perguntas = inputPerguntas.value.trim();
+        if (!jurado || !candidato || !perguntas) {
+            showToast('⚠️ Preencha jurado, candidato e perguntas.');
+            return;
+        }
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = '⏳ Enviando...';
+        const ok = await salvarDica(jurado, candidato, perguntas);
+        if (ok) {
+            form.style.display = 'none';
+            successMsg.style.display = 'block';
+            carregarDados();
+            setTimeout(function () {
+                form.style.display = 'block';
+                successMsg.style.display = 'none';
+                form.reset();
+                selectJurado.disabled = true;
+                selectCandidato.disabled = true;
+                selectJurado.innerHTML = '<option value="">Carregando jurados...</option>';
+                selectCandidato.innerHTML = '<option value="">Carregando candidatos...</option>';
+                carregarDados();
+            }, 4000);
+        } else {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = '💬 Enviar Dica';
+            showToast('⚠️ Erro ao enviar. Tente novamente.');
+        }
+    });
+
+    // ===== INICIA =====
+    carregarDados();
+    setInterval(carregarDados, 15000);
+</script>
+</body>
+</html>
