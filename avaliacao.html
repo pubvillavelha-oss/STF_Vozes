@@ -226,6 +226,10 @@
             .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
             .toLowerCase().trim();
     }
+    // Jurado atualmente selecionado (normalizado) — ou '' se nenhum
+    function juradoSelecionado() {
+        return normalizarTexto(selectJurado.value);
+    }
     // ===== CARREGA JURADOS =====
     async function carregarJurados() {
         try {
@@ -299,28 +303,38 @@
             // silencioso: a avaliação continua funcionando sem as dicas
         }
     }
-    // Dicas cujo campo Quesito contém o quesito da avaliação.
+    // Dicas do JURADO selecionado cujo campo Quesito contém o quesito da avaliação.
     // O campo Quesito pode ter vários valores ("Afinação, Interpretação").
     // Se houver candidato selecionado, filtra também pelo candidato da dica.
     function dicasDoQuesito(nomeQuesito) {
         const alvo = normalizarTexto(nomeQuesito);
         if (!alvo) return [];
+        const juradoSel = juradoSelecionado();
         const candidatoSel = normalizarTexto(selectCandidato.value);
         return (dicas || []).filter(function (d) {
+            // 1) Filtra pelo jurado que registrou a dica (se algum jurado foi selecionado)
+            if (juradoSel && normalizarTexto(d.jurado) !== juradoSel) return false;
+            // 2) Filtra pelo quesito da dica
             const campos = (d.quesitos && d.quesitos.length)
                 ? d.quesitos.map(normalizarTexto)
                 : String(d.quesito || '').split(',').map(normalizarTexto).filter(Boolean);
             if (!campos.includes(alvo)) return false;
+            // 3) Filtra pelo candidato (se houver candidato selecionado)
             if (candidatoSel && normalizarTexto(d.candidato) !== candidatoSel) return false;
             return true;
         });
     }
-    // Dicas SEM quesito definido, do candidato que está sendo avaliado
+    // Dicas SEM quesito definido, do jurado selecionado e do candidato avaliado
     function dicasGeraisDoCandidato() {
+        const juradoSel = juradoSelecionado();
         const candidatoSel = normalizarTexto(selectCandidato.value);
         if (!candidatoSel) return [];
         return (dicas || []).filter(function (d) {
-            if (String(d.quesito || '').trim()) return false; // só as sem quesito
+            // 1) Filtra pelo jurado que registrou a dica (se algum jurado foi selecionado)
+            if (juradoSel && normalizarTexto(d.jurado) !== juradoSel) return false;
+            // 2) Só dicas sem quesito definido
+            if (String(d.quesito || '').trim()) return false;
+            // 3) Filtra pelo candidato
             return normalizarTexto(d.candidato) === candidatoSel;
         });
     }
@@ -361,12 +375,12 @@
                 <div class="nota-row">
                     <label>Nota:</label>
                     ${[5,6,7,8,9,10].map(n => `
-                        <button type="button" class="nota-btn" data-linha="${q.linha}" data-nota="${n}" onclick="marcarNota(${q.linha}, ${n})">${n}</button>
+                        <button type="button" class="nota-btn${notas[q.linha] === n ? ' selecionada' : ''}" data-linha="${q.linha}" data-nota="${n}" onclick="marcarNota(${q.linha}, ${n})">${n}</button>
                     `).join('')}
                 </div>
                 <div class="form-group" style="margin-top: 10px; margin-bottom: 0;">
                     <label>Observações para o candidato</label>
-                    <textarea data-obs="${q.linha}" placeholder="Escreva suas considerações..."></textarea>
+                    <textarea data-obs="${q.linha}" placeholder="Escreva suas considerações...">${esc(observacoes[q.linha] || '')}</textarea>
                 </div>
             </div>
         `;
@@ -418,9 +432,11 @@
             }
             showToast('✅ Avaliação enviada com sucesso!');
             notas = {};
+            observacoes = {};
             totalValor.textContent = '0';
             selectJurado.value = '';
             renderizarQuesitos();
+            renderizarDicasGerais();
             btnEnviar.disabled = false;
             btnEnviar.textContent = '📤 Enviar avaliação';
         } catch (err) {
@@ -429,6 +445,11 @@
             btnEnviar.textContent = '📤 Enviar avaliação';
         }
     }
+    // ===== AO TROCAR O JURADO, RECARREGA AS DICAS DELE =====
+    selectJurado.addEventListener('change', function () {
+        renderizarDicasGerais();
+        renderizarQuesitos();
+    });
     // ===== INICIA =====
     carregarJurados();
     carregarCandidatos();
