@@ -152,6 +152,17 @@
         }
         .dica-item .jurado { font-size: 0.85rem; color: #4ade80; font-weight: 600; }
         .dica-item .candidato { font-size: 0.85rem; color: #FFD700; font-weight: 600; }
+        .dica-item .quesito {
+            display: inline-block;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #6ba3ff;
+            background: rgba(70, 130, 255, 0.12);
+            border: 1px solid rgba(70, 130, 255, 0.3);
+            padding: 2px 10px;
+            border-radius: 20px;
+            margin-top: 6px;
+        }
         .dica-item .perguntas { font-size: 0.95rem; color: #e0e0e0; margin-top: 6px; white-space: pre-wrap; }
         .dica-item .data { font-size: 0.75rem; color: #666; margin-top: 6px; }
         .empty { text-align: center; color: #555; font-size: 1rem; font-style: italic; padding: 24px 0; }
@@ -212,6 +223,12 @@
                 </select>
             </div>
             <div class="form-group">
+                <label for="selectQuesito">Quesito <span class="req">*</span></label>
+                <select id="selectQuesito" required>
+                    <option value="">Carregando quesitos...</option>
+                </select>
+            </div>
+            <div class="form-group">
                 <label for="perguntas">Perguntas <span class="req">*</span></label>
                 <textarea id="perguntas" placeholder="Escreva aqui as perguntas ou orientações para o candidato..." required></textarea>
             </div>
@@ -242,12 +259,15 @@
     // WEB_APP_URL e LOGO_URL vêm do config.js (carregado no <head>)
     // ============================================================
     //
-    // CONTRATO COM O BACKEND (Google Apps Script - Code.gs)
+    // CONTRATO COM O BACKEND (Google Apps Script - Code.gs v5)
     // ------------------------------------------------------------
     // GET  (doGet)  → { ok:true, jurados:["Nome 1",...],
-    //                   candidatos:["Nome 1",...], dicas:[{...}] }
+    //                   candidatos:["Nome 1",...],
+    //                   quesitos:["Afinação",...],
+    //                   dicas:[{ jurado, candidato, perguntas, quesito }] }
     // POST (doPost) → body JSON { acao:"salvarDica",
-    //                   jurado:"...", candidato:"...", perguntas:"..." }
+    //                   jurado:"...", candidato:"...",
+    //                   perguntas:"...", quesito:"..." }
     //                → { ok:true }
     // ============================================================
 
@@ -256,6 +276,7 @@
     const formCard    = document.getElementById('formCard');
     const selectJurado = document.getElementById('selectJurado');
     const selectCandidato = document.getElementById('selectCandidato');
+    const selectQuesito = document.getElementById('selectQuesito');
     const inputPerguntas = document.getElementById('perguntas');
     const btnSubmit   = document.getElementById('btnSubmit');
     const successMsg  = document.getElementById('successMsg');
@@ -305,12 +326,16 @@
             return;
         }
         dicasLista.innerHTML = dicas.map(function (d) {
+            const quesitoHtml = d.quesito
+                ? '<span class="quesito">📋 ' + esc(d.quesito) + '</span>'
+                : '';
             return `
                 <div class="dica-item">
                     <div class="topo">
                         <span class="jurado">👨‍⚖️ ${esc(d.jurado)}</span>
                         <span class="candidato">🎤 ${esc(d.candidato)}</span>
                     </div>
+                    ${quesitoHtml}
                     <div class="perguntas">${esc(d.perguntas)}</div>
                     <div class="data">${esc(d.data || '')}</div>
                 </div>
@@ -318,7 +343,7 @@
         }).join('');
     }
 
-    // ===== CARREGA DADOS (jurados, candidatos e dicas) =====
+    // ===== CARREGA DADOS (jurados, candidatos, quesitos e dicas) =====
     async function carregarDados() {
         try {
             const res = await fetch(WEB_APP_URL);
@@ -326,6 +351,7 @@
             if (!json.ok) { showToast('⚠️ Erro ao carregar dados.'); return; }
             preencherSelect(selectJurado, json.jurados, 'Selecione o jurado');
             preencherSelect(selectCandidato, json.candidatos, 'Selecione o candidato');
+            preencherSelect(selectQuesito, json.quesitos, 'Selecione o quesito');
             renderizarDicas(json.dicas);
         } catch (err) {
             showToast('⚠️ Erro de conexão.');
@@ -333,7 +359,7 @@
     }
 
     // ===== ENVIA A DICA =====
-    async function salvarDica(jurado, candidato, perguntas) {
+    async function salvarDica(jurado, candidato, perguntas, quesito) {
         try {
             const res = await fetch(WEB_APP_URL, {
                 method: 'POST',
@@ -342,7 +368,8 @@
                     acao: 'salvarDica',
                     jurado: jurado,
                     candidato: candidato,
-                    perguntas: perguntas
+                    perguntas: perguntas,
+                    quesito: quesito
                 })
             });
             const json = await res.json();
@@ -357,14 +384,15 @@
         e.preventDefault();
         const jurado = selectJurado.value.trim();
         const candidato = selectCandidato.value.trim();
+        const quesito = selectQuesito.value.trim();
         const perguntas = inputPerguntas.value.trim();
-        if (!jurado || !candidato || !perguntas) {
-            showToast('⚠️ Preencha jurado, candidato e perguntas.');
+        if (!jurado || !candidato || !quesito || !perguntas) {
+            showToast('⚠️ Preencha jurado, candidato, quesito e perguntas.');
             return;
         }
         btnSubmit.disabled = true;
         btnSubmit.textContent = '⏳ Enviando...';
-        const ok = await salvarDica(jurado, candidato, perguntas);
+        const ok = await salvarDica(jurado, candidato, perguntas, quesito);
         if (ok) {
             form.style.display = 'none';
             successMsg.style.display = 'block';
@@ -375,8 +403,10 @@
                 form.reset();
                 selectJurado.disabled = true;
                 selectCandidato.disabled = true;
+                selectQuesito.disabled = true;
                 selectJurado.innerHTML = '<option value="">Carregando jurados...</option>';
                 selectCandidato.innerHTML = '<option value="">Carregando candidatos...</option>';
+                selectQuesito.innerHTML = '<option value="">Carregando quesitos...</option>';
                 carregarDados();
             }, 4000);
         } else {
