@@ -63,6 +63,47 @@
             display: flex; align-items: center; gap: 8px; margin-top: 6px;
             font-size: 0.8rem; color: #4ade80;
         }
+
+        /* ===== DICAS GERAIS (sem quesito) — abaixo do nome do candidato ===== */
+        .dicas-gerais {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(255, 223, 0, 0.05);
+            border: 1px solid rgba(255, 223, 0, 0.15);
+            border-radius: 10px;
+        }
+        .dicas-gerais-titulo {
+            font-size: 0.78rem;
+            color: #FFDF00;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ===== CAIXA DE DICA (compartilhada: card do quesito e dicas gerais) ===== */
+        .dica-box { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .dica-item {
+            background: rgba(255, 223, 0, 0.06);
+            border: 1px solid rgba(255, 223, 0, 0.18);
+            border-left: 3px solid #FFDF00;
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+        .dica-item .dica-jurado {
+            font-size: 0.75rem;
+            color: #FFDF00;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .dica-item .dica-texto {
+            font-size: 0.9rem;
+            color: #e0e0e0;
+            white-space: pre-wrap;
+        }
+        .dica-vazio { font-size: 0.8rem; color: #777; font-style: italic; }
+
         .quesito-card {
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -116,7 +157,6 @@
         <h1>Avaliação dos Jurados</h1>
         <p>ShowTime Festival de Vozes</p>
     </header>
-
     <div class="card">
         <div class="form-group">
             <label for="jurado">Jurado *</label>
@@ -130,9 +170,13 @@
                 <option value="">Aguardando candidato no palco...</option>
             </select>
             <div class="candidato-lock" id="candidatoLock">🔒 Candidato definido pelo operador da fila</div>
+            <!-- ===== DICAS SEM QUESITO: exibidas abaixo do nome do candidato avaliado ===== -->
+            <div class="dicas-gerais" id="dicasGerais">
+                <div class="dicas-gerais-titulo">💬 Dicas para este candidato</div>
+                <div class="dica-box" id="dicasGeraisLista"></div>
+            </div>
         </div>
     </div>
-
     <div class="card">
         <h3 style="margin-bottom: 12px; color: #aaa;">Quesitos de avaliação</h3>
         <div id="quesitosList">
@@ -151,17 +195,18 @@
     // 🔥 CONFIGURAÇÃO DO GOOGLE SHEETS (WEB APP)
     // ============================================================
     // const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzmL1IU10IKyyjd6H48iRATaLmLWfOKnnjXFuQ70VAOn4l6zmlI5KHhenraDT24LCLzRg/exec';
-
     const selectJurado = document.getElementById('jurado');
     const selectCandidato = document.getElementById('candidato');
     const candidatoLock = document.getElementById('candidatoLock');
     const quesitosList = document.getElementById('quesitosList');
     const totalValor = document.getElementById('totalValor');
     const btnEnviar = document.getElementById('btnEnviar');
+    const dicasGerais = document.getElementById('dicasGerais');
+    const dicasGeraisLista = document.getElementById('dicasGeraisLista');
     let toastTimer = null;
     let quesitos = [];
     let notas = {};
-
+    let dicas = []; // registros da aba Dicas: { jurado, candidato, perguntas, quesito }
     function showToast(msg) {
         const el = document.getElementById('toast');
         el.textContent = msg;
@@ -169,14 +214,18 @@
         clearTimeout(toastTimer);
         toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
     }
-
     function esc(str) {
         if (!str) return '';
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
     }
-
+    // Normaliza texto para comparação (ignora acentos, caixa e espaços)
+    function normalizarTexto(s) {
+        return String(s || '')
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase().trim();
+    }
     // ===== CARREGA JURADOS =====
     async function carregarJurados() {
         try {
@@ -190,7 +239,6 @@
             showToast('⚠️ Erro ao carregar jurados.');
         }
     }
-
     // ===== CARREGA CANDIDATO (somente quem está No Palco) =====
     async function carregarCandidatos() {
         try {
@@ -216,11 +264,13 @@
                 candidatoLock.style.display = 'none';
                 selectCandidato.innerHTML = '<option value="">Aguardando candidato no palco...</option>';
             }
+            // Ao trocar o candidato, atualiza as dicas (gerais e por quesito)
+            renderizarDicasGerais();
+            renderizarQuesitos();
         } catch (err) {
             showToast('⚠️ Erro ao carregar candidatos.');
         }
     }
-
     // ===== CARREGA QUESITOS =====
     async function carregarQuesitos() {
         try {
@@ -233,16 +283,80 @@
             showToast('⚠️ Erro de conexão.');
         }
     }
-
+    // ============================================================
+    // 📋 DICAS DA ABA DICAS (Code.gs v5 — GET padrão devolve `dicas`)
+    // Cada dica: { jurado, candidato, perguntas, quesito }
+    // ============================================================
+    async function carregarDicas() {
+        try {
+            const res = await fetch(WEB_APP_URL);
+            const json = await res.json();
+            if (!json.ok) return;
+            dicas = json.dicas || [];
+            renderizarDicasGerais();
+            renderizarQuesitos();
+        } catch (err) {
+            // silencioso: a avaliação continua funcionando sem as dicas
+        }
+    }
+    // Dicas cujo campo Quesito contém o quesito da avaliação.
+    // O campo Quesito pode ter vários valores ("Afinação, Interpretação").
+    // Se houver candidato selecionado, filtra também pelo candidato da dica.
+    function dicasDoQuesito(nomeQuesito) {
+        const alvo = normalizarTexto(nomeQuesito);
+        if (!alvo) return [];
+        const candidatoSel = normalizarTexto(selectCandidato.value);
+        return (dicas || []).filter(function (d) {
+            const campos = String(d.quesito || '')
+                .split(',').map(normalizarTexto).filter(Boolean);
+            if (!campos.includes(alvo)) return false;
+            if (candidatoSel && normalizarTexto(d.candidato) !== candidatoSel) return false;
+            return true;
+        });
+    }
+    // Dicas SEM quesito definido, do candidato que está sendo avaliado
+    function dicasGeraisDoCandidato() {
+        const candidatoSel = normalizarTexto(selectCandidato.value);
+        if (!candidatoSel) return [];
+        return (dicas || []).filter(function (d) {
+            if (String(d.quesito || '').trim()) return false; // só as sem quesito
+            return normalizarTexto(d.candidato) === candidatoSel;
+        });
+    }
+    // HTML das dicas (jurado + perguntas)
+    function htmlDicas(lista) {
+        if (!lista || !lista.length) return '';
+        return '<div class="dica-box">' + lista.map(function (d) {
+            return '<div class="dica-item">' +
+                '<div class="dica-jurado">👨‍⚖️ ' + esc(d.jurado) + '</div>' +
+                '<div class="dica-texto">' + esc(d.perguntas) + '</div>' +
+            '</div>';
+        }).join('') + '</div>';
+    }
+    // Renderiza as dicas gerais (sem quesito) abaixo do nome do candidato
+    function renderizarDicasGerais() {
+        const lista = dicasGeraisDoCandidato();
+        if (!lista.length) {
+            dicasGerais.style.display = 'none';
+            dicasGeraisLista.innerHTML = '';
+            return;
+        }
+        dicasGerais.style.display = 'block';
+        dicasGeraisLista.innerHTML = htmlDicas(lista);
+    }
     function renderizarQuesitos() {
         if (!quesitos.length) {
             quesitosList.innerHTML = '<div style="color: #555; text-align: center; padding: 20px;">Nenhum quesito cadastrado. Cadastre na tela de Quesitos.</div>';
             return;
         }
-        quesitosList.innerHTML = quesitos.map(q => `
+        quesitosList.innerHTML = quesitos.map(q => {
+            const dicasQ = dicasDoQuesito(q.quesito);
+            const dicasHtml = htmlDicas(dicasQ);
+            return `
             <div class="quesito-card">
                 <div class="titulo">${esc(q.ordem || '')}. ${esc(q.quesito)}</div>
                 <div class="descricao">${esc(q.descricao || '')}</div>
+                ${dicasHtml}
                 <div class="nota-row">
                     <label>Nota:</label>
                     ${[5,6,7,8,9,10].map(n => `
@@ -254,9 +368,9 @@
                     <textarea data-obs="${q.linha}" placeholder="Escreva suas considerações..."></textarea>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
     }
-
     // ===== MARCA NOTA =====
     function marcarNota(linha, nota) {
         notas[linha] = nota;
@@ -266,7 +380,6 @@
         const total = Object.values(notas).reduce((s, n) => s + n, 0);
         totalValor.textContent = total;
     }
-
     // ===== ENVIA AVALIAÇÃO =====
     async function enviarAvaliacao() {
         const jurado = selectJurado.value;
@@ -274,10 +387,8 @@
         if (!jurado) { showToast('⚠️ Selecione o jurado.'); return; }
         if (!candidato) { showToast('⚠️ Nenhum candidato no palco para avaliar.'); return; }
         if (Object.keys(notas).length === 0) { showToast('⚠️ Marque pelo menos uma nota.'); return; }
-
         btnEnviar.disabled = true;
         btnEnviar.textContent = '⏳ Enviando...';
-
         try {
             for (const q of quesitos) {
                 const nota = notas[q.linha];
@@ -317,12 +428,13 @@
             btnEnviar.textContent = '📤 Enviar avaliação';
         }
     }
-
     // ===== INICIA =====
     carregarJurados();
     carregarCandidatos();
     carregarQuesitos();
+    carregarDicas();
     setInterval(carregarCandidatos, 10000); // atualiza quando o operador marcar novo No Palco
+    setInterval(carregarDicas, 30000);      // mantém as dicas atualizadas
 </script>
 </body>
 </html>
