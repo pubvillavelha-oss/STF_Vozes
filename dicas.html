@@ -16,7 +16,6 @@
             padding: 20px;
         }
         .container { max-width: 720px; margin: 0 auto; }
-
         /* ===== CABEÇALHO: LOGO + TÍTULO ===== */
         header {
             display: flex;
@@ -41,7 +40,6 @@
             background-clip: text;
         }
         .header-texto p { color: #aaa; margin-top: 4px; font-size: 0.9rem; }
-
         /* ===== CARD DO FORMULÁRIO ===== */
         .card {
             background: rgba(255, 255, 255, 0.06);
@@ -59,7 +57,6 @@
             margin-bottom: 6px;
         }
         label .req { color: #4ade80; }
-        label .opc { color: #888; font-weight: 500; }
         select, textarea {
             width: 100%;
             padding: 12px 16px;
@@ -89,46 +86,6 @@
         }
         select::placeholder, textarea::placeholder { color: #777; }
         select:disabled, textarea:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* ===== QUESITOS EM CHECKBOX (opcional) ===== */
-        .quesitos-grupo {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 8px;
-        }
-        .quesito-check {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 9px 10px;
-            background: rgba(0, 0, 0, 0.25);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            color: #ccc;
-            user-select: none;
-            transition: border-color 0.2s, background 0.2s;
-        }
-        .quesito-check:hover { border-color: rgba(0, 156, 59, 0.5); }
-        .quesito-check input[type="checkbox"] {
-            width: 17px;
-            height: 17px;
-            accent-color: #009C3B;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-        .quesito-check.selecionado {
-            border-color: rgba(0, 156, 59, 0.6);
-            background: rgba(0, 156, 59, 0.12);
-            color: #fff;
-        }
-        .quesito-check.vazio {
-            font-style: italic;
-            color: #777;
-            cursor: default;
-        }
-
         /* ===== BOTÃO ===== */
         .btn {
             width: 100%;
@@ -146,7 +103,6 @@
         .btn:hover { transform: scale(1.02); }
         .btn:active { transform: scale(0.97); }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
         /* ===== MENSAGEM DE SUCESSO ===== */
         .success-msg {
             display: none;
@@ -160,7 +116,6 @@
         .success-msg .icon { font-size: 2rem; }
         .success-msg .text { font-size: 1.1rem; color: #6bff6b; margin-top: 8px; font-weight: 600; }
         .success-msg .sub { font-size: 0.85rem; color: #999; margin-top: 4px; }
-
         /* ===== LISTA DE DICAS ENVIADAS ===== */
         .dicas-titulo {
             font-size: 1.1rem;
@@ -190,23 +145,10 @@
             gap: 10px;
             flex-wrap: wrap;
         }
-        .dica-item .jurado { font-size: 0.85rem; color: #4ade80; font-weight: 600; }
         .dica-item .candidato { font-size: 0.85rem; color: #FFD700; font-weight: 600; }
-        .dica-item .quesito {
-            display: inline-block;
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: #6ba3ff;
-            background: rgba(70, 130, 255, 0.12);
-            border: 1px solid rgba(70, 130, 255, 0.3);
-            padding: 2px 10px;
-            border-radius: 20px;
-            margin-top: 6px;
-        }
         .dica-item .perguntas { font-size: 0.95rem; color: #e0e0e0; margin-top: 6px; white-space: pre-wrap; }
         .dica-item .data { font-size: 0.75rem; color: #666; margin-top: 6px; }
         .empty { text-align: center; color: #555; font-size: 1rem; font-style: italic; padding: 24px 0; }
-
         /* ===== TOAST ===== */
         .toast {
             position: fixed;
@@ -227,9 +169,7 @@
             max-width: 90%;
         }
         .toast.show { opacity: 1; bottom: 50px; }
-
         .footer { text-align: center; margin-top: 24px; color: #555; font-size: 0.85rem; }
-
         @media (max-width: 600px) {
             .logo { height: 72px; }
             .header-texto h1 { font-size: 1.4rem; }
@@ -242,31 +182,18 @@
     <header>
         <img id="logoShowTime" alt="Logo ShowTime Festival de Vozes" class="logo" />
         <div class="header-texto">
-            <h1>Dicas dos Jurados</h1>
+            <h1>Dicas para os Candidatos</h1>
             <p>Registre perguntas e orientações para os candidatos</p>
         </div>
     </header>
-
     <!-- ===== FORMULÁRIO ===== -->
     <div class="card" id="formCard">
         <form id="formDica">
-            <div class="form-group">
-                <label for="selectJurado">Jurado <span class="req">*</span></label>
-                <select id="selectJurado" required>
-                    <option value="">Carregando jurados...</option>
-                </select>
-            </div>
             <div class="form-group">
                 <label for="selectCandidato">Candidato <span class="req">*</span></label>
                 <select id="selectCandidato" required>
                     <option value="">Carregando candidatos...</option>
                 </select>
-            </div>
-            <div class="form-group">
-                <label>Quesito <span class="opc">(opcional)</span></label>
-                <div class="quesitos-grupo" id="quesitosGrupo">
-                    <div class="quesito-check vazio">Carregando quesitos...</div>
-                </div>
             </div>
             <div class="form-group">
                 <label for="perguntas">Perguntas <span class="req">*</span></label>
@@ -280,7 +207,6 @@
             <div class="sub">Obrigado por contribuir com o festival 🎤</div>
         </div>
     </div>
-
     <!-- ===== DICAS ENVIADAS ===== -->
     <div class="dicas-titulo">
         <span>Dicas Enviadas</span>
@@ -289,47 +215,37 @@
     <div id="dicasLista">
         <div class="empty">Carregando...</div>
     </div>
-
     <div class="footer">ShowTime Festival de Vozes · 3ª Edição</div>
 </div>
 <div class="toast" id="toast"></div>
-
 <script>
     // ============================================================
     // WEB_APP_URL e LOGO_URL vêm do config.js (carregado no <head>)
     // ============================================================
     //
-    // CONTRATO COM O BACKEND (Google Apps Script - Code.gs v5)
+    // CONTRATO COM O BACKEND (Google Apps Script - Code.gs v6)
     // ------------------------------------------------------------
-    // GET  (doGet)  → { ok:true, jurados:[...], candidatos:[...],
-    //                   quesitos:["Afinação",...], dicas:[{...}] }
-    // POST (doPost) → body JSON { acao:"salvarDica", jurado, candidato,
-    //                   perguntas, quesito }   ← quesito é OPCIONAL e
-    //                   pode vir vazio ou com vários quesitos separados
-    //                   por ", " (ex.: "Afinação, Interpretação")
+    // GET  (doGet)  → { ok:true, candidatos:[...], dicas:[{...}] }
+    // POST (doPost) → body JSON { acao:"salvarDica", candidato,
+    //                   perguntas }
     //                → { ok:true }
+    // A dica passa a ser vinculada APENAS ao nome do candidato.
     // ============================================================
-
     // ===== DOM =====
     const form        = document.getElementById('formDica');
-    const formCard    = document.getElementById('formCard');
-    const selectJurado = document.getElementById('selectJurado');
     const selectCandidato = document.getElementById('selectCandidato');
-    const quesitosGrupo = document.getElementById('quesitosGrupo');
     const inputPerguntas = document.getElementById('perguntas');
     const btnSubmit   = document.getElementById('btnSubmit');
     const successMsg  = document.getElementById('successMsg');
     const dicasLista  = document.getElementById('dicasLista');
     const dicasCount  = document.getElementById('dicasCount');
     let toastTimer = null;
-
     // ===== APLICA O LOGO (config.js) =====
     const logoEl = document.getElementById('logoShowTime');
     if (logoEl) {
         logoEl.src = LOGO_URL;
         logoEl.onerror = function () { this.style.display = 'none'; };
     }
-
     // ===== UTILITÁRIOS =====
     function showToast(msg) {
         const el = document.getElementById('toast');
@@ -344,8 +260,7 @@
         div.textContent = String(str);
         return div.innerHTML;
     }
-
-    // ===== POPULA UM SELECT (jurado / candidato) =====
+    // ===== POPULA UM SELECT (candidato) =====
     function preencherSelect(select, itens, placeholder) {
         select.innerHTML = '<option value="">' + esc(placeholder) + '</option>';
         (itens || []).forEach(function (item) {
@@ -356,47 +271,6 @@
         });
         select.disabled = false;
     }
-
-    // ===== RENDERIZA QUESITOS COMO CHECKBOX (preserva seleção) =====
-    function renderizarQuesitos(quesitos) {
-        // Guarda o que já está marcado antes de reconstruir
-        const selecionados = new Set();
-        quesitosGrupo.querySelectorAll('input[type="checkbox"]:checked').forEach(function (cb) {
-            selecionados.add(cb.value);
-        });
-
-        quesitosGrupo.innerHTML = '';
-        if (!quesitos || !quesitos.length) {
-            quesitosGrupo.innerHTML = '<div class="quesito-check vazio">Nenhum quesito cadastrado</div>';
-            return;
-        }
-        quesitos.forEach(function (q) {
-            const label = document.createElement('label');
-            label.className = 'quesito-check';
-            const cb = document.createElement('input');
-            cb.type = 'checkbox';
-            cb.value = q;
-            cb.checked = selecionados.has(q);
-            // destaque visual quando marcado
-            cb.addEventListener('change', function () {
-                label.classList.toggle('selecionado', cb.checked);
-            });
-            if (cb.checked) label.classList.add('selecionado');
-            label.appendChild(cb);
-            label.appendChild(document.createTextNode(q));
-            quesitosGrupo.appendChild(label);
-        });
-    }
-
-    // ===== LÊ OS QUESITOS MARCADOS =====
-    function getQuesitosSelecionados() {
-        const selecionados = [];
-        quesitosGrupo.querySelectorAll('input[type="checkbox"]:checked').forEach(function (cb) {
-            selecionados.push(cb.value);
-        });
-        return selecionados;
-    }
-
     // ===== RENDERIZA A LISTA DE DICAS =====
     function renderizarDicas(dicas) {
         dicasCount.textContent = (dicas || []).length;
@@ -405,29 +279,20 @@
             return;
         }
         dicasLista.innerHTML = dicas.map(function (d) {
-            const quesitoHtml = d.quesito
-                ? '<span class="quesito">📋 ' + esc(d.quesito) + '</span>'
-                : '';
             return `
                 <div class="dica-item">
                     <div class="topo">
-                        <span class="jurado">👨‍⚖️ ${esc(d.jurado)}</span>
                         <span class="candidato">🎤 ${esc(d.candidato)}</span>
                     </div>
-                    ${quesitoHtml}
                     <div class="perguntas">${esc(d.perguntas)}</div>
                     <div class="data">${esc(d.data || '')}</div>
                 </div>
             `;
         }).join('');
     }
-
     // ============================================================
     // CARREGAMENTO SEPARADO (corrige o "looping" que perdia a seleção)
     // ------------------------------------------------------------
-    // Antes, o polling recarregava o formulário inteiro a cada 15s,
-    // repopulando os seletores e apagando a seleção em andamento.
-    // Agora:
     //   carregarFormulario() → roda UMA VEZ ao abrir (e após o envio)
     //   carregarDicas()      → polling leve, atualiza SÓ a lista
     // ============================================================
@@ -436,15 +301,12 @@
             const res = await fetch(WEB_APP_URL);
             const json = await res.json();
             if (!json.ok) { showToast('⚠️ Erro ao carregar dados.'); return; }
-            preencherSelect(selectJurado, json.jurados, 'Selecione o jurado');
             preencherSelect(selectCandidato, json.candidatos, 'Selecione o candidato');
-            renderizarQuesitos(json.quesitos);
             renderizarDicas(json.dicas);
         } catch (err) {
             showToast('⚠️ Erro de conexão.');
         }
     }
-
     // Polling leve: só atualiza a lista de dicas, sem tocar no formulário
     async function carregarDicas() {
         try {
@@ -455,19 +317,16 @@
             // silencioso: não interrompe o uso do formulário
         }
     }
-
     // ===== ENVIA A DICA =====
-    async function salvarDica(jurado, candidato, perguntas, quesito) {
+    async function salvarDica(candidato, perguntas) {
         try {
             const res = await fetch(WEB_APP_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({
                     acao: 'salvarDica',
-                    jurado: jurado,
                     candidato: candidato,
-                    perguntas: perguntas,
-                    quesito: quesito
+                    perguntas: perguntas
                 })
             });
             const json = await res.json();
@@ -476,23 +335,18 @@
             return false;
         }
     }
-
     // ===== SUBMIT =====
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
-        const jurado = selectJurado.value.trim();
         const candidato = selectCandidato.value.trim();
         const perguntas = inputPerguntas.value.trim();
-        // Quesito é opcional: junta os marcados com ", " ou envia vazio
-        const quesito = getQuesitosSelecionados().join(', ');
-
-        if (!jurado || !candidato || !perguntas) {
-            showToast('⚠️ Preencha jurado, candidato e perguntas.');
+        if (!candidato || !perguntas) {
+            showToast('⚠️ Preencha candidato e perguntas.');
             return;
         }
         btnSubmit.disabled = true;
         btnSubmit.textContent = '⏳ Enviando...';
-        const ok = await salvarDica(jurado, candidato, perguntas, quesito);
+        const ok = await salvarDica(candidato, perguntas);
         if (ok) {
             form.style.display = 'none';
             successMsg.style.display = 'block';
@@ -509,7 +363,6 @@
             showToast('⚠️ Erro ao enviar. Tente novamente.');
         }
     });
-
     // ===== INICIA =====
     carregarFormulario();
     setInterval(carregarDicas, 15000);
