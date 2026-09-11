@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShowTime Festival de Vozes - Menu</title>
+    <!-- ===== CONFIG CENTRAL (URL do Web App + Logo) ===== -->
+    <script src="config.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a2e12, #0f4d1e, #0a2e12);
+            min-height: 100vh;
+            color: #e0e0e0;
+            padding: 24px;
+        }
+        .container { max-width: 900px; margin: 0 auto; position: relative; }
+        /* ===== LOGO CENTRALIZADO ===== */
+        header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 0 28px;
+        }
+        .logo {
+            height: 140px;
+            width: auto;
+            object-fit: contain;
+        }
+        /* ===== ÁREA DE ACESSO (login / usuário logado) ===== */
+        .acesso-area {
+            position: absolute;
+            top: 12px;
+            right: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 10;
+        }
+        .btn-entrar {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e0e0e0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .btn-entrar:hover { background: rgba(0, 156, 59, 0.25); border-color: rgba(0, 156, 59, 0.6); }
+        .usuario-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            max-width: 280px;
+        }
+        .usuario-info .nome {
+            color: #fff;
+            font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .perfil-badge {
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+        .perfil-master { background: rgba(0, 156, 59, 0.2); color: #4ade80; border: 1px solid rgba(0, 156, 59, 0.4); }
+        .perfil-operacional { background: rgba(255, 223, 0, 0.12); color: #FFDF00; border: 1px solid rgba(255, 223, 0, 0.35); }
+        .perfil-jurado { background: rgba(70, 130, 255, 0.15); color: #6ba3ff; border: 1px solid rgba(70, 130, 255, 0.35); }
+        .btn-sair {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 0.8rem;
+            cursor: pointer;
+            padding: 2px 4px;
+            flex-shrink: 0;
+        }
+        .btn-sair:hover { color: #ff6b6b; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+        }
+        .menu-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 10px;
+            padding: 24px 16px;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            text-decoration: none;
+            color: #e0e0e0;
+            transition: transform 0.2s, border-color 0.2s, background 0.2s;
+        }
+        .menu-card:hover {
+            transform: scale(1.03);
+            border-color: rgba(0, 156, 59, 0.6);
+            background: rgba(0, 156, 59, 0.1);
+        }
+        .menu-card .icon { font-size: 2.4rem; }
+        .menu-card .titulo { font-size: 1.1rem; font-weight: 700; color: #fff; }
+        .menu-card .desc { font-size: 0.85rem; color: #999; line-height: 1.4; }
+        .menu-card .tag {
+            font-size: 0.75rem;
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .tag.operador { background: rgba(255, 223, 0, 0.12); color: #FFDF00; border: 1px solid rgba(255, 223, 0, 0.3); }
+        .tag.jurado { background: rgba(0, 156, 59, 0.15); color: #4ade80; border: 1px solid rgba(0, 156, 59, 0.3); }
+        .tag.publico { background: rgba(70, 130, 255, 0.15); color: #6ba3ff; border: 1px solid rgba(70, 130, 255, 0.3); }
+        .tag.master { background: rgba(255, 255, 255, 0.1); color: #ccc; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .footer { text-align: center; margin-top: 28px; color: #555; font-size: 0.85rem; }
+        /* ===== MODAL DE LOGIN ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .modal-overlay[hidden] { display: none; }
+        .modal-card {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            background: #0d3317;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 28px 24px;
+        }
+        .modal-fechar {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        .modal-fechar:hover { color: #fff; }
+        .modal-card h2 { color: #fff; font-size: 1.3rem; margin-bottom: 4px; }
+        .modal-sub { color: #999; font-size: 0.85rem; margin-bottom: 16px; line-height: 1.4; }
+        .modal-card label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #ccc;
+            margin: 12px 0 4px;
+        }
+        .modal-card input {
+            width: 100%;
+            padding: 11px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.35);
+            color: #fff;
+            font-size: 1rem;
+        }
+        .modal-card input:focus {
+            outline: none;
+            border-color: #009C3B;
+            box-shadow: 0 0 0 3px rgba(0, 156, 59, 0.2);
+        }
+        .senha-wrap { position: relative; }
+        .senha-wrap input { padding-right: 46px; }
+        .btn-ver-senha {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 6px;
+        }
+        .btn-ver-senha:hover { color: #fff; }
+        .login-erro {
+            margin-top: 12px;
+            background: rgba(255, 70, 70, 0.1);
+            border: 1px solid rgba(255, 70, 70, 0.25);
+            color: #ff8a8a;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+        }
+        .login-aviso {
+            margin-top: 12px;
+            background: rgba(255, 223, 0, 0.08);
+            border: 1px solid rgba(255, 223, 0, 0.2);
+            color: #FFDF00;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+        }
+        .btn {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: linear-gradient(90deg, #009C3B, #00b84a);
+            color: #fff;
+            transition: transform 0.15s, opacity 0.2s;
+            margin-top: 18px;
+        }
+        .btn:hover { transform: scale(1.02); }
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0a2e12;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.4s, bottom 0.4s;
+            pointer-events: none;
+            z-index: 999;
+            white-space: nowrap;
+            max-width: 90%;
+        }
+        .toast.show { opacity: 1; bottom: 50px; }
+        @media (max-width: 600px) {
+            .logo { height: 96px; }
+            .acesso-area { top: 8px; right: 0; }
+            .usuario-info { max-width: 200px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- ===== LOGO CENTRALIZADO ===== -->
+    <header>
+        <img id="logoShowTime" alt="Logo ShowTime Festival de Vozes" class="logo" />
+    </header>
+    <!-- ===== ÁREA DE ACESSO ===== -->
+    <div class="acesso-area">
+        <button class="btn-entrar" id="btnEntrar" type="button">🔐 Entrar</button>
+        <div class="usuario-info" id="usuarioInfo" hidden>
+            <span class="nome" id="usuarioNome"></span>
+            <span class="perfil-badge" id="usuarioPerfil"></span>
+            <button class="btn-sair" id="btnSair" type="button">Sair</button>
+        </div>
+    </div>
+    <div class="grid">
+        <a class="menu-card" href="st_candidatos.html" data-roles="publico">
+            <div class="icon">📝</div>
+            <div class="titulo">Inscrição</div>
+            <div class="desc">Formulário para o candidato entrar na fila com nome, música e artista</div>
+            <span class="tag publico">Público</span>
+        </a>
+        <a class="menu-card" href="st_fila.html" data-roles="Operacional Master">
+            <div class="icon">📋</div>
+            <div class="titulo">Fila de Apresentação</div>
+            <div class="desc">Painel do operador: chamar candidato, marcar No Palco e desfazer</div>
+            <span class="tag operador">Operacional</span>
+        </a>
+        <a class="menu-card" href="apresentacao.html" data-roles="Operacional Master">
+            <div class="icon">🖥️</div>
+            <div class="titulo">Apresentação</div>
+            <div class="desc">Tela do palco: imagem/vídeo da história do candidato e likes do público</div>
+            <span class="tag operador">Operacional</span>
+        </a>
+        <a class="menu-card" href="quesitos.html" data-roles="Master">
+            <div class="icon">📋</div>
+            <div class="titulo">Quesitos</div>
+            <div class="desc">Cadastro das perguntas que serão lidas aos jurados</div>
+            <span class="tag master">Master</span>
+        </a>
+        <a class="menu-card" href="jurados.html" data-roles="Master">
+            <div class="icon">👨‍⚖️</div>
+            <div class="titulo">Jurados</div>
+            <div class="desc">Cadastro de jurados com nome, especialidade e história</div>
+            <span class="tag master">Master</span>
+        </a>
+        <a class="menu-card" href="avaliacao.html" data-roles="Jurado Master">
+            <div class="icon">⭐</div>
+            <div class="titulo">Avaliação</div>
+            <div class="desc">Formulário dos jurados com notas de 5 a 10 e observações</div>
+            <span class="tag jurado">Jurado</span>
+        </a>
+        <a class="menu-card" href="dicas.html" data-roles="Jurado Master">
+            <div class="icon">💬</div>
+            <div class="titulo">Dicas</div>
+            <div class="desc">Registro de perguntas e orientações dos jurados para os candidatos</div>
+            <span class="tag jurado">Jurado</span>
+        </a>
+        <a class="menu-card" href="ranking.html" data-roles="Master">
+            <div class="icon">📊</div>
+            <div class="titulo">Ranking</div>
+            <div class="desc">Notas somadas por candidato, com barras e médias</div>
+            <span class="tag master">Master</span>
+        </a>
+        <a class="menu-card" href="resultado.html" data-roles="publico">
+            <div class="icon">🏆</div>
+            <div class="titulo">Resultado Final</div>
+            <div class="desc">Campeão em destaque, pódio e demais classificados</div>
+            <span class="tag publico">Público</span>
+        </a>
+    </div>
+    <div class="footer">ShowTime Festival de Vozes · 3ª Edição</div>
+</div>
+
+<!-- ===== MODAL DE LOGIN ===== -->
+<div class="modal-overlay" id="modalLogin" hidden>
+    <div class="modal-card">
+        <button class="modal-fechar" id="btnFecharLogin" type="button" aria-label="Fechar">✕</button>
+        <h2>🔐 Acesso Restrito</h2>
+        <p class="modal-sub">Áreas internas exigem login. Use as credenciais cadastradas na aba Usuario.</p>
+        <label for="loginEmail">E-mail</label>
+        <input type="email" id="loginEmail" placeholder="seu@email.com" autocomplete="username" />
+        <label for="loginSenha">Senha</label>
+        <div class="senha-wrap">
+            <input type="password" id="loginSenha" placeholder="••••••••" autocomplete="current-password" />
+            <button class="btn-ver-senha" id="btnVerSenha" type="button" aria-label="Mostrar senha">👁️</button>
+        </div>
+        <div class="login-erro" id="loginErro" hidden></div>
+        <div class="login-aviso" id="loginAviso" hidden></div>
+        <button class="btn" id="btnLogin" type="button">Entrar</button>
+    </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+    // ============================================================
+    // 🔐 CONTROLE DE ACESSO — ABA "Usuario" (planilha ShowTime)
+    // ------------------------------------------------------------
+    // O login consulta o backend WEB_APP_URL (config.js) com a ação
+    // 'validar_acesso'. O servidor (Apps Script) lê a aba Usuario da
+    // planilha 1rvBcu4oV5boz_n21yVHIof4ex8YvNLkIABYtj5oHfeE e
+    // devolve { ok, perfil, nome }.
+    // Perfis: Master | Operacional | Jurado
+    // ============================================================
+    const ACESSO_KEY = 'st_acesso_v1';
+    const SESSION_TTL_MS = 8 * 60 * 60 * 1000; // sessão válida por 8 horas
+    const MAX_TENTATIVAS = 5;                  // bloqueio após 5 erros
+    const BLOQUEIO_MS = 60 * 1000;             // bloqueio de 60 segundos
+    const ACAO_VALIDAR_ACESSO = 'validar_acesso';
+
+    let falhasLogin = 0;
+    let bloqueadoAte = 0;
+    let loginEmAndamento = false;
+    let toastTimer = null;
+
+    function showToast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    // ===== SESSÃO (sessionStorage, expira em 8h) =====
+    function lerSessao() {
+        try {
+            const raw = sessionStorage.getItem(ACESSO_KEY);
+            if (!raw) return null;
+            const s = JSON.parse(raw);
+            if (!s || !s.perfil || !s.expira || Date.now() > s.expira) {
+                sessionStorage.removeItem(ACESSO_KEY);
+                return null;
+            }
+            return s;
+        } catch { return null; }
+    }
+    function salvarSessao(perfil, nome, email) {
+        const s = { perfil: perfil, nome: nome || '', email: email || '', expira: Date.now() + SESSION_TTL_MS };
+        try { sessionStorage.setItem(ACESSO_KEY, JSON.stringify(s)); } catch {}
+    }
+    function limparSessao() {
+        try { sessionStorage.removeItem(ACESSO_KEY); } catch {}
+    }
+
+    // ===== APLICA O ACESSO AO MENU =====
+    // Cards com data-roles="publico" ficam sempre visíveis.
+    // Os demais só aparecem se o perfil logado estiver em data-roles.
+    function aplicarAcesso() {
+        const sessao = lerSessao();
+        const btnEntrar = document.getElementById('btnEntrar');
+        const usuarioInfo = document.getElementById('usuarioInfo');
+        if (sessao) {
+            btnEntrar.hidden = true;
+            usuarioInfo.hidden = false;
+            document.getElementById('usuarioNome').textContent = sessao.nome || sessao.email;
+            const badge = document.getElementById('usuarioPerfil');
+            badge.textContent = sessao.perfil;
+            badge.className = 'perfil-badge perfil-' + sessao.perfil.toLowerCase();
+        } else {
+            btnEntrar.hidden = false;
+            usuarioInfo.hidden = true;
+        }
+        document.querySelectorAll('.menu-card').forEach(card => {
+            const roles = (card.getAttribute('data-roles') || '').split(/\s+/).filter(Boolean);
+            const liberado = roles.includes('publico') || (sessao && roles.includes(sessao.perfil));
+            card.style.display = liberado ? '' : 'none';
+        });
+    }
+
+    // ===== MODAL DE LOGIN =====
+    function abrirLogin() {
+        if (Date.now() < bloqueadoAte) {
+            const seg = Math.ceil((bloqueadoAte - Date.now()) / 1000);
+            mostrarAvisoLogin('🔒 Muitas tentativas. Aguarde ' + seg + 's.');
+            return;
+        }
+        document.getElementById('modalLogin').hidden = false;
+        document.getElementById('loginErro').hidden = true;
+        document.getElementById('loginAviso').hidden = true;
+        document.getElementById('loginSenha').value = '';
+        setTimeout(() => document.getElementById('loginEmail').focus(), 50);
+    }
+    function fecharLogin() {
+        document.getElementById('modalLogin').hidden = true;
+    }
+    function mostrarErroLogin(msg) {
+        const el = document.getElementById('loginErro');
+        el.textContent = msg;
+        el.hidden = false;
+    }
+    function mostrarAvisoLogin(msg) {
+        const el = document.getElementById('loginAviso');
+        el.textContent = msg;
+        el.hidden = false;
+    }
+    function registrarFalhaLogin() {
+        falhasLogin++;
+        if (falhasLogin >= MAX_TENTATIVAS) {
+            bloqueadoAte = Date.now() + BLOQUEIO_MS;
+            falhasLogin = 0;
+            const seg = Math.ceil(BLOQUEIO_MS / 1000);
+            mostrarAvisoLogin('🔒 Muitas tentativas. Aguarde ' + seg + 's.');
+        }
+    }
+
+    // ===== LOGIN =====
+    async function fazerLogin() {
+        if (loginEmAndamento) return;
+        if (Date.now() < bloqueadoAte) {
+            const seg = Math.ceil((bloqueadoAte - Date.now()) / 1000);
+            mostrarAvisoLogin('🔒 Muitas tentativas. Aguarde ' + seg + 's.');
+            return;
+        }
+        const email = document.getElementById('loginEmail').value.trim();
+        const senha = document.getElementById('loginSenha').value;
+        if (!email || !senha) {
+            mostrarErroLogin('Informe e-mail e senha.');
+            return;
+        }
+        if (typeof WEB_APP_URL === 'undefined' || !WEB_APP_URL) {
+            mostrarErroLogin('Configuração ausente (config.js não carregado).');
+            return;
+        }
+        const btn = document.getElementById('btnLogin');
+        btn.disabled = true;
+        btn.textContent = '⏳ Validando...';
+        loginEmAndamento = true;
+        try {
+            const res = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ acao: ACAO_VALIDAR_ACESSO, email: email, senha: senha })
+            });
+            const json = await res.json();
+            if (json.ok && json.perfil) {
+                falhasLogin = 0;
+                salvarSessao(json.perfil, json.nome || '', email);
+                fecharLogin();
+                aplicarAcesso();
+                showToast('✅ Acesso liberado: ' + json.perfil);
+            } else {
+                registrarFalhaLogin();
+                mostrarErroLogin(json.msg || 'Credenciais inválidas.');
+            }
+        } catch (err) {
+            registrarFalhaLogin();
+            mostrarErroLogin('Erro de conexão com o servidor. Tente novamente.');
+        } finally {
+            loginEmAndamento = false;
+            btn.disabled = false;
+            btn.textContent = 'Entrar';
+        }
+    }
+
+    // ===== SAIR =====
+    function sair() {
+        limparSessao();
+        aplicarAcesso();
+        showToast('👋 Sessão encerrada.');
+    }
+
+    // ===== EVENTOS =====
+    document.getElementById('btnEntrar').addEventListener('click', abrirLogin);
+    document.getElementById('btnFecharLogin').addEventListener('click', fecharLogin);
+    document.getElementById('btnLogin').addEventListener('click', fazerLogin);
+    document.getElementById('btnSair').addEventListener('click', sair);
+    document.getElementById('btnVerSenha').addEventListener('click', function () {
+        const inp = document.getElementById('loginSenha');
+        inp.type = inp.type === 'password' ? 'text' : 'password';
+    });
+    document.getElementById('modalLogin').addEventListener('click', function (e) {
+        if (e.target === this) fecharLogin();
+    });
+    document.getElementById('loginEmail').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') document.getElementById('loginSenha').focus();
+    });
+    document.getElementById('loginSenha').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') fazerLogin();
+    });
+
+    // ===== APLICA O LOGO (config.js) =====
+    const logoEl = document.getElementById('logoShowTime');
+    if (logoEl) {
+        logoEl.src = LOGO_URL;
+        logoEl.onerror = function () { this.style.display = 'none'; };
+    }
+
+    // ===== INICIA =====
+    aplicarAcesso();
+    if (typeof WEB_APP_URL === 'undefined' || !WEB_APP_URL) {
+        showToast('⚠️ config.js não carregado — apenas telas públicas visíveis.');
+    }
+</script>
+</body>
+</html>
