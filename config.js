@@ -20,12 +20,23 @@ const LOGO_URL = 'https://raw.githubusercontent.com/PUBVILLAVELHA-OSS/STF_Vozes/
 // const LOGO_URL = 'https://raw.githubusercontent.com/SEU_USUARIO/SEU_REPO/main/LG_STFV.png';
 // OU lista de imagens (sorteia uma a cada carregamento)
 const IMAGENS_LATERAIS = [
-    'https://drive.google.com/thumbnail?id=1CmcEvxRKctqdcv3jDwcLQ5-vBRTk-rQK&sz=w400', // Emporio do Queijo
-    'https://drive.google.com/thumbnail?id=1MNdjkYFzmHPwnsJkM9XYQWYqReYdulVt&sz=w400', // Seven Mobby
-    'https://drive.google.com/thumbnail?id=1D3qVaKSK-QN_CwIbgaZf1nRo6lxPTnNk&sz=w400', // Peixinho Felix
-    'https://drive.google.com/thumbnail?id=1MGMYNDiwzQqhe1RcsuW-xth4vNFwJsNC&sz=w400', // Motinha 
-    'https://drive.google.com/thumbnail?id=1nPaoZZs29SuiWBHJumPcK2WPr5n6eTg3&sz=w400', //Beholdme
-    'https://drive.google.com/thumbnail?id=11Q6d45tJ7kzFz1h6DUjAQ6wkRmxmWuC1&sz=w400', //Imobiliaria Lencois
-    'https://drive.google.com/thumbnail?id=11OqzpZ5NhvgmdyD2-7tCYhqc3zr6ZY_-&sz=w400', // Descomplicanto
-    'https://drive.google.com/thumbnail?id=1MNdjkYFzmHPwnsJkM9XYQWYqReYdulVt&sz=w400'  // Seven Mobby
+  'https://drive.google.com/thumbnail?id=1CmcEvxRKctqdcv3jDwcLQ5-vBRTk-rQK&sz=w400', // _Emporio do Queijo
+    'https://drive.google.com/thumbnail?id=1OtJl1MQkGJzhPT87PHUhagKpTBAKJFkf&sz=w400', // _Seven Mobby
+    'https://drive.google.com/thumbnail?id=1jdXhblQD1eFj-7Op99sOzHqE8g2mhW17&sz=w400', // _Peixinho Felix
+    'https://drive.google.com/thumbnail?id=1MGMYNDiwzQqhe1RcsuW-xth4vNFwJsNC&sz=w400', // _Motinha 
+    'https://drive.google.com/thumbnail?id=1hoWLJYKlShex5S3punCac2k84ekKt6aP&sz=w400', // _Beholdme
+    'https://drive.google.com/thumbnail?id=1izgtJXcmwEPFxSezcn_m_Q0ts_clvSMC&sz=w400', // _Imobiliaria Lencois
+    'https://drive.google.com/thumbnail?id=1IxQVIxm3XbHCXg32qpRQHHPopKjzjGyI&sz=w400', // _Descomplicanto
+    'https://drive.google.com/thumbnail?id=1OtJl1MQkGJzhPT87PHUhagKpTBAKJFkf&sz=w400', // _Seven Mobby
+    'https://drive.google.com/thumbnail?id=1p0kZx2YWnNiPYfIe7bN33rwP15alB2ve&sz=w400', // _Bolsa de Mulher
+    'https://drive.google.com/thumbnail?id=1YGmWPgHbCrgteyBgd8ZgZMQI8gTJ_ufl&sz=w400', // _Case Store
+    'https://drive.google.com/thumbnail?id=1YgQQ5e-te6rJK_dNvLVF9M0QpeUHnFsf&sz=w400', // _Ideali
+    'https://drive.google.com/thumbnail?id=1CmcEvxRKctqdcv3jDwcLQ5-vBRTk-rQK&sz=w400', // _Emporio do Queijo
+    'https://drive.google.com/thumbnail?id=1hojFbNqhoZsZ80MvYxPUu5RYPSwsbjXv&sz=w400', // _PC SHOW
+    'https://drive.google.com/thumbnail?id=1axPA2samXNo532kHJ30M38A8yI05538x&sz=w400', // _Pet Shop
+    'https://drive.google.com/thumbnail?id=1F2h3Oo12Ab2K9OLkKQH2uFKFe_7NzqUA&sz=w400', // _Estetic Car Purgano
+    'https://drive.google.com/thumbnail?id=1UbZvEzyirFKFpt_lniw-w4PZaiYWTbmi&sz=w400', // _Sellum
+    'https://drive.google.com/thumbnail?id=1_B3TnZV6OD8-c9OwLjZZX8UdUOgBSNF2&sz=w400', // _Tempo Livre
+    'https://drive.google.com/thumbnail?id=1HZ9QqIWOlCiVQOF7TlpbQpnRXTXIp9_8&sz=w400', // _Velozo
+    'https://drive.google.com/thumbnail?id=1MYHduZsvPeFLUxipCrC6G6oBa0JY08TR&sz=w400' // _VVP
 ];
