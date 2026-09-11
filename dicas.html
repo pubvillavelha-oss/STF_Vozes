@@ -139,15 +139,8 @@
             border-radius: 10px;
             margin-bottom: 8px;
         }
-        .dica-item .topo {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
         .dica-item .candidato { font-size: 0.85rem; color: #FFD700; font-weight: 600; }
         .dica-item .perguntas { font-size: 0.95rem; color: #e0e0e0; margin-top: 6px; white-space: pre-wrap; }
-        .dica-item .data { font-size: 0.75rem; color: #666; margin-top: 6px; }
         .empty { text-align: center; color: #555; font-size: 1rem; font-style: italic; padding: 24px 0; }
         /* ===== TOAST ===== */
         .toast {
@@ -223,13 +216,14 @@
     // WEB_APP_URL e LOGO_URL vêm do config.js (carregado no <head>)
     // ============================================================
     //
-    // CONTRATO COM O BACKEND (Google Apps Script - Code.gs v6)
+    // CONTRATO COM O BACKEND (Code.gs v9)
     // ------------------------------------------------------------
-    // GET  (doGet)  → { ok:true, candidatos:[...], dicas:[{...}] }
-    // POST (doPost) → body JSON { acao:"salvarDica", candidato,
-    //                   perguntas }
-    //                → { ok:true }
-    // A dica passa a ser vinculada APENAS ao nome do candidato.
+    // GET  → WEB_APP_URL + '?acao=dicas'
+    //        → { ok:true, candidatos:[nomes], dicas:[{candidato,
+    //          perguntas}], aviso? }
+    // POST → body JSON { acao:"salvarDica", candidato, perguntas }
+    //        → { ok:true }
+    // A dica é vinculada APENAS a Candidato e Perguntas.
     // ============================================================
     // ===== DOM =====
     const form        = document.getElementById('formDica');
@@ -260,7 +254,7 @@
         div.textContent = String(str);
         return div.innerHTML;
     }
-    // ===== POPULA UM SELECT (candidato) =====
+    // ===== POPULA O SELECT DE CANDIDATO =====
     function preencherSelect(select, itens, placeholder) {
         select.innerHTML = '<option value="">' + esc(placeholder) + '</option>';
         (itens || []).forEach(function (item) {
@@ -281,36 +275,40 @@
         dicasLista.innerHTML = dicas.map(function (d) {
             return `
                 <div class="dica-item">
-                    <div class="topo">
-                        <span class="candidato">🎤 ${esc(d.candidato)}</span>
-                    </div>
+                    <div class="candidato">🎤 ${esc(d.candidato)}</div>
                     <div class="perguntas">${esc(d.perguntas)}</div>
-                    <div class="data">${esc(d.data || '')}</div>
                 </div>
             `;
         }).join('');
     }
     // ============================================================
-    // CARREGAMENTO SEPARADO (corrige o "looping" que perdia a seleção)
+    // CARREGAMENTO
     // ------------------------------------------------------------
     //   carregarFormulario() → roda UMA VEZ ao abrir (e após o envio)
     //   carregarDicas()      → polling leve, atualiza SÓ a lista
+    // AMBAS usam ?acao=dicas — sem isso o backend responde a FILA
+    // (padrão do doGet) e o campo candidatos não existe.
     // ============================================================
     async function carregarFormulario() {
+        if (typeof WEB_APP_URL === 'undefined') {
+            showToast('⚠️ config.js não encontrado. Verifique o upload.');
+            return;
+        }
         try {
-            const res = await fetch(WEB_APP_URL);
+            const res = await fetch(WEB_APP_URL + '?acao=dicas');
             const json = await res.json();
             if (!json.ok) { showToast('⚠️ Erro ao carregar dados.'); return; }
             preencherSelect(selectCandidato, json.candidatos, 'Selecione o candidato');
             renderizarDicas(json.dicas);
         } catch (err) {
-            showToast('⚠️ Erro de conexão.');
+            showToast('⚠️ Erro de conexão. Verifique a URL do Web App.');
         }
     }
     // Polling leve: só atualiza a lista de dicas, sem tocar no formulário
     async function carregarDicas() {
+        if (typeof WEB_APP_URL === 'undefined') return;
         try {
-            const res = await fetch(WEB_APP_URL);
+            const res = await fetch(WEB_APP_URL + '?acao=dicas');
             const json = await res.json();
             if (json.ok) renderizarDicas(json.dicas);
         } catch (err) {
