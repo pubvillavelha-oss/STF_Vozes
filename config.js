@@ -38,5 +38,7 @@ const IMAGENS_LATERAIS = [
     'https://drive.google.com/thumbnail?id=1UbZvEzyirFKFpt_lniw-w4PZaiYWTbmi&sz=w400', // _Sellum
     'https://drive.google.com/thumbnail?id=1_B3TnZV6OD8-c9OwLjZZX8UdUOgBSNF2&sz=w400', // _Tempo Livre
     'https://drive.google.com/thumbnail?id=1HZ9QqIWOlCiVQOF7TlpbQpnRXTXIp9_8&sz=w400', // _Velozo
-    'https://drive.google.com/thumbnail?id=1MYHduZsvPeFLUxipCrC6G6oBa0JY08TR&sz=w400' // _VVP
+    'https://drive.google.com/thumbnail?id=1MYHduZsvPeFLUxipCrC6G6oBa0JY08TR&sz=w400', // _VVP
+    'https://drive.google.com/thumbnail?id=1dQVVbok48bJPKNssOy3D_2hImOsPnLXv&sz=w400', // _GABRIEL
+    'https://drive.google.com/thumbnail?id=1vAGQfHfEukyS-ssMftwOnLdTv6q-FAbl&sz=w400' // MARTINS
 ];
