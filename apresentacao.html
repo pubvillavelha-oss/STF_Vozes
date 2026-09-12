@@ -449,7 +449,7 @@
         url = url.trim();
         const idYT = extrairIdYouTube(url);
         if (idYT) {
-            return 'https://www.youtube.com/embed/' + idYT + '?autoplay=1&mute=1&rel=0';
+            return 'https://www.youtube.com/embed/' + idYT + '?autoplay=1&&rel=0';
         }
         const mFile = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
         const mOpen = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
